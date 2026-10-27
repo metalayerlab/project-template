@@ -19,7 +19,15 @@ import urllib.request
 from pathlib import Path
 
 import pytest
-from copier import run_copy
+
+# Rendered projects must pick their own interpreter and venv, as a fresh checkout would.
+# CI's setup-uv exports UV_PYTHON (the template's own Python), and `uv run pytest` sets
+# VIRTUAL_ENV: both would leak into every project's `uv lock` / `uv run`. Before importing
+# copier: it runs tasks through plumbum, which snapshots the environment at import time.
+for _var in ("UV_PYTHON", "VIRTUAL_ENV", "UV_PROJECT_ENVIRONMENT"):
+    os.environ.pop(_var, None)
+
+from copier import run_copy  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 
