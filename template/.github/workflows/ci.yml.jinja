@@ -3,9 +3,11 @@
 # Every job blocks the merge (make them required checks in branch protection).
 name: CI
 
+# Branches are checked through their PR: pushing to a branch with an open PR
+# would otherwise run every job twice.
 on:
   push:
-    branches: [main, 'dev/**', 'feat/**']
+    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:

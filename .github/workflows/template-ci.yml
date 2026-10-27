@@ -3,7 +3,7 @@ name: Template CI
 
 on:
   push:
-    branches: [main, 'dev/**', 'feat/**']
+    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
