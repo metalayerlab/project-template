@@ -1,0 +1,29 @@
+[% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]
+[% include 'layers/' ~ language ~ '/ignore/gitignore.jinja' %]
+
+# Local knowledge graphs (graphify): rebuilt locally, never committed
+.graphify/
+graphify-out/
+
+# Secrets and local state: never committed
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+/data/
+[% if 'docker' in contrib %]
+contrib/docker/config/
+contrib/docker/state/
+contrib/docker/secrets/
+[% endif %]
+
+# Editors and AI assistants' local files
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+.claude/settings.local.json
+CLAUDE.local.md

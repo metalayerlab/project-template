@@ -1,0 +1,7 @@
+```sh
+uv run pytest                                   # unit tests, with an 80% coverage floor
+uv run pytest tests/unit/test_config.py -k env  # a subset
+RUN_INTEGRATION=1 uv run pytest -m integration  # integration tests (real external systems)
+```
+
+CI runs the unit tests on every supported Python version, together with ruff, mypy (strict), the wiki checks and the manifest checks. All of them block a merge.

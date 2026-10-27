@@ -1,0 +1,7 @@
+
+- **Types:** full annotations; `mypy --strict` passes. Any `# type: ignore` states its reason.
+- **Style:** ruff decides (line length 100). Comments say *why*.
+- **Output:** `logging` in library code; only the CLI writes stdout (`typer.echo`). No `print` (ruff T20).
+- **Config:** every setting goes through `config.SETTINGS`: `[[ env_prefix ]]<KEY>_FILE` > `[[ env_prefix ]]<KEY>` > file > default. Secrets: `secret=True`, read from `_FILE`, never logged.
+- **Errors:** specific exceptions (`ConfigError`, ...); the CLI prints one line and exits 2. No bare `except:`.
+- **Dependencies:** only when the stdlib or an existing dependency can't do it, justified in the PR. Check the exact package name exists (typosquatting).

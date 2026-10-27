@@ -1,0 +1,24 @@
+[project]
+name = "project-template"
+version = "0.0.0"
+description = "The metalayerlab project template (Copier): this file only drives the template's own tests"
+requires-python = ">=3.13"
+
+[dependency-groups]
+dev = [
+    "copier>=9.6,<10",
+    "pytest>=8.3",
+    "pytest-xdist>=3.6",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not docker'"
+markers = ["docker: builds and runs container images (uv run pytest -m docker)"]
+
+[tool.ruff]
+line-length = 100
+extend-exclude = ["template"]

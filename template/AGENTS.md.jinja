@@ -1,0 +1,121 @@
+[% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]
+# AGENTS.md
+
+[[ project_name ]]: [[ description ]]
+Single source of instructions for AI assistants (CLAUDE.md, GEMINI.md, Copilot and Cursor files point here).
+The reasons behind these rules are in the wiki (`docs/wiki/Contributing.md`); you don't need them to follow them.
+
+## How to work
+
+1. Read only what the task needs: the page for your area in the [Docs map](#docs-map),
+   `docs/design/README.md` (the index; then only the records it points you to), and `TODO.md` "Decided against"
+   (never re-propose those).
+2. New feature, new dependency, or a public-interface change (config keys, CLI, HTTP API, file formats):
+   write `docs/design/NNNN-*.md` from `0000-template.md`, add a line to its index, and **stop for approval**.
+3. One concern per PR. A human reviews every line.
+4. Done = code + tests + wiki ([Definition of done](#definition-of-done)).
+5. Report what you skipped or couldn't run. Never claim an unrun check passed.
+
+## Don't read
+
+These are large or generated, and reading them wastes context. Use the commands instead:
+
+- `[[ layer.lock_file ]]` (use `[[ layer.deps_query ]]`), `CHANGELOG.md` (use `git log`), [% for d in layer.noread %]`[[ d ]]`, [% endfor %]`.graphify/`
+- Generated wiki blocks (`<!-- generated:start/end -->`): the code is the source.
+- `docs/design/` records the index doesn't point you to.
+
+Adding a large or generated path? List it here and deny `Read` on it in `.claude/settings.json`.
+
+## Stack and commands
+
+[% include 'layers/' ~ language ~ '/agents/stack-intro.md.jinja' %]
+
+| Task | Command |
+|---|---|
+| Install | `[[ layer.install ]]` |
+| Add a dependency | [[ layer.add_dependency ]] |
+| Lint (fix) / format | `[[ layer.lint_fix ]]` / `[[ layer.format ]]` |
+| Type check (strict) | `[[ layer.typecheck ]]` |
+| Tests (80% floor) / integration | `[[ layer.test ]]` / `[[ layer.test_integration ]]` |
+| Regenerate wiki sections | `[[ layer.gen_wiki ]]` |
+| Check the wiki | `python3 scripts/check-wiki.py` |
+[% if container_image or contrib %]
+| Check manifests | `scripts/check-manifests.sh` |
+[% endif %]
+[% if has_cli %]
+| Run | `[[ layer.run ]] --help` |
+[% endif %]
+
+## Repository map
+
+T = template-owned: never edit here. Changes go to [project-template](https://github.com/[[ github_owner ]]/project-template) and arrive by the weekly update PR.
+
+| Path | What |
+|---|---|
+[% include 'layers/' ~ language ~ '/agents/repo-map.md.jinja' %]
+| `docs/wiki/` | The wiki (published from `main`); `.standard.toml` = required pages (T) |
+| `docs/design/` | Design records; `README.md` is the index |
+| `docs/ai/` | Prompts, review checklist (T) |
+[% if contrib %]
+| `contrib/` | Manifests: [[ contrib | join(', ') ]] |
+[% endif %]
+[% if container_image %]
+| `Dockerfile`[% if puid_pgid %], `docker/`[% endif %] | Image (T skeleton) |
+[% endif %]
+| `.github/workflows/`, `scripts/` | CI and its scripts (T) |
+| `CHANGELOG.md`, version in `[[ layer.version_file ]]`, `.release-please-manifest.json` | release-please only |
+| `.copier-answers.yml` | Copier only |
+
+## Conventions
+[% include 'layers/' ~ language ~ '/agents/conventions.md.jinja' %]
+- **Tests:** each behaviour change gets a test that fails without it. Assert behaviour; no network in unit tests.
+- **PR titles:** Conventional Commits (`feat:` `fix:` `docs:` `refactor:` `perf:` `test:` `build:` `ci:` `chore:`, `!` = breaking), lower-case subject, no full stop. The title becomes the CHANGELOG line.
+- **Branches:** `feat/<topic>` or `dev/<topic>`.
+
+## Never
+
+- Push to `main`, create tags or releases, or edit release-please or Copier files (see the map).
+- Edit inside generated wiki blocks: regenerate them.
+- Commit secrets, real hostnames, IPs or personal data. Use `example.org` and `192.0.2.0/24`.
+- Weaken a check: lower the coverage floor, add an unexplained `noqa`/`type: ignore`, skip or xfail a test, loosen the sandbox or `securityContext`, add `continue-on-error`. If a check is wrong, say so.
+- Add the `no-docs-needed` label (reviewers only), telemetry, or network calls at import time.
+- Grow this file or the tool pointer files past `[context_budget]` (`docs/wiki/.standard.toml`, CI-checked): add rules tersely, put reasons in the wiki.
+
+## Definition of done
+
+```sh
+[[ layer.lint ]] && [[ layer.format_check ]]
+[[ layer.typecheck ]]
+[[ layer.test ]]
+[[ layer.gen_wiki ]] --check
+python3 scripts/check-wiki.py
+[% if container_image or contrib %]
+scripts/check-manifests.sh
+[% endif %]
+```
+
+All of these pass, and the [Docs map](#docs-map) pages for your change are updated in the same PR.
+
+## Docs map
+
+CI fails a PR that changes watched code without touching `docs/wiki/`.
+
+| You changed | Update |
+|---|---|
+[% if has_cli %]
+| a setting (`[[ layer.config_file ]]`) | In-Depth-Configuration (prose; the table is generated) |
+| a command or option (`[[ layer.cli_file ]]`) | CLI-Reference (regenerate), Quick-Start if shown |
+[% endif %]
+[% if kind == 'service' %]
+| a route (`[[ layer.api_file ]]`) | HTTP-API-Reference: regenerate, then document request, response, errors |
+[% endif %]
+[% if contrib or container_image %]
+| `Dockerfile`, `contrib/**` | Deployment |
+[% endif %]
+| component structure | Architecture-Internals + a design record |
+| auth, secrets, input handling, exposure | Security |
+| a new failure mode or error | Troubleshooting |
+| test layout or tooling | Testing-Guide |
+| a recurring question | Frequently-Asked-Questions |
+
+Wiki links use page names (`[Quick Start](Quick-Start)`), never repo paths. Link new pages from `_Sidebar.md`.

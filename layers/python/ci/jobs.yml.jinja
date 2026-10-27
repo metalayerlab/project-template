@@ -1,0 +1,60 @@
+[% set pythons = ['3.13', '3.14'] | select('ge', python_version) | list %]
+
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [[ pythons | tojson ]]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Install (from the lock file)
+        run: uv sync --locked
+
+      - name: Lint
+        run: uv run ruff check
+
+      - name: Format
+        run: uv run ruff format --check
+
+      - name: Type check
+        run: uv run mypy
+
+      - name: Tests (with coverage floor)
+        run: uv run pytest
+
+      - name: Import and entry-point smoke test
+        run: |
+          uv run python -c "import [[ package_name ]]; print('[[ package_name ]]', [[ package_name ]].__version__)"
+[% if has_cli %]
+          uv run [[ project_name ]] --help > /dev/null
+[% endif %]
+
+      - name: Generated wiki sections are current
+        if: matrix.python-version == '[[ python_version ]]'
+        run: uv run scripts/gen-wiki.py --check
+
+  version:
+    name: Version and lock file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+      - name: Version is PEP 440 and matches the release manifest
+        run: |
+          VERSION=$(grep -oP '^version = "\K[^"]+' pyproject.toml)
+          MANIFEST=$(python3 -c 'import json; print(json.load(open(".release-please-manifest.json"))["."])')
+          echo "pyproject: $VERSION, manifest: $MANIFEST"
+          echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+((a|b|rc)[0-9]+)?(\.post[0-9]+)?(\.dev[0-9]+)?$' \
+            || { echo "::error file=pyproject.toml::version $VERSION is not PEP 440"; exit 1; }
+          [ "$VERSION" = "$MANIFEST" ] \
+            || { echo "::error::pyproject.toml ($VERSION) and .release-please-manifest.json ($MANIFEST) disagree: only release-please changes them"; exit 1; }
+      - name: uv.lock is in sync with pyproject.toml
+        run: uv lock --check

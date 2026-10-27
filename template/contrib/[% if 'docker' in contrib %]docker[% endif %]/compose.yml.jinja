@@ -1,0 +1,45 @@
+# [[ project_name ]] under Docker Compose. Template-owned skeleton; see the wiki's
+# Deployment page.
+#
+#   docker compose -f contrib/docker/compose.yml up -d
+#   docker exec [[ project_name ]] [[ project_name ]] config     # effective config and sources
+#
+# Config: ./config/config.yaml (from contrib/[[ project_name ]].example.yaml), mounted
+# read-only. Secrets: as files under ./secrets, passed with [[ env_prefix ]]<KEY>_FILE.
+
+services:
+  [[ project_name ]]:
+    image: [[ image ]]:0.0.0 # x-release-please-version
+    container_name: [[ project_name ]]
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:[[ port ]]:[[ port ]]"   # loopback only: put a reverse proxy in front
+
+    volumes:
+      - ./config:/etc/[[ project_name ]]:ro
+      - ./state:/var/lib/[[ project_name ]]
+      # - ./secrets:/run/secrets/[[ project_name ]]:ro
+
+    environment:
+[% if puid_pgid %]
+      PUID: "1000"
+      PGID: "1000"
+[% endif %]
+      TZ: "[[ timezone ]]"
+      # [[ env_prefix ]]LOG_LEVEL: DEBUG
+      # [[ env_prefix ]]SOME_TOKEN_FILE: /run/secrets/[[ project_name ]]/some-token
+
+    # Hardening: read-only root, no new privileges, only the capabilities it needs
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+[% if puid_pgid %]
+    # The entrypoint chowns the state directory, then drops to PUID:PGID
+    cap_add: [CHOWN, SETUID, SETGID, DAC_OVERRIDE, FOWNER]
+[% endif %]
+
+    # The image's HEALTHCHECK polls [[ health_path ]]

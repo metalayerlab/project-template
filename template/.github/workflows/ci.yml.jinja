@@ -1,0 +1,77 @@
+[% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]
+# Template-owned: change it in project-template and pull it in with `copier update`.
+# Every job blocks the merge (make them required checks in branch protection).
+name: CI
+
+on:
+  push:
+    branches: [main, 'dev/**', 'feat/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      # Allow-list false positives in .gitleaks.toml, never by disabling the job.
+      - name: gitleaks
+        run: |
+          docker run --rm -v "$PWD:/repo" -w /repo ghcr.io/gitleaks/gitleaks:v8.30.1 \
+            git --redact --verbose --config .gitleaks.toml .
+[% if personal_data_guard %]
+
+  personal-data:
+    name: Personal data guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # PERSONAL_DATA_DENYLIST is an optional repository secret: one string per line.
+      - name: Scan tracked files
+        env:
+          PERSONAL_DATA_DENYLIST: ${{ secrets.PERSONAL_DATA_DENYLIST }}
+        run: python3 scripts/check-personal-data.py
+[% endif %]
+[% include 'layers/' ~ language ~ '/ci/jobs.yml.jinja' %]
+[% if container_image or contrib %]
+
+  manifests:
+    name: Dockerfile and contrib manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install validators
+        run: |
+          mkdir -p "$HOME/.local/bin"
+[% if container_image %]
+          curl -fsSL -o "$HOME/.local/bin/hadolint" \
+            https://github.com/hadolint/hadolint/releases/download/v2.15.1/hadolint-linux-x86_64
+          chmod +x "$HOME/.local/bin/hadolint"
+[% endif %]
+[% if 'k8s' in contrib %]
+          curl -fsSL https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz \
+            | tar -xz -C "$HOME/.local/bin" kubeconform
+[% endif %]
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Validate
+        run: scripts/check-manifests.sh
+[% endif %]
+
+  workflows:
+    name: Workflow lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: actionlint
+        run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color

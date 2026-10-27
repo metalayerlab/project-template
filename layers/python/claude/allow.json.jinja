@@ -1,0 +1,8 @@
+      "Bash(uv sync:*)",
+      "Bash(uv run ruff:*)",
+      "Bash(uv run mypy:*)",
+      "Bash(uv run pytest:*)",
+      "Bash(uv run scripts/gen-wiki.py:*)",
+[% if has_cli %]
+      "Bash(uv run [[ project_name ]]:*)",
+[% endif %]

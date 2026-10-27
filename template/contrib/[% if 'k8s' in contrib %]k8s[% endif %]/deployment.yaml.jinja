@@ -1,0 +1,65 @@
+# As a non-root user, read-only root filesystem, no capabilities (PSS restricted).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: [[ project_name ]]
+  labels:
+    app.kubernetes.io/name: [[ project_name ]]
+    app.kubernetes.io/component: server
+spec:
+  replicas: 1
+  # State is on an emptyDir: swap it for a PersistentVolumeClaim (and keep
+  # Recreate, so there are never two writers) if it must survive the pod.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: [[ project_name ]]
+      app.kubernetes.io/component: server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: [[ project_name ]]
+        app.kubernetes.io/component: server
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: [[ project_name ]]
+          image: [[ image ]]
+          args: ["serve"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          env:
+            - {name: TZ, value: "[[ timezone ]]"}
+            - {name: [[ env_prefix ]]CONFIG, value: /etc/[[ project_name ]]/config.yaml}
+          ports:
+            - {name: http, containerPort: [[ port ]]}
+          readinessProbe:
+            httpGet: {path: /readyz, port: http}
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: {path: [[ health_path ]], port: http}
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 10m, memory: 64Mi}
+            limits: {memory: 256Mi}
+          volumeMounts:
+            - {name: config, mountPath: /etc/[[ project_name ]], readOnly: true}
+            - {name: state, mountPath: /var/lib/[[ project_name ]]}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: config
+          configMap: {name: [[ project_name ]]-config}
+        - name: state
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {medium: Memory, sizeLimit: 64Mi}

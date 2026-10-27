@@ -1,0 +1,2 @@
+| `src/[[ package_name ]]/` | The package[% if has_cli %]: `config.py`, `cli.py` (Typer)[% endif %][% if kind == 'service' %], `api.py` (FastAPI)[% endif %] |
+| `tests/unit/`, `tests/integration/` | pytest; integration is marked and opt-in |

@@ -1,0 +1,225 @@
+# project-template: start a new metalayerlab project.
+#
+#   uvx copier copy --trust gh:metalayerlab/project-template my-project
+#   cd my-project && uvx copier update --trust      # later: pull template fixes in
+#
+# See the wiki: Quick-Start and Answering-the-Questions.
+
+_min_copier_version: "9.6.0"
+_subdirectory: template
+_templates_suffix: .jinja
+_answers_file: .copier-answers.yml
+
+# GitHub Actions uses ${{ }}, so Jinja uses [[ ]] / [% %] instead and the
+# workflows need no {% raw %} blocks.
+_envops:
+  variable_start_string: "[["
+  variable_end_string: "]]"
+  block_start_string: "[%"
+  block_end_string: "%]"
+  comment_start_string: "[#!"
+  comment_end_string: "!#]"
+  keep_trailing_newline: true
+  trim_blocks: true
+  lstrip_blocks: true
+
+# Written once, then the project's: `copier update` never touches them again.
+# Template-owned files (workflows, scripts/check-wiki.py, docs/wiki/.standard.toml,
+# docs/wiki/Release-Process.md, ...) are not listed, so updates reach them.
+_skip_if_exists:
+  - CHANGELOG.md
+  - .release-please-manifest.json
+  - TODO.md
+  - "src/**"
+  - "tests/**"
+  - "contrib/*.example.yaml"
+  - docs/design/README.md
+  - docs/wiki/Home.md
+  - docs/wiki/Introduction.md
+  - docs/wiki/Quick-Start.md
+  - docs/wiki/In-Depth-Configuration.md
+  - docs/wiki/Architecture-Internals.md
+  - docs/wiki/Security.md
+  - docs/wiki/Testing-Guide.md
+  - docs/wiki/Contributing.md
+  - docs/wiki/Troubleshooting.md
+  - docs/wiki/Frequently-Asked-Questions.md
+  - docs/wiki/HTTP-API-Reference.md
+  - docs/wiki/CLI-Reference.md
+  - docs/wiki/Deployment.md
+  - docs/wiki/_Sidebar.md
+  - docs/wiki/_Footer.md
+
+# Lock dependencies, fill the generated wiki sections, git init. Needs --trust;
+# without it, run scripts/bootstrap.sh yourself.
+_tasks:
+  - command: "sh scripts/bootstrap.sh"
+
+_message_after_copy: |
+  [[ project_name ]] is ready.
+
+  Next:
+    cd [[ _copier_conf.dst_path ]]
+    sh scripts/bootstrap.sh            # if you didn't pass --trust
+    git add -A && git commit -m "chore: initial commit from project-template"
+
+  Then read AGENTS.md (it is what your AI assistant reads too) and
+  docs/ai/prompts.md for the kick-off prompt. Wiki: docs/wiki/.
+
+# ---------------------------------------------------------------- questions
+
+language:
+  type: str
+  help: Language layer (more layers come later; see layers/README.md)
+  choices:
+    Python: python
+  default: python
+
+project_name:
+  type: str
+  help: Project name, kebab-case (repo, image and CLI name)
+  validator: >-
+    [% if not (project_name | regex_search('^[a-z][a-z0-9]*(-[a-z0-9]+)*$')) %]
+    Use lower-case kebab-case: my-project
+    [% endif %]
+
+package_name:
+  type: str
+  help: Python package name (snake_case)
+  default: "[[ project_name | replace('-', '_') ]]"
+  when: "[[ language == 'python' ]]"
+  validator: >-
+    [% if not (package_name | regex_search('^[a-z][a-z0-9_]*$')) %]
+    Use snake_case: my_project
+    [% endif %]
+
+description:
+  type: str
+  help: One-line description (README, pyproject, wiki footer)
+  validator: "[% if not description %]Required[% endif %]"
+
+github_owner:
+  type: str
+  help: GitHub owner (organisation or user)
+  default: metalayerlab
+
+kind:
+  type: str
+  help: What it is
+  choices:
+    "service: long-running, HTTP API (FastAPI), health endpoints": service
+    "cli: command-line tool (Typer)": cli
+    "library: importable package only": library
+  default: service
+
+python_version:
+  type: str
+  help: Minimum Python version (Docker base image and the first CI matrix entry)
+  choices: ["3.13", "3.14"]
+  default: "3.13"
+  when: "[[ language == 'python' ]]"
+
+port:
+  type: int
+  help: HTTP port the service listens on
+  default: 8080
+  when: "[[ kind == 'service' ]]"
+
+health_path:
+  type: str
+  help: Liveness endpoint (Docker HEALTHCHECK, k8s probes, CI smoke test)
+  default: /healthz
+  when: "[[ kind == 'service' ]]"
+  validator: "[% if not health_path.startswith('/') %]Must start with /[% endif %]"
+
+container_image:
+  type: bool
+  help: Build and publish a container image to GHCR?
+  default: "[[ kind != 'library' ]]"
+  when: "[[ kind != 'library' ]]"
+
+multi_arch:
+  type: bool
+  help: Build linux/arm64 as well as linux/amd64?
+  default: true
+  when: "[[ container_image ]]"
+
+contrib:
+  type: str
+  help: Deployment manifests to include under contrib/
+  multiselect: true
+  choices:
+    "docker: compose.yml": docker
+    "k8s: kustomize base (Flux-friendly)": k8s
+    "systemd: hardened unit + sysusers": systemd
+  default: "[[ ['docker', 'k8s', 'systemd'] if kind == 'service' else [] ]]"
+  when: "[[ kind == 'service' ]]"
+  validator: >-
+    [% if not container_image and ('docker' in contrib or 'k8s' in contrib) %]
+    docker and k8s need a container image
+    [% endif %]
+
+puid_pgid:
+  type: bool
+  help: Container starts as root to chown its state directory, then drops to PUID:PGID? No (default) = runs as uid 1000.
+  default: false
+  when: "[[ container_image and kind == 'service' ]]"
+
+timezone:
+  type: str
+  help: Default TZ in compose and k8s manifests
+  default: Europe/London
+  when: "[[ kind == 'service' ]]"
+
+code_owners:
+  type: str
+  help: CODEOWNERS for every path (a team or users; required reviewers)
+  default: "@[[ github_owner ]]/maintainers"
+
+license:
+  type: str
+  help: Licence
+  choices:
+    Unlicense (public domain): Unlicense
+    MIT: MIT
+    Apache-2.0: Apache-2.0
+    Proprietary (all rights reserved): Proprietary
+  default: Unlicense
+
+copyright_holder:
+  type: str
+  help: Copyright holder (MIT / Apache / Proprietary)
+  default: "[[ github_owner ]]"
+  when: "[[ license != 'Unlicense' ]]"
+
+personal_data_guard:
+  type: bool
+  help: Add the personal-data guard (fails CI on public IPs / denylisted strings in tracked files)?
+  default: false
+
+# ------------------------------------------------- derived (never asked)
+
+env_prefix:
+  type: str
+  default: "[[ (package_name if language == 'python' else project_name | replace('-', '_')) | upper ]]_"
+  when: false
+
+image:
+  type: str
+  default: "ghcr.io/[[ github_owner ]]/[[ project_name ]]"
+  when: false
+
+repo_url:
+  type: str
+  default: "https://github.com/[[ github_owner ]]/[[ project_name ]]"
+  when: false
+
+has_cli:
+  type: bool
+  default: "[[ kind in ['service', 'cli'] ]]"
+  when: false
+
+copyright_year:
+  type: str
+  default: "[[ '%Y' | strftime ]]"
+  when: false

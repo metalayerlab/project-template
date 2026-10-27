@@ -1,0 +1,9 @@
+[% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]
+# Copilot instructions
+
+Follow [AGENTS.md](../AGENTS.md): the project's only instruction file. If it isn't loaded, read it before
+changing anything. The rules that matter most:
+
+[% include 'layers/' ~ language ~ '/copilot.md.jinja' %]
+- Code, tests and the matching `docs/wiki/` page change together.
+- Never edit `CHANGELOG.md`, the version, generated wiki blocks or template-owned files. Never weaken a check.
