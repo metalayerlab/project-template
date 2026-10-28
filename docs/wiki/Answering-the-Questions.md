@@ -21,6 +21,7 @@ Copier asks these when you run `copier copy`. Pass answers non-interactively wit
 | `puid_pgid` | no | No: the image runs as `USER 1000:1000`. Yes: the container starts as root to chown the state directory, then drops to `PUID:PGID`, for hosts where bind-mounted state must match a host user. Either way it runs as uid 1000 under Kubernetes |
 | `timezone` | `Europe/London` | `TZ` in the Compose, k8s and systemd manifests |
 | `code_owners` | `@<owner>/maintainers` | CODEOWNERS for every path. The team must exist and have write access |
+| `dependabot_automerge` | `off` | `patch` or `minor`: Dependabot PRs up to that level get auto-merge queued, so a code owner's **Approve** merges them as soon as the required checks pass. Majors, and updates Dependabot can't classify, are merged by hand. Nothing is merged without a human approval. Needs repository settings: see [Quick Start](Quick-Start#create-the-github-repository) and [design 0003](https://github.com/metalayerlab/project-template/blob/main/docs/design/0003-dependabot-automerge.md) |
 | `license` | `Unlicense` | `Unlicense`, `MIT`, `Apache-2.0`, `Proprietary` |
 | `copyright_holder` | the owner | Not asked for the Unlicense |
 | `personal_data_guard` | no | A CI job that fails on public IPv4 addresses or on strings from a `PERSONAL_DATA_DENYLIST` secret. Use it when tests carry fixtures captured from real systems |

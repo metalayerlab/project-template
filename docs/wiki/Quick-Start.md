@@ -26,7 +26,7 @@ gh label create template-update --color C5DEF5 --description "copier update from
 
 Then, once per repository, in the GitHub settings:
 
-1. **General → Pull Requests:** allow **squash merging only**, set the default commit message to **"Pull request title"**, and turn on "Automatically delete head branches". The PR title becomes the commit release-please reads.
+1. **General → Pull Requests:** allow **squash merging only**, set the default commit message to **"Pull request title"**, and turn on "Automatically delete head branches". The PR title becomes the commit release-please reads. If you set `dependabot_automerge`, also tick **Allow auto-merge** (`gh repo edit --enable-auto-merge`).
 2. **Wiki:** enable it and **create the first page** in the web UI (any text). GitHub only creates the wiki's git repository then. From now on `wiki.yml` overwrites it from `docs/wiki/` on every push to `main`.
 3. **Rules → Rulesets** for `main`: require a pull request with 1 approval and **review from Code Owners**, block force pushes, and make these checks required: `Secret scan`, `Test (...)`, `Version and lock file`, `Dockerfile and contrib manifests`, `Workflow lint`, `Wiki standard`, `Docs updated with the code`, `conventional-commit`.
 4. **Packages:** after the first image is pushed, give the repository's Actions **Admin** access to the package (package settings → Manage Actions access), so branch-image cleanup can delete versions.

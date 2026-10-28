@@ -32,7 +32,7 @@ from copier import run_copy  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 
 VARIANTS: dict[str, dict[str, object]] = {
-    "service": {"kind": "service", "puid_pgid": True},
+    "service": {"kind": "service", "puid_pgid": True, "dependabot_automerge": "minor"},
     "service-min": {
         "kind": "service",
         "contrib": ["k8s"],
@@ -42,7 +42,7 @@ VARIANTS: dict[str, dict[str, object]] = {
         "personal_data_guard": True,
         "license": "Proprietary",
     },
-    "cli": {"kind": "cli", "license": "MIT"},
+    "cli": {"kind": "cli", "license": "MIT", "dependabot_automerge": "patch"},
     "library": {"kind": "library", "license": "Apache-2.0"},
 }
 
@@ -103,6 +103,17 @@ def test_first_release_is_0_1_0(project: Path) -> None:
 
     config = json.loads((project / "release-please-config.json").read_text())
     assert config["packages"]["."]["initial-version"] == "0.1.0"
+
+
+def test_dependabot_automerge_is_opt_in(project: Path) -> None:
+    level = VARIANTS[project.name.removeprefix("demo-")].get("dependabot_automerge", "off")
+    wf = project / ".github/workflows/dependabot-automerge.yml"
+    assert wf.exists() == (level != "off")
+    if level != "off":
+        text = wf.read_text()
+        assert "semver-patch" in text
+        assert ("semver-minor" in text) == (level == "minor")
+        assert "semver-major" not in text
 
 
 def test_python_checks(project: Path) -> None:

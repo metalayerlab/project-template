@@ -28,6 +28,9 @@
 - **systemd:** a dedicated system user, `ProtectSystem=strict`, no capabilities, a system-call filter, and restricted address families.
 [% endif %]
 - **Supply chain:** dependencies are pinned in the lock file and updated weekly by Dependabot. GitHub Actions are pinned to commit SHAs.
+[% if dependabot_automerge != 'off' %]
+- **Dependency auto-merge:** Dependabot [[ 'patch and minor' if dependabot_automerge == 'minor' else 'patch' ]] updates get auto-merge queued by `dependabot-automerge.yml`: they still need a code owner's approval, then merge once CI passes.
+[% endif %]
 
 <!-- guidance: input validation, authentication and authorisation, rate limiting: what this project does and where. -->
 
