@@ -14,6 +14,8 @@
 
 `latest` is only ever set explicitly. An old release rebuilt by hand can't take it over.
 
+**Visibility:** GHCR creates a new package as **private**, even for a public repository, and anonymous pulls fail with `unauthorized`. After the first push, set it once under the package's *Package settings → Change visibility* (there's no API for this). It stays linked to the repository either way.
+
 ## Smoke test
 
 For a service, before anything is pushed, the image is built for the runner and started, and `health_path` must answer within 30 seconds. On failure the container logs are printed. Multi-arch builds (`linux/amd64,linux/arm64`) follow and reuse the cache.
