@@ -39,6 +39,7 @@ Other images: `:edge` and `:main-<sha>` are built from every push to `main`, and
 ## Pre-releases and hotfixes
 
 - **Pre-release:** run the *Release* workflow after adding `"prerelease": true` and `"prerelease-type": "rc"` for the package in `release-please-config.json`, in a PR. Remove them again for the final release.
+- **First release** is `0.1.0`, and `feat:` stays a patch bump until 1.0. Leave 0.x with the force below.
 - **Force a version:** a commit with `Release-As: 1.0.0` in its body (an empty `chore:` commit is fine) makes the next Release PR use that version.
 - **Hotfix:** a `fix:` PR to `main` and a release as usual. There are no long-lived release branches.
 [% if container_image %]
