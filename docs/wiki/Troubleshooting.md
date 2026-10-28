@@ -10,6 +10,14 @@ Usually uv is missing or can't reach the package index. Copier removes the half-
 
 The GitHub wiki's git repository exists only after its first page is created in the web UI. Enable the wiki, create any page, and re-run the job: it replaces that page.
 
+### Template update opened an issue, not a PR
+
+The update changes `.github/workflows/`, and without the release GitHub App the workflow can't push those files ("refusing to allow a GitHub App to create or update workflow"). Run `uvx copier update --trust --conflict inline` locally, push a branch and open the PR. Set up the App ([Release Process](Release-Process#the-release-github-app)) to stop this.
+
+### Checks on a bot PR say "action required"
+
+GitHub treats `github-actions[bot]` as a first-time contributor until it has a merged commit. Approve the runs once (the PR's Checks tab, or `gh api -X POST repos/<owner>/<repo>/actions/runs/<id>/approve`). The release GitHub App avoids it.
+
 ### No CI run on the Release PR, or on the template-update PR
 
 Those PRs were opened with `GITHUB_TOKEN`, which can't trigger workflows. Set up the release GitHub App ([Release Process](Release-Process#the-release-github-app)). Meanwhile, closing and reopening the PR by hand triggers CI.

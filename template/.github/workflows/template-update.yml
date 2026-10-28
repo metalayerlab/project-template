@@ -3,7 +3,9 @@
 # <<<<<<< markers for the reviewer. See project-template's Updating-from-the-Template page.
 #
 # Uses the release GitHub App when RELEASE_APP_CLIENT_ID is set (so CI runs on
-# the PR, and a private template can be read), otherwise GITHUB_TOKEN.
+# the PR, a private template can be read, and workflow files can be pushed).
+# GITHUB_TOKEN can't push changes to .github/workflows/, so without the App an
+# update that touches them opens an issue asking for a local `copier update`.
 name: Template update
 
 on:
@@ -14,6 +16,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   update:
@@ -37,6 +40,7 @@ jobs:
       - name: copier update
         env:
           TOKEN: ${{ steps.app-token.outputs.token || github.token }}
+          HAS_APP: ${{ steps.app-token.outcome == 'success' }}
         run: |
           git config --global url."https://x-access-token:${TOKEN}@github.com/".insteadOf "https://github.com/"
           git config --global user.name "github-actions[bot]"
@@ -46,8 +50,23 @@ jobs:
           after=$(grep '^_commit:' .copier-answers.yml)
           echo "FROM=${before#_commit: }" >> "$GITHUB_ENV"
           echo "TO=${after#_commit: }" >> "$GITHUB_ENV"
+          if [ "$HAS_APP" != true ] && [ -n "$(git status --porcelain .github/workflows)" ]; then
+            echo "NEEDS_LOCAL=1" >> "$GITHUB_ENV"
+          fi
 
-      - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+      - name: Ask for a local update (no App, workflow files changed)
+        if: env.NEEDS_LOCAL == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="chore: update from project-template ${TO} (run locally)"
+          body="project-template **${FROM}** → **${TO}** changes \`.github/workflows/\`, which \`GITHUB_TOKEN\` can't push. Run \`uvx copier update --trust --conflict inline\` locally and open the PR, or set up the release GitHub App (project-template wiki: Release-Process)."
+          n=$(gh issue list --label template-update --state open --json number -q '.[0].number')
+          if [ -n "$n" ]; then gh issue edit "$n" --title "$title" --body "$body"
+          else gh issue create --label template-update --title "$title" --body "$body"; fi
+
+      - if: env.NEEDS_LOCAL != '1'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ steps.app-token.outputs.token || github.token }}
           branch: chore/template-update
