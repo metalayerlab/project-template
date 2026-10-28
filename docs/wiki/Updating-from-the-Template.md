@@ -4,7 +4,7 @@ Projects record the template version they were made from (`_commit` in `.copier-
 
 ## Automatic updates
 
-`template-update.yml` runs every Monday (or on demand: Actions → Template update → Run workflow). When the template has a new release, it opens or refreshes a PR, `chore: update from project-template vX.Y.Z`, labelled `template-update`. Review it like any PR, with the template's CHANGELOG open beside it. It uses the release GitHub App when one is configured, so CI runs on the PR and a private template is readable ([Release Process](Release-Process#the-release-github-app)).
+`template-update.yml` runs every Monday (or on demand: Actions → Template update → Run workflow). When the template has a new release, it opens or refreshes a PR, `chore: update from project-template vX.Y.Z`, labelled `template-update`. Review it like any PR, with the template's CHANGELOG open beside it. It uses the release GitHub App when one is configured, so CI runs on the PR, a private template is readable, and changes to `.github/workflows/` can be pushed ([Release Process](Release-Process#the-release-github-app)). Without the App, an update that changes workflow files opens an issue instead; run `uvx copier update --trust --conflict inline` locally and open the PR yourself.
 
 ## Manual updates
 

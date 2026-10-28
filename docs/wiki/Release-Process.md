@@ -17,7 +17,7 @@ Versus the old process: nobody runs `bump-version.sh` or pushes tags, the versio
 
 Workflows can't trigger other workflows through `GITHUB_TOKEN`. With the default token, a Release PR gets no CI run, and the uv.lock refresh commit doesn't either. The image build doesn't depend on this: it's called directly. The fix, once for the organisation:
 
-1. Create a GitHub App in metalayerlab (no webhook) with repository permissions **Contents: read & write**, **Pull requests: read & write** and **Issues: read & write**. Install it on all repositories (and on project-template, so `template-update.yml` can read it if it's private).
+1. Create a GitHub App in metalayerlab (no webhook) with repository permissions **Contents**, **Pull requests**, **Issues** and **Workflows**, all read & write (template updates change `.github/workflows/`, which `GITHUB_TOKEN` can never push). Install it on all repositories (and on project-template, so `template-update.yml` can read it if it's private).
 2. Organisation **variable** `RELEASE_APP_CLIENT_ID` = the App's client ID. Organisation **secret** `RELEASE_APP_PRIVATE_KEY` = a private key.
 
 `release-please.yml` and `template-update.yml` use the App when the variable is set, and fall back to `GITHUB_TOKEN` otherwise.
