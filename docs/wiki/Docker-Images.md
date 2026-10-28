@@ -6,7 +6,7 @@
 
 | Trigger | Tags |
 |---|---|
-| Release (called by release-please) | `X.Y.Z`, `X.Y`, `X` (from 1.0), `latest` |
+| Release (called by release-please) | `X.Y.Z`, `X.Y`, `X` (from 1.0: a 0.x release gets no `:0`), `latest` |
 | Push to `main` | `edge`, `main`, `main-<sha>` |
 | Push to `dev/**`, `feat/**` | `<branch>`, `<branch>-<sha>` |
 | Pull request | built and smoke-tested, not pushed |
