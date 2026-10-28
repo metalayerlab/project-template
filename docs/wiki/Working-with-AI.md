@@ -46,3 +46,4 @@ Every assistant session pays for what it reads, so the AI-facing files are kept 
 - **Supply chain:** dependencies must be justified, and checked to exist under exactly that name (typosquatting). The lock file pins them, and Dependabot updates them.
 - **Honesty:** the assistant must say what it didn't run or isn't sure of. A claimed green check must have been run.
 - **Human ownership:** CODEOWNERS plus a required review. `no-docs-needed` is a reviewer's label, and the assistant never adds it.
+- **No AI credit in history:** the person who opens the PR is its author. `.claude/settings.json` sets `"attribution": {"commit": "", "pr": "", "sessionUrl": false}`, so Claude Code adds no `Co-authored-by` trailer, PR byline or session link, and AGENTS.md tells every other assistant the same. Set it in your user settings (`~/.claude/settings.json`) too, for repositories not made from the template; the old `includeCoAuthoredBy` setting is deprecated and ignored.
