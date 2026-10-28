@@ -60,7 +60,9 @@ def project(request: pytest.FixtureRequest, tmp_path_factory: pytest.TempPathFac
     name = f"demo-{request.param}"
     dst = tmp_path_factory.mktemp("render") / name
     data = {"project_name": name, "description": f"A demo {request.param}", **VARIANTS[request.param]}
-    run_copy(str(ROOT), dst, data=data, defaults=True, unsafe=True, quiet=True)
+    # vcs_ref="HEAD": render this checkout, uncommitted changes included. Without it Copier
+    # renders the latest tag, and the tests would check the last release, not the change.
+    run_copy(str(ROOT), dst, data=data, defaults=True, unsafe=True, quiet=True, vcs_ref="HEAD")
     sh("git", "add", "-A", cwd=dst)
     return dst
 
