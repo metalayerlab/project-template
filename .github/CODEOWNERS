@@ -1,0 +1,3 @@
+# Every change to the template reaches every project, so every PR needs a
+# maintainer's approval (the main ruleset requires review from Code Owners).
+*       @metalayerlab/maintainers
