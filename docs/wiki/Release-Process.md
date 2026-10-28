@@ -24,4 +24,4 @@ Workflows can't trigger other workflows through `GITHUB_TOKEN`. With the default
 
 ## Releasing the template itself
 
-project-template is released the same way (release-type `simple`). Its tags matter: `copier update` moves projects to the newest tag, so **every template change reaches projects only through a reviewed release**. Mark breaking changes (a new required wiki heading, a renamed question, a removed file) with `!`.
+project-template is released the same way (release-type `simple`), tagged `vX.Y.Z` with no component prefix, because Copier ignores tags that aren't PEP 440 versions. Its tags matter: `copier update` moves projects to the newest tag, so **every template change reaches projects only through a reviewed release**. Mark breaking changes (a new required wiki heading, a renamed question, a removed file) with `!`.
