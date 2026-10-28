@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/metalayerlab/project-template/compare/v0.1.0...v0.1.1) (2026-10-28)
+
+
+### 🐛 Bug Fixes
+
+* open an issue when a template update needs workflow changes the token can't push ([#5](https://github.com/metalayerlab/project-template/issues/5)) ([51248cc](https://github.com/metalayerlab/project-template/commit/51248ccc9cf9d3fa027e86a82f8367e551812517))
+* tag template releases vX.Y.Z so copier update can find them ([#4](https://github.com/metalayerlab/project-template/issues/4)) ([abade04](https://github.com/metalayerlab/project-template/commit/abade0478b7ec1e94d69e4dd5398fcd3b5a96d78))
+
 ## 0.1.0 (2026-10-28)
 
 
