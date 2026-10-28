@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.3](https://github.com/metalayerlab/project-template/compare/v0.1.2...v0.1.3) (2026-10-28)
+
+
+### ✨ Features
+
+* optional Dependabot auto-merge, still gated on a code owner's approval ([#13](https://github.com/metalayerlab/project-template/issues/13)) ([5a56087](https://github.com/metalayerlab/project-template/commit/5a560876f85187b2d30f033326462cfc2a4b3c8d))
+
+
+### 🐛 Bug Fixes
+
+* render tests from the checkout, not the latest release tag ([#11](https://github.com/metalayerlab/project-template/issues/11)) ([84f3d9a](https://github.com/metalayerlab/project-template/commit/84f3d9a205b9ae0c08054a8c91e5546b6289c951))
+
 ## [0.1.2](https://github.com/metalayerlab/project-template/compare/v0.1.1...v0.1.2) (2026-10-28)
 
 
