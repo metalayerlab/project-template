@@ -16,7 +16,7 @@ The update changes `.github/workflows/`, and without the release GitHub App the 
 
 ### Checks on a bot PR say "action required"
 
-GitHub treats `github-actions[bot]` as a first-time contributor until it has a merged commit. Approve the runs once (the PR's Checks tab, or `gh api -X POST repos/<owner>/<repo>/actions/runs/<id>/approve`). The release GitHub App avoids it.
+Runs on a PR opened by `github-actions[bot]` wait for a maintainer's approval, after every push to it. Approve them on the PR's Checks tab, or with `gh api -X POST repos/<owner>/<repo>/actions/runs/<id>/approve`. Approve only the runs for the PR's latest commit: a stale run approved later cancels the current one (`cancel-in-progress`). The release GitHub App avoids all of this.
 
 ### No CI run on the Release PR, or on the template-update PR
 
