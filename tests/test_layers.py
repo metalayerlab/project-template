@@ -68,3 +68,12 @@ def test_layer_provides_every_required_fragment(layer: str) -> None:
             if not optional and not (ROOT / "layers" / layer / frag).is_file():
                 missing.append(f"{frag} (included by {p.relative_to(TEMPLATE)})")
     assert not missing, f"layers/{layer}/ lacks: {missing}"
+
+
+def test_template_tags_are_copier_versions() -> None:
+    """copier update only sees PEP 440 tags (v0.1.0), not release-please's project-template-v0.1.0."""
+    import json
+
+    config = json.loads((ROOT / "release-please-config.json").read_text())
+    assert config.get("include-component-in-tag") is False
+    assert config["packages"]["."].get("initial-version") == "0.1.0"
