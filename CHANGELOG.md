@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/metalayerlab/project-template/compare/v0.1.3...v0.1.4) (2026-10-28)
+
+
+### 🐛 Bug Fixes
+
+* stop AI assistants crediting themselves in commits and PRs ([#15](https://github.com/metalayerlab/project-template/issues/15)) ([caed0b8](https://github.com/metalayerlab/project-template/commit/caed0b8605a3748964abe522c3ab60ff8c8b8ec8))
+
 ## [0.1.3](https://github.com/metalayerlab/project-template/compare/v0.1.2...v0.1.3) (2026-10-28)
 
 
