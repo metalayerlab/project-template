@@ -14,6 +14,10 @@ The GitHub wiki's git repository exists only after its first page is created in 
 
 The update changes `.github/workflows/`, and without the release GitHub App the workflow can't push those files ("refusing to allow a GitHub App to create or update workflow"). Run `uvx copier update --trust --conflict inline` locally, push a branch and open the PR. Set up the App ([Release Process](Release-Process#the-release-github-app)) to stop this.
 
+### `unauthorized` pulling a public project's image
+
+The GHCR package is still private, which is the default for a new package. Make it public in its package settings ([Docker Images](Docker-Images#tags)).
+
 ### Checks on a bot PR say "action required"
 
 Runs on a PR opened by `github-actions[bot]` wait for a maintainer's approval, after every push to it. Approve them on the PR's Checks tab, or with `gh api -X POST repos/<owner>/<repo>/actions/runs/<id>/approve`. Approve only the runs for the PR's latest commit: a stale run approved later cancels the current one (`cancel-in-progress`). The release GitHub App avoids all of this.
