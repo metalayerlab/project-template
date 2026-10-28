@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.2](https://github.com/metalayerlab/project-template/compare/v0.1.1...v0.1.2) (2026-10-28)
+
+
+### 🐛 Bug Fixes
+
+* don't publish a :0 image tag for 0.x releases ([#9](https://github.com/metalayerlab/project-template/issues/9)) ([981aa27](https://github.com/metalayerlab/project-template/commit/981aa273e63428880bf4e27e1319fbac7d1d907e))
+
+
+### 📚 Documentation
+
+* bot PR runs need approval on every push, not just the first ([#7](https://github.com/metalayerlab/project-template/issues/7)) ([251e9d2](https://github.com/metalayerlab/project-template/commit/251e9d2076d1528e0af15f9ee71a1561c80cc338))
+* new GHCR packages are private until made public ([#10](https://github.com/metalayerlab/project-template/issues/10)) ([e3d156c](https://github.com/metalayerlab/project-template/commit/e3d156cc3fda54061d2bcef9a6abd82d03fb112e))
+
 ## [0.1.1](https://github.com/metalayerlab/project-template/compare/v0.1.0...v0.1.1) (2026-10-28)
 
 
