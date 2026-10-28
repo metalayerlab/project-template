@@ -6,7 +6,7 @@ The template is a shared dependency of every project. A change here reaches all 
 
 1. Read the template's `AGENTS.md`. Most important: **Jinja uses `[[ ]]` and `[% %]`**, so GitHub Actions' `${{ }}` needs no escaping, and `[[` may never appear in a `.jinja` file except as a variable.
 2. Branch and edit. Language-neutral changes go in `template/` (or `copier.yml`). Anything specific to one language goes in `layers/<lang>/`: a value in `layer.jinja`, or a fragment that core files `include` (see [Core and layers](#core-and-layers)). Conditional files are conditional in their *names*: `[% if kind == 'service' %]api.py[% endif %].jinja`.
-3. Render and look at the output: `uvx copier copy --trust --defaults -d project_name=demo -d description=demo . /tmp/demo`.
+3. Render and look at the output: `uvx copier copy --trust --defaults -r HEAD -d project_name=demo -d description=demo . /tmp/demo`. Keep `-r HEAD`: without it Copier renders the latest release tag, not your working tree.
 4. Run `uv run pytest`, which renders four variants (service, a minimal service, cli, library) and runs each one's Definition of done, the wiki checks, the manifest checks and actionlint. `uv run pytest -m docker` also builds each image and probes its health endpoint.
 5. Update this wiki (CI checks it with `--strict`), and open a PR whose Conventional Commit title describes the effect on *projects*. Use `!` for anything that will fail a project's CI after the update (a new required heading, a stricter check, a renamed question).
 6. Release with the template's own Release PR. Projects pick it up at their next update.
