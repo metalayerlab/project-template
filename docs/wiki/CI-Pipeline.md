@@ -12,6 +12,7 @@ Every workflow is template-owned, and every action is pinned to a commit SHA (De
 | `docker-build.yml` | branches, PRs, release (called), manual | See [Docker Images](Docker-Images) |
 | `docker-cleanup.yml` | daily | Deletes branch images older than 7 days |
 | `release-please.yml` | push to `main` | See [Release Process](Release-Process) |
+| `dependabot-automerge.yml` | Dependabot PRs (only with `dependabot_automerge`) | Queues auto-merge for patch (or patch and minor) updates; the merge waits for a code owner's approval and every required check. It never approves |
 | `template-update.yml` | weekly | See [Updating from the Template](Updating-from-the-Template) |
 
 Locally, `pre-commit` runs the same lint, type, wiki and secret checks before each commit, and checks the commit message format.

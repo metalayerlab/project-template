@@ -176,6 +176,15 @@ code_owners:
   help: CODEOWNERS for every path (a team or users; required reviewers)
   default: "@[[ github_owner ]]/maintainers"
 
+dependabot_automerge:
+  type: str
+  help: Queue auto-merge on Dependabot PRs, so a code owner's approval merges them once checks pass? Bigger updates get no auto-merge.
+  choices:
+    "off: a human reviews every update": "off"
+    "patch updates": patch
+    "patch and minor updates": minor
+  default: "off"
+
 license:
   type: str
   help: Licence
