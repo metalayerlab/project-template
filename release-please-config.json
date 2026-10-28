@@ -16,5 +16,5 @@
     {"type": "test", "section": "🧪 Tests", "hidden": true},
     {"type": "chore", "section": "🔧 Maintenance", "hidden": true}
   ],
-  "packages": {".": {"package-name": "project-template"}}
+  "packages": {".": {"package-name": "project-template", "initial-version": "0.1.0"}}
 }

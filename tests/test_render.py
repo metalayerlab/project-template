@@ -95,6 +95,14 @@ def test_always_loaded_files_leave_headroom(project: Path) -> None:
     assert not over, f"skeleton uses too much of the context budget (chars, allowed): {over}"
 
 
+def test_first_release_is_0_1_0(project: Path) -> None:
+    """With the manifest at 0.0.0, release-please would otherwise propose 1.0.0."""
+    import json
+
+    config = json.loads((project / "release-please-config.json").read_text())
+    assert config["packages"]["."]["initial-version"] == "0.1.0"
+
+
 def test_python_checks(project: Path) -> None:
     for cmd in (
         ["uv", "lock", "--check"],

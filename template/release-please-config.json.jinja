@@ -22,6 +22,7 @@
   "packages": {
     ".": {
       "package-name": "[[ project_name ]]",
+      "initial-version": "0.1.0",
       "extra-files": [
 [% set extra = [] %]
 [% if 'k8s' in contrib %][% set _ = extra.append('contrib/k8s/kustomization.yaml') %][% endif %]
