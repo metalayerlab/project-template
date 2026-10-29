@@ -14,7 +14,7 @@ AGENTS.md  CLAUDE.md  GEMINI.md          instructions for AI assistants (AGENTS.
 README.md  CONTRIBUTING.md  SECURITY.md  LICENSE  CHANGELOG.md  TODO.md
 src/<pkg>/            __init__ (version)  config (settings)  cli (Typer)  api (FastAPI)  __main__
 tests/unit/  tests/integration/  tests/conftest.py
-scripts/              bootstrap.sh  check-wiki.py  gen-wiki.py  check-manifests.sh  [check-personal-data.py]
+scripts/              bootstrap.sh  check-wiki.py  gen-wiki.py  check-manifests.sh  check-docs-secrets.sh  [check-personal-data.py]
 docs/wiki/            the project wiki + .standard.toml
 docs/design/          design records: README.md (the index), 0000-template.md
 docs/ai/              prompts.md  review-checklist.md

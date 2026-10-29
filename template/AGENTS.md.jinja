@@ -92,6 +92,7 @@ python3 scripts/check-wiki.py
 [% if container_image or contrib %]
 scripts/check-manifests.sh
 [% endif %]
+scripts/check-docs-secrets.sh  # if Docker is available
 ```
 
 All pass, and your change's [Docs map](#docs-map) pages are updated in the same PR.

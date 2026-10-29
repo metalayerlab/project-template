@@ -54,6 +54,14 @@ The image sets `<PREFIX>_LISTEN_HOST=0.0.0.0`, and environment variables beat th
 
 `docs/wiki/Troubleshooting.md:5 MD012/no-multiple-blanks`: before 0.1.7, a `library` project's Diagnostics section rendered empty, leaving two blank lines. The page is project-owned, so the update doesn't change it: delete one blank line, and write the section (how a user sees what the library is doing).
 
+### Wiki standard fails on markdownlint, but every local check passed
+
+Run `scripts/check-docs-secrets.sh docs`: it runs the same markdownlint-cli2 version, globs and `.markdownlint-cli2.yaml` as CI. A common one is MD014, a `$` prompt in a fenced block of commands without output: drop the `$`.
+
+### Secret scan flags a value that isn't a secret
+
+A test vector or a documented sample (RFC 6455's `Sec-WebSocket-Key`, for example). Allow-list it in `.gitleaks.toml` (a `[allowlist]` regex, or the finding's fingerprint in `.gitleaksignore`), never by disabling the job. `scripts/check-docs-secrets.sh secrets` re-runs CI's scan locally, on committed history.
+
 ### Branch-image cleanup fails with a permissions error
 
 Grant the repository's Actions **Admin** access in the package settings, or add a `PACKAGES_DELETE_TOKEN` secret (`delete:packages`).
