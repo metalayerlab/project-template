@@ -38,6 +38,10 @@ A reviewer adds the `no-docs-needed` label, and the check is skipped, which coun
 
 Code changed the settings, CLI or API: run `uv run scripts/gen-wiki.py` and commit. Never edit between the markers.
 
+### CLI-Reference lists a sub-app but not its commands
+
+Before 0.1.5, `gen-wiki.py` rendered only the root app's commands, without positional arguments: a sub-app (`app.add_typer(sub, name="grp")`) showed as one `grp` entry. Take the template update, run `uv run scripts/gen-wiki.py`, and delete any hand-written table of sub-commands. The update makes `generated section is stale` fail until you do.
+
 ### Branch-image cleanup fails with a permissions error
 
 Grant the repository's Actions **Admin** access in the package settings, or add a `PACKAGES_DELETE_TOKEN` secret (`delete:packages`).
