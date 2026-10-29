@@ -32,7 +32,12 @@ from copier import run_copy  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 
 VARIANTS: dict[str, dict[str, object]] = {
-    "service": {"kind": "service", "puid_pgid": True, "dependabot_automerge": "minor"},
+    "service": {
+        "kind": "service",
+        "puid_pgid": True,
+        "dependabot_automerge": "minor",
+        "extra_ports": [3128],
+    },
     "service-min": {
         "kind": "service",
         "contrib": ["k8s"],
@@ -102,6 +107,33 @@ def test_template_problems_are_reported(project: Path) -> None:
     agents = (project / "AGENTS.md").read_text()
     assert "gh issue list -R metalayerlab/project-template --state all" in agents
     assert "Template problem found?" in (project / ".github/pull_request_template.md").read_text()
+
+
+def test_extra_ports(project: Path) -> None:
+    """Each extra port is exposed and published; none means no trace of them (0005)."""
+    extra = VARIANTS[project.name.removeprefix("demo-")].get("extra_ports", [])
+    files = {
+        "Dockerfile": [f"EXPOSE {' '.join(map(str, [8080, *extra]))}\n"],
+        "contrib/docker/compose.yml": [f'"127.0.0.1:{p}:{p}"' for p in extra],
+        "contrib/k8s/deployment.yaml": [f"{{name: tcp-{p}, containerPort: {p}}}" for p in extra],
+        "contrib/k8s/service.yaml": [f"targetPort: tcp-{p}}}" for p in extra],
+        "contrib/k8s/networkpolicy.yaml": [f"#     - {{port: {p}, protocol: TCP}}" for p in extra],
+    }
+    if "service" not in project.name:
+        pytest.skip("no listener")
+    for name, expected in files.items():
+        if (path := project / name).exists():
+            text = path.read_text()
+            assert all(e in text for e in expected), name
+            assert extra or ("tcp-" not in text and "extra_ports" not in text), name
+
+
+@pytest.mark.parametrize("bad", [[0], [70000], [8080], [3128, 3128], [True], "3128"])
+def test_extra_ports_rejected(bad: object, tmp_path: Path) -> None:
+    data = {"project_name": "demo", "description": "demo", "extra_ports": bad}
+    with pytest.raises(ValueError, match="extra_ports"):
+        run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+                 vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
 
 
 def test_first_release_is_0_1_0(project: Path) -> None:
@@ -262,6 +294,9 @@ def test_image_runs(project: Path) -> None:
         pytest.skip("no container image")
     tag = f"{project.name}:test"
     sh("docker", "build", "-q", "-t", tag, ".", cwd=project)
+    extra = VARIANTS[project.name.removeprefix("demo-")].get("extra_ports", [])
+    exposed = sh("docker", "inspect", "-f", "{{json .Config.ExposedPorts}}", tag, cwd=project)
+    assert all(f'"{p}/tcp"' in exposed for p in extra), exposed
     if "service" not in project.name:
         sh("docker", "run", "--rm", tag, "version", cwd=project)
         return

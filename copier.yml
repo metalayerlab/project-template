@@ -125,6 +125,22 @@ port:
   default: 8080
   when: "[[ kind == 'service' ]]"
 
+extra_ports:
+  type: yaml
+  help: Other TCP ports the service listens on, besides `port` (for example [3128]). Each is exposed by the image and published by the contrib manifests.
+  default: "[]"
+  when: "[[ kind == 'service' ]]"
+  validator: >-
+    [% if extra_ports is string or extra_ports is not sequence %]
+    A list of port numbers: [3128]
+    [% elif extra_ports | reject('integer') | list or extra_ports | select('lt', 1) | list or extra_ports | select('gt', 65535) | list %]
+    Each port is a number from 1 to 65535
+    [% elif extra_ports | unique | list | length != extra_ports | length %]
+    A port is listed twice
+    [% elif port in extra_ports %]
+    [[ port ]] is already `port`
+    [% endif %]
+
 health_path:
   type: str
   help: Liveness endpoint (Docker HEALTHCHECK, k8s probes, CI smoke test)

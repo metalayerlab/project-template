@@ -42,6 +42,9 @@ spec:
             - {name: [[ env_prefix ]]CONFIG, value: /etc/[[ project_name ]]/config.yaml}
           ports:
             - {name: http, containerPort: [[ port ]]}
+[% for p in extra_ports %]
+            - {name: tcp-[[ p ]], containerPort: [[ p ]]}
+[% endfor %]
           readinessProbe:
             httpGet: {path: /readyz, port: http}
             periodSeconds: 10

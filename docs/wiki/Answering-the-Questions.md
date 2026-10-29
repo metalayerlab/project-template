@@ -14,6 +14,7 @@ Copier asks these when you run `copier copy`. Pass answers non-interactively wit
 | `kind` | `service` | `service`: long-running FastAPI app with health endpoints and a `serve` command. `cli`: a Typer command. `library`: import only, with no CLI, image or contrib |
 | `python_version` | `3.13` | Minimum version: the Docker base image and the first CI matrix entry. CI also tests every newer supported version |
 | `port` | `8080` | service only |
+| `extra_ports` | `[]` | service only. Other TCP ports it listens on, e.g. `[3128]`: exposed by the image and published by Compose and Kubernetes ([Contrib Manifests](Contrib-Manifests)). Each is 1–65535, listed once, and not `port` |
 | `health_path` | `/healthz` | service only: the liveness route, Docker `HEALTHCHECK`, k8s liveness probe and CI smoke test |
 | `container_image` | yes (no for library) | Builds and publishes to GHCR |
 | `multi_arch` | yes | Adds `linux/arm64` (built with QEMU; slower) |

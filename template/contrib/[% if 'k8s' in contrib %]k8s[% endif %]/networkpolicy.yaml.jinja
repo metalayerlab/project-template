@@ -16,3 +16,15 @@ spec:
               kubernetes.io/metadata.name: traefik
       ports:
         - {port: [[ port ]], protocol: TCP}
+[% if extra_ports %]
+    # The extra ports (extra_ports) usually serve in-cluster clients, not the
+    # ingress controller, so nothing may reach them yet. Uncomment, and say who.
+    # - from:
+    #     - podSelector:
+    #         matchLabels:
+    #           app.kubernetes.io/name: <client>
+    #   ports:
+[% for p in extra_ports %]
+    #     - {port: [[ p ]], protocol: TCP}
+[% endfor %]
+[% endif %]
