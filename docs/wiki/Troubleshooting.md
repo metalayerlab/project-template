@@ -50,6 +50,10 @@ The app binds `127.0.0.1`, which can't be reached through a published port. Befo
 
 The image sets `<PREFIX>_LISTEN_HOST=0.0.0.0`, and environment variables beat the config file. Pass `-e <PREFIX>_LISTEN_HOST=...` instead. `<project> config` shows where each value came from.
 
+### A new library project's first PR fails Wiki standard with MD012
+
+`docs/wiki/Troubleshooting.md:5 MD012/no-multiple-blanks`: before 0.1.7, a `library` project's Diagnostics section rendered empty, leaving two blank lines. The page is project-owned, so the update doesn't change it: delete one blank line, and write the section (how a user sees what the library is doing).
+
 ### Branch-image cleanup fails with a permissions error
 
 Grant the repository's Actions **Admin** access in the package settings, or add a `PACKAGES_DELETE_TOKEN` secret (`delete:packages`).
