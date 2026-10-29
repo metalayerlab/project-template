@@ -30,6 +30,10 @@ RUN useradd --system --create-home --shell /usr/sbin/nologin --uid 1000 [[ proje
 RUN mkdir -p /etc/[[ project_name ]] /var/lib/[[ project_name ]] \
     && chown [[ project_name ]]:[[ project_name ]] /var/lib/[[ project_name ]]
 COPY contrib/[[ project_name ]].example.yaml /usr/share/[[ project_name ]]/config.example.yaml
+
+# Bind every interface whatever the app's default: in a container, the
+# published ports decide what is reachable, and loopback would be unreachable
+ENV [[ env_prefix ]]LISTEN_HOST=0.0.0.0
 [% if puid_pgid %]
 
 # Starts as root only to give the state directory to PUID:PGID (default

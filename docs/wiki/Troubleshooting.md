@@ -42,6 +42,14 @@ Code changed the settings, CLI or API: run `uv run scripts/gen-wiki.py` and comm
 
 Before 0.1.5, `gen-wiki.py` rendered only the root app's commands, without positional arguments: a sub-app (`app.add_typer(sub, name="grp")`) showed as one `grp` entry. Take the template update, run `uv run scripts/gen-wiki.py`, and delete any hand-written table of sub-commands. The update makes `generated section is stale` fail until you do.
 
+### Smoke test: `no answer on /healthz after 30s`, but the container is healthy
+
+The app binds `127.0.0.1`, which can't be reached through a published port. Before 0.1.5 the image used the app's default listen address. Take the template update, which sets `<PREFIX>_LISTEN_HOST=0.0.0.0` in the image, and drop any project-side `ENV` for it from the Dockerfile ([Docker Images](Docker-Images#smoke-test)).
+
+### `listen.host` in `config.yaml` is ignored in the container
+
+The image sets `<PREFIX>_LISTEN_HOST=0.0.0.0`, and environment variables beat the config file. Pass `-e <PREFIX>_LISTEN_HOST=...` instead. `<project> config` shows where each value came from.
+
 ### Branch-image cleanup fails with a permissions error
 
 Grant the repository's Actions **Admin** access in the package settings, or add a `PACKAGES_DELETE_TOKEN` secret (`delete:packages`).

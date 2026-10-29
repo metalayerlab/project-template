@@ -215,6 +215,28 @@ def test_image_runs(project: Path) -> None:
     if "service" not in project.name:
         sh("docker", "run", "--rm", tag, "version", cwd=project)
         return
+    _probe_healthz(project, tag)
+
+
+@pytest.mark.docker
+def test_image_serves_when_app_binds_loopback(project: Path, tmp_path: Path) -> None:
+    """A safe 127.0.0.1 default in the app must not break the image (#17): inside a
+    container, the published ports decide exposure."""
+    if "service" not in project.name:
+        pytest.skip("no HTTP listener")
+    copy = tmp_path / project.name
+    shutil.copytree(project, copy, ignore=shutil.ignore_patterns(".venv"))
+    config = copy / "src" / project.name.replace("-", "_") / "config.py"
+    text = config.read_text()
+    assert '"listen.host", "0.0.0.0"' in text
+    config.write_text(text.replace('"listen.host", "0.0.0.0"', '"listen.host", "127.0.0.1"'))
+    tag = f"{project.name}:loopback"
+    sh("docker", "build", "-q", "-t", tag, ".", cwd=copy)
+    _probe_healthz(copy, tag)
+
+
+def _probe_healthz(project: Path, tag: str) -> None:
+    """Run the image as docker-build.yml's smoke test does and wait for /healthz."""
     name = f"{project.name}-test"
     subprocess.run(["docker", "rm", "-f", name], capture_output=True)
     sh("docker", "run", "-d", "--name", name, "-p", "127.0.0.1::8080", tag, cwd=project)
