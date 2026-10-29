@@ -11,3 +11,6 @@ spec:
     app.kubernetes.io/component: server
   ports:
     - {name: http, port: [[ port ]], targetPort: http}
+[% for p in extra_ports %]
+    - {name: tcp-[[ p ]], port: [[ p ]], targetPort: tcp-[[ p ]]}
+[% endfor %]

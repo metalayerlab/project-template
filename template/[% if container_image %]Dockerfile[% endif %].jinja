@@ -50,7 +50,7 @@ USER 1000:1000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 [% include 'layers/' ~ language ~ '/docker/healthcheck.Dockerfile.jinja' %]
 
-EXPOSE [[ port ]]
+EXPOSE [[ ([port] + extra_ports) | join(' ') ]]
 VOLUME ["/var/lib/[[ project_name ]]"]
 
 ENTRYPOINT ["[[ project_name ]]"]

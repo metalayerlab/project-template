@@ -6,7 +6,7 @@
 
 `contrib/docker/compose.yml`, with no obsolete `version:` key:
 
-- Pinned to the release tag, and the port bound to `127.0.0.1` only (Traefik goes in front).
+- Pinned to the release tag, and the port bound to `127.0.0.1` only (Traefik goes in front). So is each of `extra_ports`: publishing one on other interfaces is a deliberate edit.
 - `./config` mounted read-only, `./state` for state, secrets as files via `<PREFIX>_<KEY>_FILE`.
 - A read-only root, `no-new-privileges`, and `cap_drop: [ALL]`. With `puid_pgid`, only the capabilities the entrypoint needs to chown and drop privileges are added back.
 
@@ -16,7 +16,7 @@
 
 - A Namespace with the *restricted* Pod Security Standard enforced.
 - A Deployment: `runAsNonRoot`, uid 1000, `readOnlyRootFilesystem`, `capabilities: drop [ALL]`, `seccompProfile: RuntimeDefault`, `automountServiceAccountToken: false`, readiness on `/readyz`, liveness on `health_path`, requests/limits, and `Recreate` (state is single-writer).
-- A Service, and a NetworkPolicy admitting only the `traefik` namespace.
+- A Service, and a NetworkPolicy admitting only the `traefik` namespace. Each of `extra_ports` is a named port (`tcp-3128`) in the Deployment and the Service, and a commented-out NetworkPolicy rule: an extra listener usually serves in-cluster clients rather than the ingress controller, so nothing reaches it until you uncomment the rule and name those clients.
 - A ConfigMap generated from `config.yaml`; its hash suffix rolls the Deployment on change. Secrets are never in the base: SOPS in the GitOps repo, mounted as files.
 
 ## systemd

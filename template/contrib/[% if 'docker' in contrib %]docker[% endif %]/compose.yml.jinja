@@ -15,6 +15,9 @@ services:
 
     ports:
       - "127.0.0.1:[[ port ]]:[[ port ]]"   # loopback only: put a reverse proxy in front
+[% for p in extra_ports %]
+      - "127.0.0.1:[[ p ]]:[[ p ]]"
+[% endfor %]
 
     volumes:
       - ./config:/etc/[[ project_name ]]:ro
