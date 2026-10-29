@@ -1,0 +1,19 @@
+name: Feature request
+description: Something the template should give every project, or do differently
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you're trying to do
+      description: The problem, and the project that hit it. Not only the feature you have in mind.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How it could work
+      description: Optional. The question, file or workflow change you'd like.
+  - type: markdown
+    attributes:
+      value: A change here reaches every project through `copier update`, so a new feature usually starts with a design record (docs/design/).

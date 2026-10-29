@@ -1,0 +1,61 @@
+name: Template problem
+description: A rendered file, workflow or check that's wrong, or differs from the wiki
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Search the [open and closed issues](https://github.com/metalayerlab/project-template/issues?q=is%3Aissue) first. If one matches, add your project's case to it instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what happened instead. Say how you worked around it, if you did.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: "Ideally from a fresh render: `uvx copier copy --trust --defaults -d project_name=demo -d description=demo gh:metalayerlab/project-template /tmp/demo`, plus the answers and steps that show it."
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log output
+      description: The failing CI step or command output. Remove anything private.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Template version
+      description: "`_commit` in the project's `.copier-answers.yml`, or the ref you rendered."
+      placeholder: v0.1.5
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: File or workflow
+      placeholder: scripts/gen-wiki.py, .github/workflows/docker-build.yml
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language layer
+      options:
+        - python
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      multiple: true
+      options:
+        - service
+        - cli
+        - library
+  - type: dropdown
+    id: when
+    attributes:
+      label: When it shows
+      options:
+        - In a fresh render
+        - Only after copier update
+        - Not sure

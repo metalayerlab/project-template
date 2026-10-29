@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Template wiki
+    url: https://github.com/metalayerlab/project-template/wiki
+    about: Answering the questions, updating, CI and troubleshooting.
+  - name: Contributing to the template
+    url: https://github.com/metalayerlab/project-template/wiki/Contributing-to-the-Template
+    about: How a change gets in, and what it must pass.
