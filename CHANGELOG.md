@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.5](https://github.com/metalayerlab/project-template/compare/v0.1.4...v0.1.5) (2026-10-29)
+
+
+### 🐛 Bug Fixes
+
+* document Typer sub-commands and positional arguments in CLI-Reference ([#18](https://github.com/metalayerlab/project-template/issues/18)) ([495f2cf](https://github.com/metalayerlab/project-template/commit/495f2cf40ce0290146fefa4b0b19196c13764de3))
+* service images bind 0.0.0.0 whatever the app's default listen host ([#19](https://github.com/metalayerlab/project-template/issues/19)) ([90fe2bd](https://github.com/metalayerlab/project-template/commit/90fe2bdfeac1f2867cffe7718c635f5711931a09))
+
 ## [0.1.4](https://github.com/metalayerlab/project-template/compare/v0.1.3...v0.1.4) (2026-10-28)
 
 
