@@ -210,6 +210,42 @@ def test_manifests(project: Path) -> None:
         sh(str(script), cwd=project)
 
 
+def test_docs_secrets_without_docker(project: Path, tmp_path: Path) -> None:
+    """Optional locally, never skipped in CI (0004)."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    for tool in ("bash", "dirname"):
+        (bin_dir / tool).symlink_to(shutil.which(tool) or tool)
+    script = str(project / "scripts/check-docs-secrets.sh")
+    for ci, code in (("", 0), ("true", 1)):
+        env = {"PATH": str(bin_dir), "CI": ci}
+        result = subprocess.run([script], cwd=project, capture_output=True, text=True, env=env)
+        assert result.returncode == code, result.stdout + result.stderr
+
+
+def test_gitleaks_pins_match(project: Path) -> None:
+    """pre-commit scans staged changes with the same gitleaks as CI's script."""
+    script = (project / "scripts/check-docs-secrets.sh").read_text()
+    hook = (project / ".pre-commit-config.yaml").read_text()
+    tag = re.search(r"gitleaks/gitleaks:(v[\d.]+)", script)
+    rev = re.search(r"gitleaks/gitleaks\n\s+rev: (v[\d.]+)", hook)
+    assert tag and rev and tag.group(1) == rev.group(1)
+
+
+@pytest.mark.docker
+def test_docs_secrets_match_ci(project: Path, tmp_path: Path) -> None:
+    """The skeleton passes, and an MD014 `$` prompt fails locally as it does in CI (#21)."""
+    sh("scripts/check-docs-secrets.sh", cwd=project)
+    copy = tmp_path / project.name
+    shutil.copytree(project, copy, ignore=shutil.ignore_patterns(".venv"))
+    page = copy / "docs/wiki/Home.md"
+    page.write_text(page.read_text() + "\n```sh\n$ demo --help\n```\n")
+    result = subprocess.run(
+        ["scripts/check-docs-secrets.sh", "docs"], cwd=copy, capture_output=True, text=True
+    )
+    assert result.returncode == 1 and "MD014" in result.stdout + result.stderr
+
+
 def test_workflows_lint(project: Path) -> None:
     if not shutil.which("actionlint") and not shutil.which("docker"):
         pytest.skip("neither actionlint nor docker available")
