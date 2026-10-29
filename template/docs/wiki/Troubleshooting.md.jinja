@@ -18,6 +18,9 @@
 [% if 'systemd' in contrib %]
 - **systemd:** `journalctl -u [[ project_name ]] -e` and `systemctl status [[ project_name ]]`.
 [% endif %]
+[% if not (has_cli or container_image or contrib) %]
+<!-- guidance: how a user sees what the library is doing: its logger names, and any debug switches. -->
+[% endif %]
 
 ## Common problems
 

@@ -168,6 +168,13 @@ def test_gen_wiki_documents_subcommands(project: Path, tmp_path: Path) -> None:
     assert "`--force`" in out and "Show it anyway." in out
 
 
+def test_no_double_blank_lines_in_markdown(project: Path) -> None:
+    """markdownlint's MD012 fails a project's first PR (Wiki standard) on these."""
+    pages = [project / "AGENTS.md", *sorted((project / "docs/wiki").glob("*.md"))]
+    doubled = [p.name for p in pages if "\n\n\n" in p.read_text(encoding="utf-8")]
+    assert not doubled
+
+
 def test_wiki_standard(project: Path) -> None:
     sh("python3", "scripts/check-wiki.py", cwd=project)
 
