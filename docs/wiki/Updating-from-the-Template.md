@@ -23,3 +23,14 @@ The working tree must be clean first. `--trust` re-runs `scripts/bootstrap.sh`, 
 When your change and the template's touch the same lines, Copier leaves `<<<<<<< before updating` / `>>>>>>> after updating` markers in the file (`--conflict inline`, the workflow's default). Search the PR diff for `<<<<<<<`, resolve each one, and commit. A file you deleted that the template still ships comes back, so delete it again if it's really unwanted, and say why in the PR.
 
 If you keep resolving the same conflict, the change probably belongs in the template: see [Contributing to the Template](Contributing-to-the-Template).
+
+## Reporting a template problem
+
+A bug in a template-owned file is every project's bug, and a fix made inside one project reaches none of the others. It can also be overwritten or conflict at the next update. So, human or AI:
+
+1. **Search first**, open and closed: `gh issue list -R metalayerlab/project-template --state all -S "<terms>"`.
+2. **If one matches**, comment with your project's case: what you saw, and the workaround. If it's closed as fixed, take the update instead of working around it.
+3. **Otherwise open one** with the *Template problem* form ([Contributing to the Template](Contributing-to-the-Template)), before or alongside any workaround.
+4. **A workaround** only unblocks the project. Keep it minimal, link the issue in a code comment and in `TODO.md`, and remove it when the fix arrives in the update PR.
+
+Every project's AGENTS.md carries this rule tersely, in its Repository map, and the PR template asks for the linked issue.
