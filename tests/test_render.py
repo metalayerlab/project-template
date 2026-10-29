@@ -97,6 +97,13 @@ def test_always_loaded_files_leave_headroom(project: Path) -> None:
     assert not over, f"skeleton uses too much of the context budget (chars, allowed): {over}"
 
 
+def test_template_problems_are_reported(project: Path) -> None:
+    """A project that finds a template bug reports it, not only works around it (#23)."""
+    agents = (project / "AGENTS.md").read_text()
+    assert "gh issue list -R metalayerlab/project-template --state all" in agents
+    assert "Template problem found?" in (project / ".github/pull_request_template.md").read_text()
+
+
 def test_first_release_is_0_1_0(project: Path) -> None:
     """With the manifest at 0.0.0, release-please would otherwise propose 1.0.0."""
     import json
