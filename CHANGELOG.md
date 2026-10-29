@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/metalayerlab/project-template/compare/v0.1.5...v0.1.6) (2026-10-29)
+
+
+### ✨ Features
+
+* tell projects how to report a template bug instead of only working around it ([#26](https://github.com/metalayerlab/project-template/issues/26)) ([f7dcc1e](https://github.com/metalayerlab/project-template/commit/f7dcc1e9bab576a6680e362611906e9656ffad5f))
+
 ## [0.1.5](https://github.com/metalayerlab/project-template/compare/v0.1.4...v0.1.5) (2026-10-29)
 
 
