@@ -59,7 +59,7 @@ Reference tables come from the code, so they can't drift:
 | Block | Page | Source |
 |---|---|---|
 | `settings` | In-Depth-Configuration | `config.SETTINGS`: key, env var, default, help, 🔒 for secrets |
-| `cli` | CLI-Reference | the Typer app: commands, options, env vars, help |
+| `cli` | CLI-Reference | the Typer app: commands (sub-apps' too, as `<group> <command>`), arguments, options, env vars, help |
 | `http-api` | HTTP-API-Reference | the FastAPI OpenAPI schema: method, path, summary |
 
 `uv run scripts/gen-wiki.py` rewrites them; CI runs it with `--check` and fails on any difference. Prose goes around the markers, never inside them.

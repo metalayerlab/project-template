@@ -128,6 +128,46 @@ def test_python_checks(project: Path) -> None:
         sh(*cmd, cwd=project)
 
 
+SUBGROUP = '''
+import importlib.util
+from typing import Annotated
+
+import typer
+
+from {pkg}.cli import app
+
+grp = typer.Typer(help="Manage things.")
+
+
+@grp.command()
+def show(
+    name: Annotated[str, typer.Argument(help="The thing to show.")],
+    force: Annotated[bool, typer.Option("--force", help="Show it anyway.")] = False,
+) -> None:
+    """Show a thing."""
+
+
+app.add_typer(grp, name="grp")
+spec = importlib.util.spec_from_file_location("gen_wiki", "scripts/gen-wiki.py")
+gen_wiki = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(gen_wiki)
+print(gen_wiki.cli())
+'''
+
+
+def test_gen_wiki_documents_subcommands(project: Path, tmp_path: Path) -> None:
+    """A sub-app's commands, and their positional arguments, reach CLI-Reference (#17)."""
+    pkg = project.name.replace("-", "_")
+    if not (project / "src" / pkg / "cli.py").exists():
+        pytest.skip("no CLI")
+    script = tmp_path / "subgroup.py"
+    script.write_text(SUBGROUP.format(pkg=pkg))
+    out = sh("uv", "run", "python", str(script), cwd=project)
+    assert f"### `{project.name} grp show`" in out
+    assert "`NAME`" in out and "The thing to show." in out
+    assert "`--force`" in out and "Show it anyway." in out
+
+
 def test_wiki_standard(project: Path) -> None:
     sh("python3", "scripts/check-wiki.py", cwd=project)
 
