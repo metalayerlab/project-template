@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.10](https://github.com/metalayerlab/project-template/compare/v0.1.9...v0.1.10) (2026-10-30)
+
+
+### 🐛 Bug Fixes
+
+* a warning fails a project's tests ([#41](https://github.com/metalayerlab/project-template/issues/41)) ([3ec9127](https://github.com/metalayerlab/project-template/commit/3ec912771aa961f699a2b7c70b1ba4c74be8b1e7))
+* service projects test with httpx2, so pytest no longer warns ([#40](https://github.com/metalayerlab/project-template/issues/40)) ([a6160e6](https://github.com/metalayerlab/project-template/commit/a6160e6ad06954edbf1d6a7082c00baa370c9923))
+
 ## [0.1.9](https://github.com/metalayerlab/project-template/compare/v0.1.8...v0.1.9) (2026-10-30)
 
 
