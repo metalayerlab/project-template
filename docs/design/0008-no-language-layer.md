@@ -1,6 +1,6 @@
 # 0008: A "None" language choice
 
-Status: Approved
+Status: Implemented
 Date: 2026-10-30
 Authors: Stephen Cox; drafted by Claude (Opus 5.5)
 
