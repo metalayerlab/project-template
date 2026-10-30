@@ -70,6 +70,10 @@ Since 0.1.9, the checks print one line when they pass. Run `python3 scripts/chec
 
 The template's pytest options gained `-q` and `term-missing:skip-covered` (quieter output on a pass), and your project changed the same line. Keep your options, and add those two.
 
+### `StarletteDeprecationWarning: Using httpx with starlette.testclient is deprecated`
+
+Starlette 1.x builds its `TestClient` on `httpx2`. A service project's dev group now lists `httpx2` instead of `httpx`; after `copier update`, run `uv lock` so the lock file follows. If you dropped the template's dev group, swap `httpx` for `httpx2` yourself.
+
 ### Secret scan flags a value that isn't a secret
 
 A test vector or a documented sample (RFC 6455's `Sec-WebSocket-Key`, for example). Allow-list it in `.gitleaks.toml` (a `[allowlist]` regex, or the finding's fingerprint in `.gitleaksignore`), never by disabling the job. `scripts/check-docs-secrets.sh secrets` re-runs CI's scan locally, on committed history.
