@@ -214,6 +214,13 @@ def test_no_double_blank_lines_in_markdown(project: Path) -> None:
     assert not doubled
 
 
+def test_readme_links_existing_wiki_pages(project: Path) -> None:
+    """The README links the wiki by URL, which check-wiki.py doesn't follow."""
+    pages = re.findall(r"/wiki/([\w-]+)\)", (project / "README.md").read_text())
+    missing = [p for p in pages if not (project / "docs/wiki" / f"{p}.md").exists()]
+    assert pages and not missing
+
+
 def test_wiki_standard(project: Path) -> None:
     sh("python3", "scripts/check-wiki.py", cwd=project)
 
