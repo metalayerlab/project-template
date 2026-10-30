@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.8](https://github.com/metalayerlab/project-template/compare/v0.1.7...v0.1.8) (2026-10-30)
+
+
+### ✨ Features
+
+* assistants give their recommendation with every question they ask ([#35](https://github.com/metalayerlab/project-template/issues/35)) ([4fa07aa](https://github.com/metalayerlab/project-template/commit/4fa07aad34b25ac697b7487c6ba29e0ea6bbda2f))
+* assistants report what let a bug happen and what should change ([#36](https://github.com/metalayerlab/project-template/issues/36)) ([4c89cee](https://github.com/metalayerlab/project-template/commit/4c89ceeda5b50e19c0367f65d1a67f065e1aac44))
+* raise the AGENTS.md budget to 9,000 characters and document what a cut costs ([#37](https://github.com/metalayerlab/project-template/issues/37)) ([f06ffbb](https://github.com/metalayerlab/project-template/commit/f06ffbb0125611292ac3f10eaf49933792f0ed27))
+
+
+### 🐛 Bug Fixes
+
+* tell a sole code owner how to merge their own PR ([#33](https://github.com/metalayerlab/project-template/issues/33)) ([4192a27](https://github.com/metalayerlab/project-template/commit/4192a27e6f15263fe0dccb9bbb24b639247808b1))
+
 ## [0.1.7](https://github.com/metalayerlab/project-template/compare/v0.1.6...v0.1.7) (2026-10-29)
 
 
