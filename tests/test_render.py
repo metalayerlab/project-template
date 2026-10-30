@@ -319,6 +319,39 @@ def test_manifests(project: Path) -> None:
         sh(str(script), cwd=project)
 
 
+FAKE_GH = """#!/bin/sh
+# Stands in for the GitHub CLI: answers `gh api repos/{owner}/{repo}`, records everything else.
+echo "$*" >> "$GH_LOG"
+[ "$1 $2" = "api repos/{owner}/{repo}" ] && cat "$GH_REPO" || cat > /dev/null
+"""
+
+
+def test_repository_metadata(project: Path, tmp_path: Path) -> None:
+    """The About box: seeded from the answers, applied by gh, drift reported (0010)."""
+    import json
+    import tomllib
+
+    want = tomllib.loads((project / ".github/repository.toml").read_text())
+    variant = VARIANTS[project.name.removeprefix("demo-")]
+    topics = [variant.get("language", "python"), variant["kind"]] if "kind" in variant else []
+    assert want == {"description": f"A demo {project.name.removeprefix('demo-')}",
+                    "homepage": f"https://github.com/metalayerlab/{project.name}/wiki", "topics": topics}  # fmt: skip
+
+    (tmp_path / "gh").write_text(FAKE_GH)
+    (tmp_path / "gh").chmod(0o755)
+    env = {"PATH": f"{tmp_path}:{os.environ['PATH']}", "GH_LOG": str(tmp_path / "log"),
+           "GH_REPO": str(tmp_path / "repo.json")}  # fmt: skip
+    script = ["python3", "scripts/repo-metadata.py"]
+    (tmp_path / "repo.json").write_text(json.dumps({**want, "topics": [*topics, "stray"]}))
+    drift = subprocess.run([*script, "--check"], cwd=project, env={**os.environ, **env},
+                           capture_output=True, text=True)  # fmt: skip
+    assert drift.returncode == 1 and "applying removes them): stray" in drift.stdout
+    (tmp_path / "repo.json").write_text(json.dumps(want))
+    assert sh(*script, "--check", cwd=project, env=env) == ""
+    sh(*script, cwd=project, env=env)
+    assert "repo edit --enable-wiki" in (tmp_path / "log").read_text()
+
+
 def quiet(cmd: list[str], cwd: Path) -> list[str]:
     """A passing check's output lines, outside GitHub Actions (whose annotations are CI-only)."""
     env = {**os.environ, "GITHUB_ACTIONS": ""}

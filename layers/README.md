@@ -44,6 +44,7 @@ A layer `layers/<lang>/` provides:
 | Name | Python value | TypeScript value | Used in |
 |---|---|---|---|
 | `name`, `code_lang` | `Python`, `python` | `TypeScript`, `typescript` | docs, code-fence language |
+| `topic` | `python` | `typescript` | `.github/repository.toml` (a GitHub topic; `''` for `none`) |
 | `release_type` | `python` | `node` | release-please-config.json |
 | `version_file` | `pyproject.toml` | `package.json` | AGENTS.md boundaries and repository map |
 | `install`, `add_dependency` | `uv sync`, `` `uv add <pkg>` (dev: …) `` | `npm ci`, `` `npm install <pkg>` (dev: …) `` | AGENTS.md |

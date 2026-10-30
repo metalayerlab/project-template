@@ -26,7 +26,8 @@ FORBIDDEN = {
                    r"\beslint\b", r"\bprettier\b", r"\btsc\b", r"tsconfig", r"node:\S+-slim"],  # fmt: skip
 }
 # Core scripts written in Python on purpose (stdlib only, runnable by any layer's CI).
-CORE_PYTHON_SCRIPTS = {"scripts/check-wiki.py", "scripts/[% if personal_data_guard %]check-personal-data.py[% endif %]"}
+CORE_PYTHON_SCRIPTS = {"scripts/check-wiki.py", "scripts/repo-metadata.py",
+                       "scripts/[% if personal_data_guard %]check-personal-data.py[% endif %]"}
 
 USE = re.compile(r"(?<![/\w])layer\.(?!jinja\b)([a-z_]+)")
 DEFINE = re.compile(r"\[%\s*set\s+([a-z_]+)\s*=")

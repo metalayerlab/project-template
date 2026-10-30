@@ -1,0 +1,27 @@
+# GitHub's About box for this repository, applied with
+#   python3 template/scripts/repo-metadata.py
+# The template wiki workflow warns on each push to main while GitHub differs (design record 0010).
+description = "Copier template for metalayerlab projects: CI/CD, release-please, manifests, a standardised wiki and AI-assistant instructions"
+homepage = "https://github.com/metalayerlab/project-template/wiki"
+topics = [
+  "agents-md",
+  "ai-assisted-development",
+  "boilerplate",
+  "ci-cd",
+  "conventional-commits",
+  "copier",
+  "copier-template",
+  "devops",
+  "docker",
+  "documentation",
+  "github-actions",
+  "kubernetes",
+  "project-template",
+  "python",
+  "release-please",
+  "scaffolding",
+  "systemd",
+  "template",
+  "typescript",
+  "wiki",
+]

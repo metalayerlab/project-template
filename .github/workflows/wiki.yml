@@ -43,6 +43,9 @@ jobs:
             *.md
             !CHANGELOG.md
 
+      - name: .github/repository.toml is valid
+        run: python3 template/scripts/repo-metadata.py --validate
+
   docs-touched:
     name: Docs updated with the code
     if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'no-docs-needed') && !startsWith(github.head_ref, 'release-please--')
@@ -85,3 +88,14 @@ jobs:
               -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
               commit -m "docs: publish from ${GITHUB_SHA::7}" -m "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$GITHUB_SHA"
           git push
+
+      # A warning, not a failure: only a repository admin can fix it, outside any PR
+      # (design record 0010). An invalid file still fails.
+      - name: GitHub's About box matches .github/repository.toml?
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          rc=0; python3 template/scripts/repo-metadata.py --check || rc=$?
+          if [ "$rc" = 1 ]; then
+            echo "::warning::GitHub's About box differs from .github/repository.toml: run python3 template/scripts/repo-metadata.py"
+          elif [ "$rc" != 0 ]; then exit "$rc"; fi
