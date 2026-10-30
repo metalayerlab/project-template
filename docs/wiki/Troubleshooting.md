@@ -22,6 +22,10 @@ The GHCR package is still private, which is the default for a new package. Make 
 
 Runs on a PR opened by `github-actions[bot]` wait for a maintainer's approval, after every push to it. Approve them on the PR's Checks tab, or with `gh api -X POST repos/<owner>/<repo>/actions/runs/<id>/approve`. Approve only the runs for the PR's latest commit: a stale run approved later cancels the current one (`cancel-in-progress`). The release GitHub App avoids all of this.
 
+### "Review required", and I'm the only code owner
+
+GitHub never counts an author's approval, so if the only member of `code_owners` opens a PR, nobody can approve it. Give organisation admins (or yourself) bypass in `main`'s ruleset, and merge with `gh pr merge --squash --admin` once CI is green. New projects' Contributing page says so. Contributing is project-owned, so an existing project gets this step only by copying it.
+
 ### No CI run on the Release PR, or on the template-update PR
 
 Those PRs were opened with `GITHUB_TOKEN`, which can't trigger workflows. Set up the release GitHub App ([Release Process](Release-Process#the-release-github-app)). Meanwhile, closing and reopening the PR by hand triggers CI.
