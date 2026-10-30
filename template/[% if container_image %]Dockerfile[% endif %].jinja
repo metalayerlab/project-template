@@ -13,7 +13,7 @@ ARG VERSION=0.0.0
 ARG REVISION=unknown
 ARG CREATED=unknown
 LABEL org.opencontainers.image.title="[[ project_name ]]" \
-      org.opencontainers.image.description="[[ description ]]" \
+      org.opencontainers.image.description="[[ description | replace('\\', '\\\\') | replace('"', '\\"') ]]" \
       org.opencontainers.image.source="[[ repo_url ]]" \
       org.opencontainers.image.documentation="[[ repo_url ]]/wiki" \
       org.opencontainers.image.licenses="[[ 'LicenseRef-Proprietary' if license == 'Proprietary' else license ]]" \
