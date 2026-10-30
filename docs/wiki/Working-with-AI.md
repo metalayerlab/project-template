@@ -39,6 +39,15 @@ Every assistant session pays for what it reads, so the AI-facing files are kept 
 | `[context_budget]` in each project's `docs/wiki/.standard.toml`, enforced by `check-wiki.py` in project CI | AGENTS.md ≤ 9,000 characters, the pointer files 300–700. The template's own tests require the skeleton to use at most 75%, leaving room for the project |
 | AGENTS.md, the review checklist and the Contributing page tell assistants and reviewers to keep it that way | the method carries on after the first commit |
 
+## Keeping sessions small
+
+The budget covers what an assistant reads first. Most of a session's tokens come later: command output, and the conversation itself, which is sent again with every turn ([design record 0007](https://github.com/metalayerlab/project-template/blob/main/docs/design/0007-terse-sessions.md)).
+
+- **Quiet checks:** every Definition of done command prints one line when it passes, and its detail only when it fails. `check-wiki.py --verbose` lists the warnings it counts. A passing run of a fresh project's Definition of done prints about 6,450 characters without this. The template's tests fail if a template-owned check prints more than one line on a pass.
+- **Terse replies:** AGENTS.md tells the assistant to give the result, then what it needs from the user, with no preamble, recaps or restated plans. That cuts form, not content: recommendations, reasons for non-obvious choices and what was skipped stay.
+- **One task per session:** when a task is done and the next is unrelated, the assistant checks that the PR, `TODO.md` or a design record holds what the next session needs, then suggests starting one. It suggests this once, at the boundary, never mid-task. In Claude Code, `/clear` starts afresh and `/compact` summarises; other tools have their own equivalents.
+- **Point, don't paste:** give the assistant a path or the failing check's name, not the log. It can read the file or rerun the check, and only reads what it needs.
+
 ## Guard rails
 
 - **Checks the assistant can't talk its way past:** blocking CI, the coverage floor, mypy strict, the wiki standard, docs-touched, and PR-title linting.

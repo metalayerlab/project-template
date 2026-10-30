@@ -242,6 +242,23 @@ def test_manifests(project: Path) -> None:
         sh(str(script), cwd=project)
 
 
+def quiet(cmd: list[str], cwd: Path) -> list[str]:
+    """A passing check's output lines, outside GitHub Actions (whose annotations are CI-only)."""
+    env = {**os.environ, "GITHUB_ACTIONS": ""}
+    result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, env=env)
+    assert result.returncode == 0, result.stdout + result.stderr
+    return (result.stdout + result.stderr).splitlines()
+
+
+def test_checks_are_quiet_when_they_pass(project: Path) -> None:
+    """Every Definition of done run is read by an assistant: one line on a pass (0007)."""
+    checks = [["python3", "scripts/check-wiki.py"]]
+    if (project / "scripts/check-manifests.sh").exists():
+        checks.append(["scripts/check-manifests.sh"])
+    noisy = {" ".join(c): lines for c in checks if len(lines := quiet(c, project)) > 1}
+    assert not noisy
+
+
 def test_docs_secrets_without_docker(project: Path, tmp_path: Path) -> None:
     """Optional locally, never skipped in CI (0004)."""
     bin_dir = tmp_path / "bin"
@@ -266,8 +283,8 @@ def test_gitleaks_pins_match(project: Path) -> None:
 
 @pytest.mark.docker
 def test_docs_secrets_match_ci(project: Path, tmp_path: Path) -> None:
-    """The skeleton passes, and an MD014 `$` prompt fails locally as it does in CI (#21)."""
-    sh("scripts/check-docs-secrets.sh", cwd=project)
+    """The skeleton passes in one line (0007), and an MD014 `$` prompt fails locally as in CI (#21)."""
+    assert len(quiet(["scripts/check-docs-secrets.sh"], project)) == 1
     copy = tmp_path / project.name
     shutil.copytree(project, copy, ignore=shutil.ignore_patterns(".venv"))
     page = copy / "docs/wiki/Home.md"

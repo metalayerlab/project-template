@@ -69,7 +69,7 @@ strict = true
 files = ["src/[[ package_name ]]", "tests", "scripts"]
 
 [tool.pytest.ini_options]
-addopts = "--strict-markers --strict-config --cov --cov-report=term-missing"
+addopts = "-q --strict-markers --strict-config --cov --cov-report=term-missing:skip-covered"
 testpaths = ["tests"]
 markers = ["integration: talks to real external systems; deselect with -m 'not integration'"]
 

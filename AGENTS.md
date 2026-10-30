@@ -56,6 +56,9 @@ pytest's temporary directories: render a variant yourself instead.
 - Asking the user something? Give your recommendation and why.
 - Finished a bug or enhancement? Say what let it happen, and whether `template/`, a check or this file should
   change. Propose it, with your recommendation, or say "none".
+- Reply tersely: the result, then what you need from the user. No preamble, recaps or restated plans.
+- Task done and the next is unrelated? Make sure the PR, `TODO.md` or a design record holds what's needed,
+  then suggest a new session.
 - Keep the generated code small. It's a skeleton for AI-assisted build-out, not a framework.
 - AI-facing files have a budget: `[context_budget]` in `template/docs/wiki/.standard.toml`, enforced in every
   project's CI. The skeleton may use 75% of it (`tests/test_render.py`). Raising it needs a design record. A change to

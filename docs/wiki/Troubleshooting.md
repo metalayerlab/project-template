@@ -62,6 +62,14 @@ The image sets `<PREFIX>_LISTEN_HOST=0.0.0.0`, and environment variables beat th
 
 Run `scripts/check-docs-secrets.sh docs`: it runs the same markdownlint-cli2 version, globs and `.markdownlint-cli2.yaml` as CI. A common one is MD014, a `$` prompt in a fenced block of commands without output: drop the `$`.
 
+### `check-wiki.py` says "N warning(s)" but doesn't list them
+
+Since 0.1.9, the checks print one line when they pass. Run `python3 scripts/check-wiki.py --verbose` to list the warnings. Errors are always listed in full.
+
+### `copier update` conflicts on `addopts` in `pyproject.toml`
+
+The template's pytest options gained `-q` and `term-missing:skip-covered` (quieter output on a pass), and your project changed the same line. Keep your options, and add those two.
+
 ### Secret scan flags a value that isn't a secret
 
 A test vector or a documented sample (RFC 6455's `Sec-WebSocket-Key`, for example). Allow-list it in `.gitleaks.toml` (a `[allowlist]` regex, or the finding's fingerprint in `.gitleaksignore`), never by disabling the job. `scripts/check-docs-secrets.sh secrets` re-runs CI's scan locally, on committed history.
