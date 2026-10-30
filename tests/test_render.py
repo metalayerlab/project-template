@@ -445,6 +445,26 @@ def test_image_runs(project: Path) -> None:
     _probe_healthz(project, tag)
 
 
+def test_system_packages_are_empty_by_default(project: Path) -> None:
+    """contrib/system-packages.txt (#53) exists in every project and lists nothing."""
+    lines = (project / "contrib/system-packages.txt").read_text().splitlines()
+    assert [ln for ln in lines if not ln.startswith("#") and ln.strip()] == ["build:", "runtime:"]
+
+
+@pytest.mark.docker
+def test_image_installs_system_packages(project: Path, tmp_path: Path) -> None:
+    """The `build:` packages reach the builder stage and the `runtime:` ones the image (#53)."""
+    if not project.name.endswith("cli"):
+        pytest.skip("one variant per layer is enough")
+    copy = tmp_path / project.name
+    shutil.copytree(project, copy, ignore=shutil.ignore_patterns(".venv", "node_modules"))
+    with (copy / "contrib/system-packages.txt").open("a") as f:
+        f.write("build: pkg-config\nruntime: tini\n")
+    tag = f"{project.name}:packages"
+    sh("docker", "build", "-q", "-t", tag, ".", cwd=copy)
+    sh("docker", "run", "--rm", "--entrypoint", "tini", tag, "--version", cwd=copy)
+
+
 @pytest.mark.docker
 def test_image_serves_when_app_binds_loopback(project: Path, tmp_path: Path) -> None:
     """A safe 127.0.0.1 default in the app must not break the image (#17): inside a

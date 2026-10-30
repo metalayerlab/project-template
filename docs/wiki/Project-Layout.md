@@ -20,7 +20,7 @@ scripts/              bootstrap.sh  check-wiki.py  repo-metadata.py  gen-wiki.py
 docs/wiki/            the project wiki + .standard.toml
 docs/design/          design records: README.md (the index), 0000-template.md
 docs/ai/              prompts.md  review-checklist.md
-contrib/              <name>.example.yaml  docker/  k8s/  systemd/
+contrib/              <name>.example.yaml  system-packages.txt  docker/  k8s/  systemd/
 Dockerfile  docker/entrypoint.sh  .dockerignore
 pyproject.toml  uv.lock  (or package.json  package-lock.json  tsconfig*.json  eslint.config.js  vitest.config.ts)  [version.txt]  release-please-config.json  .release-please-manifest.json  .copier-answers.yml
 .gitignore  .gitleaks.toml  .markdownlint-cli2.yaml  .pre-commit-config.yaml  .editorconfig
@@ -31,7 +31,7 @@ pyproject.toml  uv.lock  (or package.json  package-lock.json  tsconfig*.json  es
 | Owner | Files | On `copier update` |
 |---|---|---|
 | **Template** | `.github/workflows/`, `scripts/`, `docs/wiki/.standard.toml`, `docs/wiki/Release-Process.md`, `docs/ai/`, lint configs, `Dockerfile`, `docker/` | Updated (three-way merge; local edits survive or conflict) |
-| **Project** | `src/`, `tests/`, `scripts/check.sh` and `version.txt` (`language: none`), every other `docs/wiki/` page, `.github/repository.toml`, `CHANGELOG.md`, `TODO.md`, `contrib/*.example.yaml` | Never touched again after the first copy (`_skip_if_exists`) |
+| **Project** | `src/`, `tests/`, `scripts/check.sh` and `version.txt` (`language: none`), every other `docs/wiki/` page, `.github/repository.toml`, `CHANGELOG.md`, `TODO.md`, `contrib/*.example.yaml`, `contrib/system-packages.txt` | Never touched again after the first copy (`_skip_if_exists`) |
 | **Shared** | `README.md`, `AGENTS.md`, `pyproject.toml` or `package.json`, `contrib/*/` manifests | Merged: template changes apply on top of yours, and clashes become conflict markers |
 | **Machines** | `CHANGELOG.md` entries, the version, `.release-please-manifest.json` (release-please); `.copier-answers.yml` (Copier); generated wiki sections (`gen-wiki.py`) | Never edited by hand |
 

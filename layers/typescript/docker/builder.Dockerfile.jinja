@@ -1,7 +1,4 @@
-# ============================================================
-# Stage 1: builder (dependencies, then dist/, then only the runtime dependencies)
-# ============================================================
-FROM node:[[ node_version ]]-slim AS builder
+# Dependencies, then dist/, then only the runtime dependencies
 
 WORKDIR /app
 
