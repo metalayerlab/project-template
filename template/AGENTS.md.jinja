@@ -15,12 +15,12 @@ Single source of instructions for AI assistants; the tool files point here. Reas
 4. Done = code + tests + wiki ([Definition of done](#definition-of-done)).
 5. Report what you skipped or couldn't run. Never claim an unrun check passed.
 6. Asking the user something? Give your recommendation and why.
+7. Finished a bug or enhancement? Say what let it happen and what should change (a test, a check, this file, the template), or "none".
 
 ## Don't read
 
 - `[[ layer.lock_file ]]` (use `[[ layer.deps_query ]]`), `CHANGELOG.md` (use `git log`), [% for d in layer.noread %]`[[ d ]]`, [% endfor %]`.graphify/`
 - Generated wiki blocks (`<!-- generated:start/end -->`): the code is the source.
-- `docs/design/` records the index doesn't point you to.
 
 New large or generated path? List it here and deny `Read` on it in `.claude/settings.json`.
 
@@ -78,7 +78,7 @@ T = template-owned: never edit here; fixes arrive by the weekly update PR. Bug i
 - Commit secrets, real hostnames, IPs or personal data. Use `example.org` and `192.0.2.0/24`.
 - Weaken a check: lower the coverage floor, add an unexplained `noqa`/`type: ignore`, skip or xfail a test, loosen the sandbox or `securityContext`, add `continue-on-error`. If a check is wrong, say so.
 - Add the `no-docs-needed` label (reviewers only), telemetry, or network calls at import time.
-- Grow this file or the tool files past `[context_budget]` (`docs/wiki/.standard.toml`, CI-checked): be terse, reasons go in the wiki.
+- Grow this file or the tool files past `[context_budget]` (CI-checked): be terse; reasons go in the wiki.
 
 ## Definition of done
 
@@ -97,8 +97,6 @@ scripts/check-docs-secrets.sh  # if Docker is available
 All pass, and your change's [Docs map](#docs-map) pages are updated in the same PR.
 
 ## Docs map
-
-CI fails a PR that changes watched code without touching `docs/wiki/`.
 
 | You changed | Update |
 |---|---|
