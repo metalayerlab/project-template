@@ -28,8 +28,9 @@ Then, once per repository, in the GitHub settings:
 
 1. **General → Pull Requests:** allow **squash merging only**, set the default commit message to **"Pull request title"**, and turn on "Automatically delete head branches". The PR title becomes the commit release-please reads. If you set `dependabot_automerge`, also tick **Allow auto-merge** (`gh repo edit --enable-auto-merge`).
 2. **Wiki:** enable it and **create the first page** in the web UI (any text). GitHub only creates the wiki's git repository then. From now on `wiki.yml` overwrites it from `docs/wiki/` on every push to `main`.
-3. **Rules → Rulesets** for `main`: require a pull request with 1 approval and **review from Code Owners**, block force pushes, and make these checks required: `Secret scan`, `Test (...)`, `Version and lock file`, `Dockerfile and contrib manifests`, `Workflow lint`, `Wiki standard`, `Docs updated with the code`, `conventional-commit`.
-4. **Packages:** after the first image is pushed, give the repository's Actions **Admin** access to the package (package settings → Manage Actions access), so branch-image cleanup can delete versions.
+3. **About box:** `python3 scripts/repo-metadata.py` sets the description, the website (the wiki) and the topics from `.github/repository.toml`, using your `gh` login. Edit the file first if you want other topics. Until you run it, `wiki.yml` warns on every push to `main`.
+4. **Rules → Rulesets** for `main`: require a pull request with 1 approval and **review from Code Owners**, block force pushes, and make these checks required: `Secret scan`, `Test (...)`, `Version and lock file`, `Dockerfile and contrib manifests`, `Workflow lint`, `Wiki standard`, `Docs updated with the code`, `conventional-commit`.
+5. **Packages:** after the first image is pushed, give the repository's Actions **Admin** access to the package (package settings → Manage Actions access), so branch-image cleanup can delete versions.
 
 The organisation's release GitHub App is set up once for all repositories: see [Release Process](Release-Process#the-release-github-app).
 

@@ -30,6 +30,7 @@ _skip_if_exists:
   - CHANGELOG.md
   - .release-please-manifest.json
   - TODO.md
+  - .github/repository.toml
   - "src/**"
   - scripts/check.sh
   - version.txt
