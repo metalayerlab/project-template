@@ -6,9 +6,13 @@ left gets a line here or an issue.
 
 ## Open
 
-- [ ] TypeScript/Node language layer: [#47](https://github.com/metalayerlab/project-template/issues/47)
-  (design [0001](docs/design/0001-template-architecture.md), `layers/README.md`)
+- [ ] `kind: web`, a Vite + React SPA in a static image, `typescript` only: needs its own design record
+  (design [0009](docs/design/0009-typescript-layer.md))
 
 ## Decided against (don't re-propose without reading this first)
 
 <!-- One line each: the idea, why not, and a link to the issue, PR or design record. -->
+
+- A separate front-end language layer (`typescript-frontend`): same toolchain, different shape, so it is a `kind` ([0009](docs/design/0009-typescript-layer.md))
+- Express, Hono, Biome, tsx, pnpm/yarn, a bundler, Jest or semantic-release in the TypeScript layer ([0009](docs/design/0009-typescript-layer.md))
+- Firebase deploy, Storybook, Chrome extensions, Electron or npm workspaces in the skeleton: one project's choice, not a skeleton's ([0009](docs/design/0009-typescript-layer.md))

@@ -75,6 +75,7 @@ language:
   help: Language layer (more layers come later; see layers/README.md)
   choices:
     Python: python
+    "TypeScript: Node.js and npm": typescript
     "None: core only (no build, tests or image)": none
   default: python
 
@@ -98,7 +99,7 @@ package_name:
 
 description:
   type: str
-  help: One-line description (README, pyproject, wiki footer)
+  help: One-line description (README, package manifest, wiki footer)
   validator: "[% if not description %]Required[% endif %]"
 
 github_owner:
@@ -110,8 +111,8 @@ kind:
   type: str
   help: What it is
   choices:
-    "service: long-running, HTTP API (FastAPI), health endpoints": service
-    "cli: command-line tool (Typer)": cli
+    "service: long-running, HTTP API (FastAPI / Fastify), health endpoints": service
+    "cli: command-line tool (Typer / commander)": cli
     "library: importable package only": library
     # What `language: none` gets: no generated code at all (design record 0008).
     "other: no language layer (language: none only)":
@@ -126,6 +127,13 @@ python_version:
   choices: ["3.13", "3.14"]
   default: "3.13"
   when: "[[ language == 'python' ]]"
+
+node_version:
+  type: str
+  help: Minimum Node.js version (Docker base image and the first CI matrix entry)
+  choices: ["24", "26"]
+  default: "24"
+  when: "[[ language == 'typescript' ]]"
 
 port:
   type: int

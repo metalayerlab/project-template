@@ -1,0 +1,71 @@
+{
+  "name": "[[ project_name ]]",
+  "version": "0.0.0",
+  "description": [[ description | tojson ]],
+  "license": "[[ 'UNLICENSED' if license == 'Proprietary' else license ]]",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+[[ repo_url ]].git"
+  },
+  "homepage": "[[ repo_url ]]/wiki",
+  "type": "module",
+  "engines": {
+    "node": ">=[[ node_version ]]"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+[% if has_cli %]
+  "bin": {
+    "[[ project_name ]]": "dist/cli.js"
+  },
+[% endif %]
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepare": "npm run build",
+[% if has_cli %]
+    "start": "node src/cli.ts",
+[% endif %]
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write \"**/*.{ts,js}\"",
+    "format:check": "prettier --check \"**/*.{ts,js}\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --coverage",
+    "test:integration": "RUN_INTEGRATION=1 vitest run"
+  },
+[% if has_cli %]
+  "dependencies": {
+[% if kind == 'service' %]
+    "@fastify/swagger": "^9.9.2",
+[% endif %]
+    "commander": "^15.0.0",
+[% if kind == 'service' %]
+    "fastify": "^5.12.7",
+    "fastify-type-provider-zod": "^7.0.0",
+[% endif %]
+    "yaml": "^2.9.1"[% if kind == 'service' %],[% endif %]
+
+[% if kind == 'service' %]
+    "zod": "^4.6.7"
+[% endif %]
+  },
+[% endif %]
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^[[ node_version ]].0.0",
+    "@vitest/coverage-v8": "^5.0.5",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.0.5"
+  }
+}

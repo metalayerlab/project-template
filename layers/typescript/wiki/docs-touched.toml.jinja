@@ -1,0 +1,10 @@
+[% if has_cli %]
+  "src/config.ts",
+  "src/cli.ts",
+[% endif %]
+[% if kind == 'service' %]
+  "src/api.ts",
+[% endif %]
+[% if kind == 'library' %]
+  "src/index.ts",
+[% endif %]

@@ -50,6 +50,14 @@ VARIANTS: dict[str, dict[str, object]] = {
     "cli": {"kind": "cli", "license": "MIT", "dependabot_automerge": "patch"},
     "library": {"kind": "library", "license": "Apache-2.0"},
     "none": {"language": "none", "license": "MIT"},
+    "ts-service": {
+        "language": "typescript",
+        "kind": "service",
+        "puid_pgid": True,
+        "extra_ports": [3128],
+    },
+    "ts-cli": {"language": "typescript", "kind": "cli", "license": "MIT", "node_version": "26"},
+    "ts-library": {"language": "typescript", "kind": "library", "license": "Proprietary"},
 }
 
 
@@ -76,7 +84,7 @@ def project(request: pytest.FixtureRequest, tmp_path_factory: pytest.TempPathFac
 def test_no_unrendered_jinja(project: Path) -> None:
     leftovers = []
     for path in project.rglob("*"):
-        if ".git" in path.parts or ".venv" in path.parts or not path.is_file():
+        if {".git", ".venv", "node_modules"} & set(path.parts) or not path.is_file():
             continue
         if re.search(r"\[\[|\[%|\.jinja$", path.name):
             leftovers.append(str(path))
@@ -170,6 +178,26 @@ def test_python_checks(project: Path) -> None:
         sh(*cmd, cwd=project)
 
 
+def test_typescript_checks(project: Path) -> None:
+    """The layer's Definition of done, plus CI's lock check and smoke test (0009)."""
+    if not (project / "package.json").exists():
+        pytest.skip("not a TypeScript project")
+    for cmd in (
+        ["npm", "ci", "--no-audit", "--no-fund"],
+        ["npm", "run", "lint"],
+        ["npm", "run", "format:check"],
+        ["npm", "run", "typecheck"],
+        ["npm", "test"],
+        ["npm", "run", "test:integration"],
+        ["node", "scripts/gen-wiki.ts", "--check"],
+        ["node", "--input-type=module", "-e", f'import {{ VERSION }} from "{project.name}";'],
+    ):
+        sh(*cmd, cwd=project)
+    if (project / "src/cli.ts").exists():
+        sh("node", "dist/cli.js", "--help", cwd=project)
+        assert sh("npm", "start", "--silent", "--", "version", cwd=project).strip() == "0.0.0"
+
+
 def test_none_checks(project: Path) -> None:
     """No layer: the project's checks are its own scripts/check.sh, and version.txt (0008)."""
     if not (project / "scripts/check.sh").exists():
@@ -215,14 +243,35 @@ print(gen_wiki.cli())
 '''
 
 
+SUBGROUP_TS = """
+import {{ cli }} from "{root}/scripts/gen-wiki.ts";
+import {{ program }} from "{root}/src/cli.ts";
+
+const root = program();
+root
+  .command("grp")
+  .description("Manage things.")
+  .command("show")
+  .description("Show a thing.")
+  .argument("<name>", "The thing to show.")
+  .option("--force", "Show it anyway.");
+console.log(cli(root));
+"""
+
+
 def test_gen_wiki_documents_subcommands(project: Path, tmp_path: Path) -> None:
     """A sub-app's commands, and their positional arguments, reach CLI-Reference (#17)."""
     pkg = project.name.replace("-", "_")
-    if not (project / "src" / pkg / "cli.py").exists():
+    if (project / "src" / pkg / "cli.py").exists():
+        script = tmp_path / "subgroup.py"
+        script.write_text(SUBGROUP.format(pkg=pkg))
+        out = sh("uv", "run", "python", str(script), cwd=project)
+    elif (project / "src/cli.ts").exists():
+        script = tmp_path / "subgroup.ts"
+        script.write_text(SUBGROUP_TS.format(root=project))
+        out = sh("node", str(script), cwd=project)
+    else:
         pytest.skip("no CLI")
-    script = tmp_path / "subgroup.py"
-    script.write_text(SUBGROUP.format(pkg=pkg))
-    out = sh("uv", "run", "python", str(script), cwd=project)
     assert f"### `{project.name} grp show`" in out
     assert "`NAME`" in out and "The thing to show." in out
     assert "`--force`" in out and "Show it anyway." in out
@@ -314,7 +363,7 @@ def test_docs_secrets_match_ci(project: Path, tmp_path: Path) -> None:
     """The skeleton passes in one line (0007), and an MD014 `$` prompt fails locally as in CI (#21)."""
     assert len(quiet(["scripts/check-docs-secrets.sh"], project)) == 1
     copy = tmp_path / project.name
-    shutil.copytree(project, copy, ignore=shutil.ignore_patterns(".venv"))
+    shutil.copytree(project, copy, ignore=shutil.ignore_patterns(".venv", "node_modules"))
     page = copy / "docs/wiki/Home.md"
     page.write_text(page.read_text() + "\n```sh\n$ demo --help\n```\n")
     result = subprocess.run(
@@ -355,11 +404,16 @@ def test_image_serves_when_app_binds_loopback(project: Path, tmp_path: Path) -> 
     if "service" not in project.name:
         pytest.skip("no HTTP listener")
     copy = tmp_path / project.name
-    shutil.copytree(project, copy, ignore=shutil.ignore_patterns(".venv"))
-    config = copy / "src" / project.name.replace("-", "_") / "config.py"
+    shutil.copytree(project, copy, ignore=shutil.ignore_patterns(".venv", "node_modules"))
+    python = copy / "src" / project.name.replace("-", "_") / "config.py"
+    config, default = (
+        (python, '"listen.host", "0.0.0.0"')
+        if python.exists()
+        else (copy / "src/config.ts", 'key: "listen.host", default: "0.0.0.0"')
+    )
     text = config.read_text()
-    assert '"listen.host", "0.0.0.0"' in text
-    config.write_text(text.replace('"listen.host", "0.0.0.0"', '"listen.host", "127.0.0.1"'))
+    assert default in text
+    config.write_text(text.replace(default, default.replace("0.0.0.0", "127.0.0.1")))
     tag = f"{project.name}:loopback"
     sh("docker", "build", "-q", "-t", tag, ".", cwd=copy)
     _probe_healthz(copy, tag)

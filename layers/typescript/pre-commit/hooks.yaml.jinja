@@ -1,0 +1,22 @@
+      - id: eslint
+        name: eslint
+        entry: npx eslint --fix --max-warnings 0
+        language: system
+        types_or: [ts, javascript]
+      - id: prettier
+        name: prettier
+        entry: npx prettier --write
+        language: system
+        types_or: [ts, javascript]
+      - id: tsc
+        name: tsc
+        entry: npx tsc --noEmit
+        language: system
+        types_or: [ts, javascript]
+        pass_filenames: false
+      - id: gen-wiki
+        name: generated wiki sections
+        entry: node scripts/gen-wiki.ts --check
+        language: system
+        pass_filenames: false
+        files: ^(src/|docs/wiki/)

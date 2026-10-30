@@ -1,0 +1,60 @@
+[% set nodes = ['24', '26'] | select('ge', node_version) | list %]
+
+  test:
+    name: Test (Node.js ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [[ nodes | tojson ]]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      # npm ci fails if package-lock.json is out of step with package.json: the lock check.
+      # It also builds dist/ (the prepare script).
+      - name: Install (from the lock file)
+        run: npm ci --no-audit --no-fund
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format
+        run: npm run format:check
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Tests (with coverage floor)
+        run: npm test
+
+      - name: Import and entry-point smoke test
+        run: |
+          node --input-type=module -e 'import { VERSION } from "[[ project_name ]]"; console.log("[[ project_name ]]", VERSION)'
+[% if has_cli %]
+          node dist/cli.js --help > /dev/null
+[% endif %]
+
+      - name: Generated wiki sections are current
+        if: matrix.node-version == '[[ node_version ]]'
+        run: node scripts/gen-wiki.ts --check
+
+  version:
+    name: Version and lock file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Version is semver and matches the lock file and the release manifest
+        run: |
+          VERSION=$(node -p 'require("./package.json").version')
+          LOCKED=$(node -p 'require("./package-lock.json").version')
+          MANIFEST=$(node -p 'require("./.release-please-manifest.json")["."]')
+          echo "package.json: $VERSION, package-lock.json: $LOCKED, manifest: $MANIFEST"
+          echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$' \
+            || { echo "::error file=package.json::version $VERSION is not semver"; exit 1; }
+          [ "$VERSION" = "$MANIFEST" ] && [ "$VERSION" = "$LOCKED" ] \
+            || { echo "::error::package.json ($VERSION), package-lock.json ($LOCKED) and .release-please-manifest.json ($MANIFEST) disagree: only release-please changes them"; exit 1; }

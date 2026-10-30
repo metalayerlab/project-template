@@ -19,10 +19,10 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    # The base image's Python must stay inside the CI matrix: take patch-level
+    # The base image's [[ layer.runtime ]] must stay inside the CI matrix: take patch-level
     # image updates only, and move the minor version by hand with ci.yml.
     ignore:
-      - dependency-name: python
+      - dependency-name: [[ layer.base_image ]]
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
     commit-message:
       prefix: chore(deps)
