@@ -72,6 +72,8 @@ files = ["src/[[ package_name ]]", "tests", "scripts"]
 addopts = "-q --strict-markers --strict-config --cov --cov-report=term-missing:skip-covered"
 testpaths = ["tests"]
 markers = ["integration: talks to real external systems; deselect with -m 'not integration'"]
+# A deprecation fails the dependency bump that brings it, not a later run.
+filterwarnings = ["error"]
 
 [tool.coverage.run]
 source = ["[[ package_name ]]"]
