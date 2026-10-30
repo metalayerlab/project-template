@@ -53,6 +53,7 @@ pytest's temporary directories: render a variant yourself instead.
   next update. Add the skeleton page and say so in the PR body.
 - Pin actions to commit SHAs, with the version in a trailing comment.
 - Never credit an AI in commits or PRs (`Co-authored-by` trailers, "Generated with" lines, session links).
+- Asking the user something? Give your recommendation and why.
 - Keep the generated code small. It's a skeleton for AI-assisted build-out, not a framework.
 - AI-facing files have a budget: `[context_budget]` in `template/docs/wiki/.standard.toml`, enforced in every
   project's CI. The skeleton may use 75% of it (`tests/test_render.py`). Raising it needs a design record.
