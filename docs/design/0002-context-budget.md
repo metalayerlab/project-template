@@ -1,6 +1,6 @@
 # 0002: Context budget for AI-facing files
 
-Status: Implemented
+Status: Implemented (the AGENTS.md budget was raised to 9,000 by [0006](0006-context-budget-review.md))
 Date: 2026-10-27
 Authors: Stephen Cox; drafted by Claude (Opus 5.5)
 

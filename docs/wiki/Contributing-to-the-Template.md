@@ -24,6 +24,25 @@ Blank issues are off. Don't report a security problem in a public issue: contact
 
 When deciding whether a file is template-owned or project-owned (`_skip_if_exists`): make it project-owned only if projects must diverge from it. Project-owned files never receive another fix.
 
+## Changing AGENTS.md
+
+A project's `AGENTS.md` is read in every assistant session, so the skeleton may use only 75% of its budget (6,750 of 9,000 characters, `tests/test_render.py`). A PR that changes `template/AGENTS.md.jinja` says how many characters it adds or frees, and the category of each cut ([design record 0006](https://github.com/metalayerlab/project-template/blob/main/docs/design/0006-context-budget-review.md)).
+
+A cut is free when an assistant would do nothing differently without the text. From cheapest to most costly:
+
+1. **Redundancy:** text that repeats what another line already says.
+2. **Anything CI enforces:** if it's forgotten, the check fails and its message teaches the rule.
+3. **Reasons for rules that are already intuitive:** these can live in the wiki.
+4. **Pointers:** without the link, the detail exists but is never found.
+5. **A reason for a counter-intuitive rule:** without it, the rule is applied too literally or talked around.
+6. **Specifics that differ from an assistant's defaults** (`uv run`, `typer.echo`, the config precedence): without them, the assistant does what most repositories do.
+7. **Triggers:** a rule without its "when" gets misapplied.
+8. **Unenforced rules about behaviour** (stop for approval, never claim an unrun check passed): only a careful reviewer backs these up.
+
+Compression has a limit too: if a new contributor can't read a line first time, an assistant may misread it silently.
+
+Before a cut in categories 4–8, measure it. Render two projects, one with the longer `AGENTS.md` and one with the shorter, give an assistant the same task in each, and compare which rules each run follows. When the skeleton reaches 6,750 characters, write a new design record instead of raising the budget piecemeal.
+
 ## Core and layers
 
 | Change | Edit |
