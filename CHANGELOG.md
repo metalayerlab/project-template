@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.7](https://github.com/metalayerlab/project-template/compare/v0.1.6...v0.1.7) (2026-10-29)
+
+
+### ✨ Features
+
+* extra_ports question, so a service can declare listeners besides port ([#30](https://github.com/metalayerlab/project-template/issues/30)) ([fbdc334](https://github.com/metalayerlab/project-template/commit/fbdc3349e5736543f7f0456fe33c12131b1231b5))
+* run CI's markdownlint and gitleaks locally with scripts/check-docs-secrets.sh ([#29](https://github.com/metalayerlab/project-template/issues/29)) ([f2f7957](https://github.com/metalayerlab/project-template/commit/f2f7957e941959a33d38ef88524eac834b89ec25))
+
+
+### 🐛 Bug Fixes
+
+* library projects' Troubleshooting page fails markdownlint on the first PR ([#28](https://github.com/metalayerlab/project-template/issues/28)) ([8c86358](https://github.com/metalayerlab/project-template/commit/8c863589242fd92522472bbdc267829d965cdebf))
+
 ## [0.1.6](https://github.com/metalayerlab/project-template/compare/v0.1.5...v0.1.6) (2026-10-29)
 
 
