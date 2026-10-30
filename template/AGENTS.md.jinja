@@ -6,24 +6,23 @@ Single source of instructions for AI assistants; the tool files point here. Reas
 
 ## How to work
 
-1. Read only what the task needs: the page for your area in the [Docs map](#docs-map),
+1. Read only what the task needs: your area's page in the [Docs map](#docs-map),
    `docs/design/README.md` (the index; then only the records it points you to), and `TODO.md` "Decided against"
    (never re-propose those).
-2. New feature, new dependency, or a public-interface change (config keys, CLI, HTTP API, file formats):
+2. New feature or dependency, or a public-interface change (config keys, CLI, HTTP API, file formats):
    write `docs/design/NNNN-*.md` from `0000-template.md`, add a line to its index, and **stop for approval**.
 3. One concern per PR. A human reviews every line.
 4. Done = code + tests + wiki ([Definition of done](#definition-of-done)).
 5. Report what you skipped or couldn't run. Never claim an unrun check passed.
+6. Asking the user something? Give your recommendation and why.
 
 ## Don't read
-
-Large or generated: use the commands instead.
 
 - `[[ layer.lock_file ]]` (use `[[ layer.deps_query ]]`), `CHANGELOG.md` (use `git log`), [% for d in layer.noread %]`[[ d ]]`, [% endfor %]`.graphify/`
 - Generated wiki blocks (`<!-- generated:start/end -->`): the code is the source.
 - `docs/design/` records the index doesn't point you to.
 
-Adding a large or generated path? List it here and deny `Read` on it in `.claude/settings.json`.
+New large or generated path? List it here and deny `Read` on it in `.claude/settings.json`.
 
 ## Stack and commands
 
