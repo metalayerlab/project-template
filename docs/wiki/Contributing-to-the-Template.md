@@ -53,6 +53,8 @@ Before a cut in categories 4–8, measure it. Render two projects, one with the 
 
 Core files read a layer with `[% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]`, then `[[ layer.test ]]` and `[% include 'layers/' ~ language ~ '/ci/jobs.yml.jinja' %]`. The `tests/test_layers.py` checks fail if language tooling lands in a core file, or if a layer is missing a value or fragment the core uses.
 
+A layer value may be empty (`layers/none/` leaves nearly all of them empty). The core then skips the line or row that uses it: guard on the **value** (`[% if layer.gen_wiki %]`), never on the language (`[% if language == 'none' %]`). A Python render must not change when you add a guard.
+
 ## Adding a language layer
 
 TypeScript/Node is the next planned layer. Start from a copy of `layers/python/` and rewrite each value and fragment. The full contract (every `layer.*` value, every fragment, the gated whole files, questions and test variants) is in the template's `layers/README.md`, and `uv run pytest tests/test_layers.py` lists whatever is still missing. Start with a design record in the template's `docs/design/`.

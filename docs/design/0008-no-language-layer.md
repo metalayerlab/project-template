@@ -59,14 +59,16 @@ A real layer directory, so `test_layers.py` checks it like any other (it globs `
 Every required fragment exists. Most render nothing (`ci/jobs.yml`, `dependabot.yml`, `pre-commit/hooks.yaml`,
 `bootstrap.sh`, `docker/*`, `ignore/*`, `systemd/*`). The rest are short generic text: `agents/*`, `copilot.md`,
 `ai/stack-summary.txt`, `readme/development.md` and `wiki/*` say that the project has no language layer and
-that its commands live in `scripts/check.sh`. `ci/jobs.yml` runs `sh scripts/check.sh` as the test job.
+that its commands live in `scripts/check.sh`. `ci/jobs.yml` runs `sh scripts/check.sh` as the test job, and
+a version job checks that `version.txt` matches `.release-please-manifest.json`.
 
 ### The core skips empty values
 
 Where a layer value can be empty, the core guards on the **value**, not the language:
 `[% if layer.gen_wiki %]…[% endif %]`. Most guards are in `AGENTS.md` (the Stack table, Definition of done,
 Don't read), the PR template, `Contributing.md` and `.claude/settings.json`. For Python every value is set,
-so its output doesn't change, and `test_render.py` gets a check that a Python variant matches v0.1.10.
+so its output doesn't change: every Python variant rendered identically to v0.1.10 when this was built
+(only `_commit` in `.copier-answers.yml` differed).
 `layers/README.md` documents which values may be empty.
 
 ### Gated whole files
@@ -75,13 +77,15 @@ so its output doesn't change, and `test_render.py` gets a check that a Python va
   `_skip_if_exists`). It is where the project puts its own lint and test commands. The stub prints
   `scripts/check.sh: no checks defined yet` and exits 0, so the first CI run is green.
   `AGENTS.md`'s Definition of done runs it, so an assistant sees the placeholder and is told to fill it.
-- `[% if language == 'none' %]version.txt[% endif %].jinja`: `0.1.0`, project-owned (release-please bumps
-  it, like `.release-please-manifest.json`).
+- `[% if language == 'none' %]version.txt[% endif %].jinja`: `0.0.0`, matching the manifest (the first
+  release is still `0.1.0`, from `initial-version`). Project-owned: release-please bumps it.
 
 ### Other questions
 
 - `kind` is not asked (`when: "[[ language != 'none' ]]"`) and its default becomes
-  `"[[ 'other' if language == 'none' else 'service' ]]"`. `other` is not a choice anyone can pick.
+  `"[[ 'other' if language == 'none' else 'service' ]]"`. Copier checks a hidden default against the
+  choices, so `other` is a choice, disabled by a validator unless `language` is `none`. A Python
+  project's interactive prompt shows it greyed out.
   It makes `has_cli` false and skips `port`, `extra_ports`, `health_path`, `contrib`, `puid_pgid` and `timezone`.
 - `container_image` is not asked for `other`, and is false. An image needs a builder stage, and a builder
   stage needs a layer.
@@ -93,7 +97,8 @@ so its output doesn't change, and `test_render.py` gets a check that a Python va
 
 - A `none` variant in `tests/test_render.py` and `.github/workflows/template-ci.yml`. It runs its own
   Definition of done, as the other variants do.
-- The Python byte-for-byte check above.
+- `test_none_checks`: `scripts/check.sh` runs and prints its one line, `version.txt` is `0.0.0`, and
+  `AGENTS.md` has no empty commands. `test_kind_other_needs_language_none`: `kind: other` with Python fails.
 - `FORBIDDEN` in `test_layers.py` is unchanged: `none` has no tools to forbid.
 
 ## Alternatives considered
@@ -116,9 +121,12 @@ so its output doesn't change, and `test_render.py` gets a check that a Python va
 - A project in any language gets the core, and keeps receiving its fixes.
 - Its guarantees are weaker. Nothing is linted or tested until someone fills `scripts/check.sh`. The stub
   says so on every run.
-- **Moving to a real layer:** `copier update -d language=python`, then answer `kind`. The layer's files
-  appear. `scripts/check.sh` and `version.txt` stay because they're project-owned: delete them, and carry the
-  version into the new manifest. Updating-from-the-Template documents this.
+- **Moving to a real layer:** `copier update --trust -d language=python -d kind=cli`. Tested from a
+  scratch tag: no conflicts, and the new project passes its checks. The layer's files appear. Copier
+  **deletes** `scripts/check.sh` and `version.txt`, project edits and all. Move their commands into the new
+  layer's tools first; the old script is still in git history. The project-owned wiki pages keep their
+  no-layer text, and `check-wiki.py` names the new pages to link from `_Sidebar.md`.
+  Updating-from-the-Template documents this.
 - The layer contract changes: a value may be empty, and the core must guard every value that can be.
   A future layer can rely on this too (no typechecker, say).
 - This is a `feat:` change, not breaking: the default and the Python output are unchanged.

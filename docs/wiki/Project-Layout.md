@@ -14,13 +14,13 @@ AGENTS.md  CLAUDE.md  GEMINI.md          instructions for AI assistants (AGENTS.
 README.md  CONTRIBUTING.md  SECURITY.md  LICENSE  CHANGELOG.md  TODO.md
 src/<pkg>/            __init__ (version)  config (settings)  cli (Typer)  api (FastAPI)  __main__
 tests/unit/  tests/integration/  tests/conftest.py
-scripts/              bootstrap.sh  check-wiki.py  gen-wiki.py  check-manifests.sh  check-docs-secrets.sh  [check-personal-data.py]
+scripts/              bootstrap.sh  check-wiki.py  gen-wiki.py  check-manifests.sh  check-docs-secrets.sh  [check-personal-data.py]  [check.sh]
 docs/wiki/            the project wiki + .standard.toml
 docs/design/          design records: README.md (the index), 0000-template.md
 docs/ai/              prompts.md  review-checklist.md
 contrib/              <name>.example.yaml  docker/  k8s/  systemd/
 Dockerfile  docker/entrypoint.sh  .dockerignore
-pyproject.toml  uv.lock  release-please-config.json  .release-please-manifest.json  .copier-answers.yml
+pyproject.toml  uv.lock  [version.txt]  release-please-config.json  .release-please-manifest.json  .copier-answers.yml
 .gitignore  .gitleaks.toml  .markdownlint-cli2.yaml  .pre-commit-config.yaml  .editorconfig
 ```
 
@@ -29,7 +29,7 @@ pyproject.toml  uv.lock  release-please-config.json  .release-please-manifest.js
 | Owner | Files | On `copier update` |
 |---|---|---|
 | **Template** | `.github/workflows/`, `scripts/`, `docs/wiki/.standard.toml`, `docs/wiki/Release-Process.md`, `docs/ai/`, lint configs, `Dockerfile`, `docker/` | Updated (three-way merge; local edits survive or conflict) |
-| **Project** | `src/`, `tests/`, every other `docs/wiki/` page, `CHANGELOG.md`, `TODO.md`, `contrib/*.example.yaml` | Never touched again after the first copy (`_skip_if_exists`) |
+| **Project** | `src/`, `tests/`, `scripts/check.sh` and `version.txt` (`language: none`), every other `docs/wiki/` page, `CHANGELOG.md`, `TODO.md`, `contrib/*.example.yaml` | Never touched again after the first copy (`_skip_if_exists`) |
 | **Shared** | `README.md`, `AGENTS.md`, `pyproject.toml`, `contrib/*/` manifests | Merged: template changes apply on top of yours, and clashes become conflict markers |
 | **Machines** | `CHANGELOG.md` entries, the version, `.release-please-manifest.json` (release-please); `.copier-answers.yml` (Copier); generated wiki sections (`gen-wiki.py`) | Never edited by hand |
 

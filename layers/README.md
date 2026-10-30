@@ -1,7 +1,8 @@
 # Language layers
 
-The template is a **language-agnostic core** plus one **layer** per language. Python is the only layer so
-far, and TypeScript/Node is next. `tests/test_layers.py` enforces the boundary: core files may not contain
+The template is a **language-agnostic core** plus one **layer** per language. Python is the only real layer
+so far, and TypeScript/Node is next. `none` is the layer for a language without one: every value is defined,
+most of them empty (design record 0008). `tests/test_layers.py` enforces the boundary: core files may not contain
 language tooling, and every layer must provide everything the core asks for.
 
 ## Where things live
@@ -53,6 +54,11 @@ A layer `layers/<lang>/` provides:
 | `release_lock_note` | `. A follow-up job refreshes uv.lock…` (may be `''`) | Release-Process |
 | `container_base`, `container_bin_dir`, `container_bin` | `python:3.13-slim`, `/opt/venv/bin`, … | Dockerfile, docker/entrypoint.sh |
 | `systemd_upgrade` | `` `uv pip install --python /opt/<name> …` `` | Deployment |
+
+**Empty values.** A value may be `''` (or `[]` for `noread`) when the language has no such step. The core
+guards every value that can be empty on the value itself, `[% if layer.typecheck %]…[% endif %]`, never on
+`language`. `name`, `code_lang`, `release_type`, `version_file` and `test` are never empty: `test` is the
+one command the Definition of done always runs.
 
 ### 2. Fragments, by area (paths relative to `layers/<lang>/`)
 
