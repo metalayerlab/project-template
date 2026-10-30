@@ -21,7 +21,7 @@ Single source of instructions for AI assistants; the tool files point here. Reas
 
 ## Don't read
 
-- `[[ layer.lock_file ]]` (use `[[ layer.deps_query ]]`), `CHANGELOG.md` (use `git log`), [% for d in layer.noread %]`[[ d ]]`, [% endfor %]`.graphify/`
+- [% if layer.lock_file %]`[[ layer.lock_file ]]` (use `[[ layer.deps_query ]]`), [% endif %]`CHANGELOG.md` (use `git log`), [% for d in layer.noread %]`[[ d ]]`, [% endfor %]`.graphify/`
 - Generated wiki blocks (`<!-- generated:start/end -->`): the code is the source.
 
 New large or generated path? List it here and deny `Read` on it in `.claude/settings.json`.
@@ -32,12 +32,26 @@ New large or generated path? List it here and deny `Read` on it in `.claude/sett
 
 | Task | Command |
 |---|---|
+[% if layer.install %]
 | Install | `[[ layer.install ]]` |
+[% endif %]
+[% if layer.add_dependency %]
 | Add a dependency | [[ layer.add_dependency ]] |
+[% endif %]
+[% if layer.lint_fix %]
 | Lint (fix) / format | `[[ layer.lint_fix ]]` / `[[ layer.format ]]` |
+[% endif %]
+[% if layer.typecheck %]
 | Type check (strict) | `[[ layer.typecheck ]]` |
+[% endif %]
+[% if layer.test_integration %]
 | Tests (80% floor) / integration | `[[ layer.test ]]` / `[[ layer.test_integration ]]` |
+[% else %]
+| Checks and tests | `[[ layer.test ]]` |
+[% endif %]
+[% if layer.gen_wiki %]
 | Regenerate wiki sections | `[[ layer.gen_wiki ]]` |
+[% endif %]
 | Check the wiki | `python3 scripts/check-wiki.py` |
 [% if container_image or contrib %]
 | Check manifests | `scripts/check-manifests.sh` |
@@ -85,10 +99,16 @@ T = template-owned: never edit here; fixes arrive by the weekly update PR. Bug i
 ## Definition of done
 
 ```sh
+[% if layer.lint %]
 [[ layer.lint ]] && [[ layer.format_check ]]
+[% endif %]
+[% if layer.typecheck %]
 [[ layer.typecheck ]]
+[% endif %]
 [[ layer.test ]]
+[% if layer.gen_wiki %]
 [[ layer.gen_wiki ]] --check
+[% endif %]
 python3 scripts/check-wiki.py
 [% if container_image or contrib %]
 scripts/check-manifests.sh

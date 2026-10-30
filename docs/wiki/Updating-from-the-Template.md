@@ -23,6 +23,16 @@ The working tree must be clean first. `--trust` re-runs `scripts/bootstrap.sh`, 
 
 When your change and the template's touch the same lines, Copier leaves `<<<<<<< before updating` / `>>>>>>> after updating` markers in the file (`--conflict inline`, the workflow's default). Search the PR diff for `<<<<<<<`, resolve each one, and commit. A file you deleted that the template still ships comes back, so delete it again if it's really unwanted, and say why in the PR.
 
+## Moving from `none` to a language layer
+
+A project made with `language: none` moves to a layer when one exists:
+
+```sh
+uvx copier update --trust -d language=python -d kind=cli   # and that layer's questions
+```
+
+Copier adds the layer's files and **deletes** `scripts/check.sh` and `version.txt`, your edits included. Before you update, move the commands from `check.sh` into the new layer's tools (they are still in git history afterwards). The version moves into the layer's manifest file (for Python, `pyproject.toml`), and must match `.release-please-manifest.json`. Your wiki pages keep their old text, so update Quick-Start, Contributing and Testing-Guide, and link the new pages from `_Sidebar.md` (`check-wiki.py` names them).
+
 If you keep resolving the same conflict, the change probably belongs in the template: see [Contributing to the Template](Contributing-to-the-Template).
 
 ## Reporting a template problem
