@@ -27,16 +27,16 @@ The README's "For AI assistants" section lists the same table for humans. Person
 
 ## Context budget
 
-Every assistant session pays for what it reads, so the AI-facing files are kept lean ([design record 0002](https://github.com/metalayerlab/project-template/blob/main/docs/design/0002-context-budget.md)):
+Every assistant session pays for what it reads, so the AI-facing files are kept lean (design records [0002](https://github.com/metalayerlab/project-template/blob/main/docs/design/0002-context-budget.md) and [0006](https://github.com/metalayerlab/project-template/blob/main/docs/design/0006-context-budget-review.md)):
 
 | Measure | Effect |
 |---|---|
-| AGENTS.md is terse: imperative rules and tables, the reasons in the wiki | ~1,400 tokens per session, for every tool |
+| AGENTS.md is terse: imperative rules and tables, the reasons in the wiki | ~1,500 tokens per session, for every tool |
 | A "Don't read" list (lock file, CHANGELOG, caches, generated blocks), plus `Read` denies in `.claude/settings.json` | avoids one-off reads of 10k–40k tokens (`uv.lock` alone is ~37k) |
 | `docs/design/README.md` indexes every record (CI-checked) | the assistant reads the index, not every record |
 | Pointer files only point; the README's AI section is a table of entry points | no double loading in Cursor or Copilot |
 | Template-owned wiki pages tell assistants whether to read on | fewer whole-page reads |
-| `[context_budget]` in each project's `docs/wiki/.standard.toml`, enforced by `check-wiki.py` in project CI | AGENTS.md ≤ 8,000 characters, the pointer files 300–700. The template's own tests require the skeleton to use at most 75%, leaving room for the project |
+| `[context_budget]` in each project's `docs/wiki/.standard.toml`, enforced by `check-wiki.py` in project CI | AGENTS.md ≤ 9,000 characters, the pointer files 300–700. The template's own tests require the skeleton to use at most 75%, leaving room for the project |
 | AGENTS.md, the review checklist and the Contributing page tell assistants and reviewers to keep it that way | the method carries on after the first commit |
 
 ## Guard rails

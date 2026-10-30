@@ -48,7 +48,7 @@ Each page starts from a skeleton: the fixed headings, prefilled text where it is
 | A relative link to a repo path, which breaks once published (use a full URL) | |
 | Unbalanced `generated:start`/`end` markers | |
 | A `docs/design/NNNN-*.md` record missing from the index (`docs/design/README.md`) | |
-| An always-loaded AI instruction file over `[context_budget]` (AGENTS.md 8,000 characters, pointer files 300–700) | |
+| An always-loaded AI instruction file over `[context_budget]` (AGENTS.md 9,000 characters, pointer files 300–700) | |
 
 markdownlint runs too, with line length, inline HTML and first-line-heading turned off.
 

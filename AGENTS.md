@@ -58,7 +58,8 @@ pytest's temporary directories: render a variant yourself instead.
   change. Propose it, with your recommendation, or say "none".
 - Keep the generated code small. It's a skeleton for AI-assisted build-out, not a framework.
 - AI-facing files have a budget: `[context_budget]` in `template/docs/wiki/.standard.toml`, enforced in every
-  project's CI. The skeleton may use 75% of it (`tests/test_render.py`). Raising it needs a design record.
+  project's CI. The skeleton may use 75% of it (`tests/test_render.py`). Raising it needs a design record. A change to
+  `template/AGENTS.md.jinja` states the characters it adds or frees and each cut's category (wiki: Contributing to the Template).
 
 ## Definition of done
 
