@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from [[ package_name ]] import __version__
+from [[ package_name ]] import __description__, __version__
 from [[ package_name ]].config import Config
 
 
@@ -17,7 +17,7 @@ def create_app(config: Config) -> FastAPI:
     app = FastAPI(
         title="[[ project_name ]]",
         version=__version__,
-        description="[[ description ]]",
+        description=__description__,
     )
     app.state.config = config
 

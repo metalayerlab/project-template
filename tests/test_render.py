@@ -34,6 +34,9 @@ ROOT = Path(__file__).resolve().parents[1]
 VARIANTS: dict[str, dict[str, object]] = {
     "service": {
         "kind": "service",
+        # Long, quoted and with a backslash: it lands in Python strings and docstrings (#52).
+        "description": 'A demo service: a long, "quoted" description with a back\\slash and a'
+        " well-known hyphenated-word, long enough to wrap in every generated file that holds it",
         "puid_pgid": True,
         "dependabot_automerge": "minor",
         "extra_ports": [3128],
@@ -334,7 +337,7 @@ def test_repository_metadata(project: Path, tmp_path: Path) -> None:
     want = tomllib.loads((project / ".github/repository.toml").read_text())
     variant = VARIANTS[project.name.removeprefix("demo-")]
     topics = [variant.get("language", "python"), variant["kind"]] if "kind" in variant else []
-    assert want == {"description": f"A demo {project.name.removeprefix('demo-')}",
+    assert want == {"description": variant.get("description", f"A demo {project.name.removeprefix('demo-')}"),
                     "homepage": f"https://github.com/metalayerlab/{project.name}/wiki", "topics": topics}  # fmt: skip
 
     (tmp_path / "gh").write_text(FAKE_GH)
