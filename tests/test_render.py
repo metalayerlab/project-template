@@ -405,6 +405,18 @@ def test_docs_secrets_match_ci(project: Path, tmp_path: Path) -> None:
     assert result.returncode == 1 and "MD014" in result.stdout + result.stderr
 
 
+def test_labels_are_created(project: Path) -> None:
+    """Copier copies files, not labels: a workflow creates each label the checks use (#56)."""
+    files = [*(project / ".github/workflows").glob("*.yml"), project / "scripts/check-wiki.py"]
+    text = "\n".join(f.read_text() for f in files)
+    use = r"--label ([\w-]+)|^\s+labels: ([\w-]+)|labels\.\*\.name, '([\w-]+)'"
+    used = set(re.findall(use, text, re.M))
+    used = {name for group in used for name in group if name}
+    created = set(re.findall(r"gh label create ([\w-]+)", text))
+    assert {"no-docs-needed", "template-update"} <= used
+    assert used <= created, used - created
+
+
 def test_workflows_lint(project: Path) -> None:
     if not shutil.which("actionlint") and not shutil.which("docker"):
         pytest.skip("neither actionlint nor docker available")

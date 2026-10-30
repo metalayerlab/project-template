@@ -20,9 +20,9 @@ git add -A && git commit -m "chore: initial commit from project-template"
 
 ```sh
 gh repo create metalayerlab/my-project --private --source . --push
-gh label create no-docs-needed --color BFD4F2 --description "Reviewer: nothing user-visible changed"
-gh label create template-update --color C5DEF5 --description "copier update from project-template"
 ```
+
+The push runs `wiki.yml`, which creates the `no-docs-needed` label; `template-update.yml` creates `template-update` before it uses it.
 
 Then, once per repository, in the GitHub settings:
 

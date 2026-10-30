@@ -29,7 +29,7 @@ Projects that predate the template can adopt it. Moving each onto it gives it th
 4. **Retire the old machinery:** `scripts/bump-version.sh`, `.github/release-template.md`, `src/<pkg>/__version__.py` (change its imports to `from <pkg> import __version__`), `requirements*.txt`, and repo-root compose files (moved to `contrib/docker/`).
 5. **Seed release-please** with the current release: set `.release-please-manifest.json` and the `pyproject.toml` version to the latest `vX.Y.Z` tag. The existing `CHANGELOG.md` stays, and new entries go on top.
 6. **Make the checks pass:** `uv sync`, then the Definition of done. A backlog of lint, type or coverage failures is fixed in follow-up PRs. Don't relax the template's settings. Where you must, add a temporary per-module mypy override, tracked in `TODO.md`.
-7. **GitHub settings,** as in [Quick Start](Quick-Start#create-the-github-repository): squash merge on the PR title, the ruleset with the new required checks, and the labels. Put the repository's current topics in `.github/repository.toml` before running `python3 scripts/repo-metadata.py`: it removes topics the file doesn't list (`--check` shows them). Once `wiki.yml` publishes, archive the old `<name>.wiki` clone.
+7. **GitHub settings,** as in [Quick Start](Quick-Start#create-the-github-repository): squash merge on the PR title, and the ruleset with the new required checks (the workflows create their labels). Put the repository's current topics in `.github/repository.toml` before running `python3 scripts/repo-metadata.py`: it removes topics the file doesn't list (`--check` shows them). Once `wiki.yml` publishes, archive the old `<name>.wiki` clone.
 
 ## Common situations
 

@@ -36,7 +36,7 @@ The lock-refresh job didn't run, or was overwritten when release-please force-pu
 
 ### "Docs updated with the code" fails, but the change is internal
 
-A reviewer adds the `no-docs-needed` label, and the check is skipped, which counts as passed. If it fires on a path that is never user-facing, change `[docs_touched] watch` in project-template, not locally.
+A reviewer adds the `no-docs-needed` label, and the check is skipped, which counts as passed. No such label? `wiki.yml` creates it on each push to `main`. A project updated before it did can update from the template, or run `gh label create no-docs-needed` once. If it fires on a path that is never user-facing, change `[docs_touched] watch` in project-template, not locally.
 
 ### `generated section is stale`
 
