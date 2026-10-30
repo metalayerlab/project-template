@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9](https://github.com/metalayerlab/project-template/compare/v0.1.8...v0.1.9) (2026-10-30)
+
+
+### ✨ Features
+
+* checks print one line when they pass, and assistants keep sessions terse ([#38](https://github.com/metalayerlab/project-template/issues/38)) ([bd6ba32](https://github.com/metalayerlab/project-template/commit/bd6ba3241bbe22afc8f72f97edfddae58c1ba25a))
+
 ## [0.1.8](https://github.com/metalayerlab/project-template/compare/v0.1.7...v0.1.8) (2026-10-30)
 
 
