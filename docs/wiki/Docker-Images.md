@@ -2,6 +2,17 @@
 
 `ghcr.io/<owner>/<project>`, built by `docker-build.yml` from a multi-stage Dockerfile: a builder installs from the lock file (Python: uv into `/opt/venv`; TypeScript: `npm ci`, then `dist/` and the runtime dependencies into `/app`), and a slim runtime runs as uid 1000 with a `HEALTHCHECK` and OCI labels (version, revision and created, passed as build args).
 
+## System packages
+
+A dependency that builds from source needs compilers and headers, and some projects need a library or tool at run time. List them, as Debian/Ubuntu apt package names, in the project-owned `contrib/system-packages.txt`:
+
+```text
+build: gcc pkg-config libfuse3-dev
+runtime: fuse3 libfuse3-3
+```
+
+The `build:` packages are installed in the builder stage, and in CI's test job before the dependencies are installed (see [CI Pipeline](CI-Pipeline)). The `runtime:` packages are installed in the runtime stage, so they are in the image. Both lists are empty by default, and an empty list installs nothing. Repeat a line to add more. Both base images (`python:<v>-slim`, `node:<v>-slim`) are Debian, so the names are Debian's. To run from source, install the `build:` packages yourself; to deploy without the image (systemd), the `runtime:` ones.
+
 ## Tags
 
 | Trigger | Tags |

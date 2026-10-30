@@ -15,6 +15,15 @@
           node-version: ${{ matrix.node-version }}
           cache: npm
 
+      # The `build:` packages in contrib/system-packages.txt (project-owned), for
+      # dependencies that build from source. None listed: nothing is installed.
+      - name: System packages
+        run: |
+          if grep -q '^build:.*[^[:space:]]' contrib/system-packages.txt; then
+            sudo apt-get update
+            sed -n 's/^build://p' contrib/system-packages.txt | xargs sudo apt-get install -y --no-install-recommends
+          fi
+
       # npm ci fails if package-lock.json is out of step with package.json: the lock check.
       # It also builds dist/ (the prepare script).
       - name: Install (from the lock file)

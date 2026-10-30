@@ -1,7 +1,4 @@
-# ============================================================
-# Stage 1: builder (dependencies, then the package, into /opt/venv)
-# ============================================================
-FROM python:[[ python_version ]]-slim AS builder
+# Dependencies, then the package, into /opt/venv
 
 COPY --from=ghcr.io/astral-sh/uv:0.13.6 /uv /bin/uv
 

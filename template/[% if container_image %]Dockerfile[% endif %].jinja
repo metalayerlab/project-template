@@ -2,6 +2,22 @@
 # [[ project_name ]]: multi-stage build. Template-owned skeleton; project-specific
 # stages (extra binaries, assets) go between the builder and the runtime stage.
 
+# ============================================================
+# Stage 1: builder
+# ============================================================
+FROM [[ layer.container_base ]] AS builder
+
+# The `build:` packages in contrib/system-packages.txt (project-owned): compilers
+# and headers for dependencies that build from source. None listed: nothing runs
+# hadolint ignore=DL3008,SC2046
+RUN --mount=type=bind,source=contrib/system-packages.txt,target=/tmp/system-packages.txt \
+    set -- $(sed -n 's/^build://p' /tmp/system-packages.txt); \
+    if [ $# -gt 0 ]; then \
+        apt-get update \
+        && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "$@" \
+        && rm -rf /var/lib/apt/lists/*; \
+    fi
+
 [% include 'layers/' ~ language ~ '/docker/builder.Dockerfile.jinja' %]
 # ============================================================
 # Stage 2: runtime
@@ -20,6 +36,17 @@ LABEL org.opencontainers.image.title="[[ project_name ]]" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${REVISION}" \
       org.opencontainers.image.created="${CREATED}"
+
+# The `runtime:` packages in contrib/system-packages.txt: libraries and tools the
+# project needs at run time. None listed: nothing runs
+# hadolint ignore=DL3008,SC2046
+RUN --mount=type=bind,source=contrib/system-packages.txt,target=/tmp/system-packages.txt \
+    set -- $(sed -n 's/^runtime://p' /tmp/system-packages.txt); \
+    if [ $# -gt 0 ]; then \
+        apt-get update \
+        && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "$@" \
+        && rm -rf /var/lib/apt/lists/*; \
+    fi
 
 [% include 'layers/' ~ language ~ '/docker/runtime.Dockerfile.jinja' %]
 RUN useradd --system --create-home --shell /usr/sbin/nologin --uid 1000 [[ project_name ]]

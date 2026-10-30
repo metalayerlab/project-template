@@ -36,6 +36,7 @@ _skip_if_exists:
   - version.txt
   - "tests/**"
   - "contrib/*.example.yaml"
+  - contrib/system-packages.txt
   - docs/design/README.md
   - docs/wiki/Home.md
   - docs/wiki/Introduction.md
