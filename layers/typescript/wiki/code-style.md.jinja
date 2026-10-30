@@ -1,0 +1,5 @@
+- ESLint (typescript-eslint, strict and type-checked) and Prettier (width 100) decide style; `tsc --strict` decides typing. Don't argue with them in review.
+- Comments explain *why*. Only the CLI prints[% if kind == 'service' %]; the service logs through Fastify's logger[% endif %].
+[% if has_cli %]
+- Settings go through `SETTINGS` in `config.ts`. Secrets come from `_FILE`, and are never logged.
+[% endif %]

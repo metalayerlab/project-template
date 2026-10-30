@@ -1,0 +1,9 @@
+# The base image's own uid 1000 user, `node`, makes way for the project's
+RUN userdel --remove node
+COPY --from=builder /app/package.json /app/
+COPY --from=builder /app/node_modules /app/node_modules/
+COPY --from=builder /app/dist /app/dist/
+COPY --from=builder /app/bin /app/bin/
+ENV PATH="/app/bin:$PATH" \
+    NODE_ENV=production
+

@@ -1,6 +1,6 @@
 # Docker Images
 
-`ghcr.io/<owner>/<project>`, built by `docker-build.yml` from a multi-stage Dockerfile: a uv builder installs from the lock file into `/opt/venv`, and a slim runtime runs as uid 1000 with a `HEALTHCHECK` and OCI labels (version, revision and created, passed as build args).
+`ghcr.io/<owner>/<project>`, built by `docker-build.yml` from a multi-stage Dockerfile: a builder installs from the lock file (Python: uv into `/opt/venv`; TypeScript: `npm ci`, then `dist/` and the runtime dependencies into `/app`), and a slim runtime runs as uid 1000 with a `HEALTHCHECK` and OCI labels (version, revision and created, passed as build args).
 
 ## Tags
 

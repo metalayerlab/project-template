@@ -1,0 +1,6 @@
+```sh
+git clone [[ repo_url ]] && cd [[ project_name ]]
+npm ci                                   # Node.js >= [[ node_version ]]
+uv tool install pre-commit && pre-commit install -t pre-commit -t commit-msg
+npm test                                 # all green before you start
+```

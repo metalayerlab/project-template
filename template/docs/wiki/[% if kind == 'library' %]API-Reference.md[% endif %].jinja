@@ -1,8 +1,9 @@
+[% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]
 # API Reference
 
 ## Public API
 
-<!-- guidance: every public name exported from [[ package_name ]] (its __init__): signature, what it does, an example, what it raises. Anything not listed here is internal. -->
+<!-- guidance: every public name exported from [[ layer.public_api ]]: signature, what it does, an example, what it raises. Anything not listed here is internal. -->
 
 ## Stability
 

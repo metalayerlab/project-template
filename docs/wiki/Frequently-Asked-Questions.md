@@ -22,7 +22,11 @@ Yes. Most read `AGENTS.md`. For any other, point it at `AGENTS.md`, or paste the
 
 ## Does it support languages other than Python?
 
-The core is language-agnostic. Python is the only layer so far, and TypeScript/Node is next ([Contributing to the Template](Contributing-to-the-Template#adding-a-language-layer)).
+Yes: TypeScript on Node.js (`language: typescript`), and any other language with `language: none`, which gives the core without a toolchain. The core is language-agnostic, and a new layer is a copy of an existing one ([Contributing to the Template](Contributing-to-the-Template#adding-a-language-layer)).
+
+## Where is the front-end (web app) kind?
+
+Not yet. A front end uses the TypeScript toolchain, so it will be a `kind` (`web`: a Vite and React single-page app in a static image), not another language layer ([design 0009](https://github.com/metalayerlab/project-template/blob/main/docs/design/0009-typescript-layer.md)). It needs its own design record first.
 
 ## Why no Helm chart?
 

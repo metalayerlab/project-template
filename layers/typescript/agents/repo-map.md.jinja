@@ -1,0 +1,2 @@
+| `src/` | The package: `index.ts` (public API)[% if has_cli %], `config.ts`, `cli.ts` (commander)[% endif %][% if kind == 'service' %], `api.ts` (Fastify)[% endif %] |
+| `tests/unit/`, `tests/integration/` | vitest; integration is opt-in (`RUN_INTEGRATION=1`) |

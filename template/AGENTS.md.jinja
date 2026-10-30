@@ -92,7 +92,7 @@ T = template-owned: never edit here; fixes arrive by the weekly update PR. Bug i
 - Credit an AI in commits or PRs: no co-author trailers, bylines or session links.
 - Edit inside generated wiki blocks: regenerate them.
 - Commit secrets, real hostnames, IPs or personal data. Use `example.org` and `192.0.2.0/24`.
-- Weaken a check: lower the coverage floor, add an unexplained `noqa`/`type: ignore`, skip or xfail a test, loosen the sandbox or `securityContext`, add `continue-on-error`. If a check is wrong, say so.
+- Weaken a check: lower the coverage floor, add an unexplained [[ layer.suppressions ]], skip or xfail a test, loosen the sandbox or `securityContext`, add `continue-on-error`. If a check is wrong, say so.
 - Add the `no-docs-needed` label (reviewers only), telemetry, or network calls at import time.
 - Grow this file or the tool files past `[context_budget]` (CI-checked): be terse; reasons go in the wiki.
 

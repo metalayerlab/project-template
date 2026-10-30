@@ -1,0 +1,18 @@
+# ============================================================
+# Stage 1: builder (dependencies, then dist/, then only the runtime dependencies)
+# ============================================================
+FROM node:[[ node_version ]]-slim AS builder
+
+WORKDIR /app
+
+# Dependencies first, so a source change doesn't reinstall them
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts --no-audit --no-fund
+
+COPY tsconfig.json tsconfig.build.json ./
+COPY src/ ./src/
+RUN npm run build \
+    && npm prune --omit=dev --no-audit --no-fund \
+    && chmod 0755 dist/cli.js \
+    && mkdir bin && ln -s ../dist/cli.js bin/[[ project_name ]]
+

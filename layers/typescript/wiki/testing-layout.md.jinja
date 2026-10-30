@@ -1,0 +1,6 @@
+| `tests/unit/` | Fast and offline: no network, no real external systems. Most tests. |
+| `tests/integration/` | Real dependencies; run only by `npm run test:integration` (`RUN_INTEGRATION=1`) |
+[% if has_cli %]
+| `tests/setup.ts` | Runs before every test file: no `[[ env_prefix ]]*` leakage from your shell |
+| `tests/helpers.ts` | Shared helpers: `tempDir`, `writeConfig` |
+[% endif %]

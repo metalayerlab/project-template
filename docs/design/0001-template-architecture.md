@@ -1,6 +1,6 @@
 # 0001: Template architecture
 
-Status: Approved
+Status: Implemented
 Date: 2026-10-27
 Authors: Stephen Cox; drafted by Claude (Opus 5.5)
 
@@ -19,7 +19,7 @@ repository.
 - **release-please** for versioning and CHANGELOG: a Release PR from Conventional Commit PR titles
   (squash-merged and linted). It replaces `bump-version.sh` and the git-log/grep changelog.
 - **A language-agnostic core plus language layers.** Python first (uv, hatchling, ruff, mypy strict,
-  pytest with an 80% floor), with TypeScript/Node next. The contract is in `layers/README.md`.
+  pytest with an 80% floor), then TypeScript on Node.js (0009). The contract is in `layers/README.md`.
 - **A standardised wiki in each repository** (`docs/wiki/`): required pages and headings in
   `.standard.toml`, checked by a stdlib script, generated reference sections, docs-touched enforcement,
   strict mode on Release PRs, and a one-way publish to the GitHub wiki.
