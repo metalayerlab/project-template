@@ -24,6 +24,8 @@ Blank issues are off. Don't report a security problem in a public issue: contact
 
 When deciding whether a file is template-owned or project-owned (`_skip_if_exists`): make it project-owned only if projects must diverge from it. Project-owned files never receive another fix.
 
+The template's outstanding work is in its root `TODO.md`, which also lists ideas that were rejected and why. A design record that is Approved but not fully implemented gets a `TODO.md` line or an issue for what's left, so it is tracked rather than only described.
+
 ## Changing AGENTS.md
 
 A project's `AGENTS.md` is read in every assistant session, so the skeleton may use only 75% of its budget (6,750 of 9,000 characters, `tests/test_render.py`). A PR that changes `template/AGENTS.md.jinja` says how many characters it adds or frees, and the category of each cut ([design record 0006](https://github.com/metalayerlab/project-template/blob/main/docs/design/0006-context-budget-review.md)).

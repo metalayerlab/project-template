@@ -2,6 +2,8 @@
 
 Why the template is the way it is. Copy [0000-template.md](../../template/docs/design/0000-template.md) to
 `NNNN-short-title.md` and add a line below. **Read this index first**, then only the records you need.
+A record that is Approved but not yet Implemented has its remaining work in the root
+[`TODO.md`](../../TODO.md) or an issue.
 
 | # | Title | Status | Decision in one line |
 |---|---|---|---|

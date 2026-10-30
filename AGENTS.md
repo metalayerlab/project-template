@@ -16,6 +16,7 @@ get are in `template/AGENTS.md.jinja`.
 | `tests/test_layers.py` | Enforces the core/layer boundary |
 | `docs/wiki/` | This template's wiki (published to the GitHub wiki), checked by the same script projects use |
 | `docs/design/` | Design records for the template; `README.md` is the index (read it, not every record) |
+| `TODO.md` | The template's outstanding work and rejected ideas |
 
 ## Jinja in this template
 
@@ -59,6 +60,7 @@ pytest's temporary directories: render a variant yourself instead.
 - Reply tersely: the result, then what you need from the user. No preamble, recaps or restated plans.
 - Task done and the next is unrelated? Make sure the PR, `TODO.md` or a design record holds what's needed,
   then suggest a new session.
+- An Approved design record with work left gets a `TODO.md` line or an issue, not just wording in the record.
 - Keep the generated code small. It's a skeleton for AI-assisted build-out, not a framework.
 - AI-facing files have a budget: `[context_budget]` in `template/docs/wiki/.standard.toml`, enforced in every
   project's CI. The skeleton may use 75% of it (`tests/test_render.py`). Raising it needs a design record. A change to
