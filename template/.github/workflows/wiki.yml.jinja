@@ -53,6 +53,21 @@ jobs:
       - name: Watched paths changed without a docs/wiki/ change?
         run: python3 scripts/check-wiki.py --docs-touched "origin/${{ github.base_ref }}"
 
+  # Copier copies files, not labels: create the one docs-touched skips on, so a
+  # reviewer can add it. Its own job, so a repository without a wiki gets it too.
+  labels:
+    name: The no-docs-needed label exists
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh label create no-docs-needed --repo "$GITHUB_REPOSITORY" --force
+          --color BFD4F2 --description "Reviewer: nothing user-visible changed"
+
   publish:
     name: Publish to the GitHub wiki
     needs: check
