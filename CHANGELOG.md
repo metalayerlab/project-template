@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.11](https://github.com/metalayerlab/project-template/compare/v0.1.10...v0.1.11) (2026-10-30)
+
+
+### ✨ Features
+
+* a "None" language choice ([#44](https://github.com/metalayerlab/project-template/issues/44)) ([d6f2104](https://github.com/metalayerlab/project-template/commit/d6f2104f86d9762c030878fa6e9d36c5e5c131cf))
+
+
+### 🐛 Bug Fixes
+
+* a library's README links API Reference, not a page it doesn't have ([#45](https://github.com/metalayerlab/project-template/issues/45)) ([4c5e52b](https://github.com/metalayerlab/project-template/commit/4c5e52bc311b5eb1ffcfb864b2dda6313542fa97))
+
 ## [0.1.10](https://github.com/metalayerlab/project-template/compare/v0.1.9...v0.1.10) (2026-10-30)
 
 
