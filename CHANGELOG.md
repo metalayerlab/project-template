@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.12](https://github.com/metalayerlab/project-template/compare/v0.1.11...v0.1.12) (2026-10-30)
+
+
+### ✨ Features
+
+* a TypeScript language layer ([#50](https://github.com/metalayerlab/project-template/issues/50)) ([f1bf1e4](https://github.com/metalayerlab/project-template/commit/f1bf1e41fd217a94690931f4ca980f4e9456c329))
+
 ## [0.1.11](https://github.com/metalayerlab/project-template/compare/v0.1.10...v0.1.11) (2026-10-30)
 
 
