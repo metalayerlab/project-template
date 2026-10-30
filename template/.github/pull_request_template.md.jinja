@@ -23,7 +23,9 @@ AGENTS.md, the wiki, or project-template? Link the issue or PR. "None" is fine. 
 
 - [ ] Tests cover the change, and fail without it
 - [ ] `docs/wiki/` is updated (see AGENTS.md "Docs map"), or this has no user-visible effect
+[% if layer.gen_wiki %]
 - [ ] Generated wiki sections regenerated (`[[ layer.gen_wiki ]]`)
+[% endif %]
 - [ ] No secrets, personal data or real hostnames/IPs in code, tests or docs
 - [ ] New dependencies are justified below, and actually exist on the index
 - [ ] Template problem found? Linked project-template issue: 

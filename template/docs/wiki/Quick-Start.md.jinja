@@ -1,7 +1,7 @@
 [% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]
 # Quick Start
 
-From nothing to a working [[ project_name ]] in a few minutes. Everything else is in [% if has_cli %][In-Depth Configuration](In-Depth-Configuration)[% else %][API Reference](API-Reference)[% endif %][% if contrib %] and [Deployment](Deployment)[% endif %].
+From nothing to a working [[ project_name ]] in a few minutes. Everything else is in [% if has_cli %][In-Depth Configuration](In-Depth-Configuration)[% elif kind == 'other' %][Contributing](Contributing)[% else %][API Reference](API-Reference)[% endif %][% if contrib %] and [Deployment](Deployment)[% endif %].
 
 ## Prerequisites
 
@@ -23,6 +23,10 @@ docker pull [[ image ]]:latest
 ```sh
 [[ layer.install_cli ]]
 ```
+[% elif kind == 'other' %]
+```sh
+git clone [[ repo_url ]] && cd [[ project_name ]]
+```
 [% else %]
 ```sh
 [[ layer.install_lib ]]
@@ -42,6 +46,8 @@ docker exec [[ project_name ]] [[ project_name ]] config   # the effective confi
 [[ project_name ]] --help
 [[ project_name ]] config      # the effective configuration, and where each value came from
 ```
+[% elif kind == 'other' %]
+<!-- guidance: the first command a user runs, and its expected output. -->
 [% else %]
 ```[[ layer.code_lang ]]
 [[ layer.import_snippet ]]
@@ -54,6 +60,8 @@ docker exec [[ project_name ]] [[ project_name ]] config   # the effective confi
 
 [% if has_cli %]
 - [In-Depth Configuration](In-Depth-Configuration): every setting
+[% elif kind == 'other' %]
+- [Contributing](Contributing): building and checking it
 [% else %]
 - [API Reference](API-Reference): the public API
 [% endif %]

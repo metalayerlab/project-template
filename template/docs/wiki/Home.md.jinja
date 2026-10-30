@@ -8,8 +8,10 @@
 
 **Getting started**: [Introduction](Introduction) · [Quick Start](Quick-Start)
 
+[% if kind != 'other' %]
 **Using it**:[% if has_cli %] [In-Depth Configuration](In-Depth-Configuration) · [CLI Reference](CLI-Reference)[% endif %][% if kind == 'service' %] · [HTTP API Reference](HTTP-API-Reference)[% endif %][% if kind == 'library' %] [API Reference](API-Reference)[% endif %][% if contrib %] · [Deployment](Deployment)[% endif %]
 
+[% endif %]
 **Help**: [Troubleshooting](Troubleshooting) · [FAQ](Frequently-Asked-Questions) · [Security](Security)
 
 **Developers**: [Contributing](Contributing) · [Architecture Internals](Architecture-Internals) · [Testing Guide](Testing-Guide) · [Release Process](Release-Process)
