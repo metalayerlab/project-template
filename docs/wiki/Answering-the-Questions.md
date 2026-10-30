@@ -6,12 +6,12 @@ Copier asks these when you run `copier copy`. Pass answers non-interactively wit
 
 | Question | Default | Notes |
 |---|---|---|
-| `language` | `python` | The language layer. Only Python for now |
+| `language` | `python` | The language layer: `python`, or `none` for a language without a layer yet. `none` gives the core only (release-please, CI's secret scan and wiki checks, the wiki, AGENTS.md) and a project-owned `scripts/check.sh` for your own checks. It skips `kind` and every question after it up to `code_owners`, and builds no image ([design 0008](https://github.com/metalayerlab/project-template/blob/main/docs/design/0008-no-language-layer.md)) |
 | `project_name` | (none) | kebab-case. Used for the repo, image, CLI command, systemd unit and k8s namespace |
 | `package_name` | from `project_name` | The Python import name, snake_case |
 | `description` | (none) | One line. Appears in the README, pyproject, OCI labels and the wiki footer |
 | `github_owner` | `metalayerlab` | Organisation or user. Sets the image path and all links |
-| `kind` | `service` | `service`: long-running FastAPI app with health endpoints and a `serve` command. `cli`: a Typer command. `library`: import only, with no CLI, image or contrib |
+| `kind` | `service` | `service`: long-running FastAPI app with health endpoints and a `serve` command. `cli`: a Typer command. `library`: import only, with no CLI, image or contrib. Not asked for `language: none`, which is `other`: no generated code |
 | `python_version` | `3.13` | Minimum version: the Docker base image and the first CI matrix entry. CI also tests every newer supported version |
 | `port` | `8080` | service only |
 | `extra_ports` | `[]` | service only. Other TCP ports it listens on, e.g. `[3128]`: exposed by the image and published by Compose and Kubernetes ([Contrib Manifests](Contrib-Manifests)). Each is 1–65535, listed once, and not `port` |

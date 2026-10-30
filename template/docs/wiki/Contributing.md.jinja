@@ -42,7 +42,9 @@ This wiki's source is [`docs/wiki/`]([[ repo_url ]]/tree/main/docs/wiki), in the
 
 - Code and docs change in the same PR. AGENTS.md's "Docs map" says which page goes with which code, and CI fails a PR that changes watched paths without touching `docs/wiki/`. A reviewer, never the author, can add the `no-docs-needed` label when nothing user-visible changed.
 - The required pages and headings are in `docs/wiki/.standard.toml` (template-owned). Add pages freely, and link each one from `_Sidebar.md`.
+[% if layer.gen_wiki %]
 - Tables between `<!-- generated:start/end -->` markers come from the code: run `[[ layer.gen_wiki ]]`.
+[% endif %]
 - Link pages by name (`[Quick Start](Quick-Start)`), and repo files by full URL.
 - Check locally: `python3 scripts/check-wiki.py`.
 

@@ -31,6 +31,8 @@ _skip_if_exists:
   - .release-please-manifest.json
   - TODO.md
   - "src/**"
+  - scripts/check.sh
+  - version.txt
   - "tests/**"
   - "contrib/*.example.yaml"
   - docs/design/README.md
@@ -73,6 +75,7 @@ language:
   help: Language layer (more layers come later; see layers/README.md)
   choices:
     Python: python
+    "None: core only (no build, tests or image)": none
   default: python
 
 project_name:
@@ -110,7 +113,12 @@ kind:
     "service: long-running, HTTP API (FastAPI), health endpoints": service
     "cli: command-line tool (Typer)": cli
     "library: importable package only": library
-  default: service
+    # What `language: none` gets: no generated code at all (design record 0008).
+    "other: no language layer (language: none only)":
+      value: other
+      validator: "[% if language != 'none' %]Only with language: none[% endif %]"
+  default: "[[ 'other' if language == 'none' else 'service' ]]"
+  when: "[[ language != 'none' ]]"
 
 python_version:
   type: str
@@ -151,8 +159,8 @@ health_path:
 container_image:
   type: bool
   help: Build and publish a container image to GHCR?
-  default: "[[ kind != 'library' ]]"
-  when: "[[ kind != 'library' ]]"
+  default: "[[ kind not in ['library', 'other'] ]]"
+  when: "[[ kind not in ['library', 'other'] ]]"
 
 multi_arch:
   type: bool

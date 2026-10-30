@@ -49,6 +49,7 @@ VARIANTS: dict[str, dict[str, object]] = {
     },
     "cli": {"kind": "cli", "license": "MIT", "dependabot_automerge": "patch"},
     "library": {"kind": "library", "license": "Apache-2.0"},
+    "none": {"language": "none", "license": "MIT"},
 }
 
 
@@ -156,6 +157,8 @@ def test_dependabot_automerge_is_opt_in(project: Path) -> None:
 
 
 def test_python_checks(project: Path) -> None:
+    if not (project / "pyproject.toml").exists():
+        pytest.skip("not a Python project")
     for cmd in (
         ["uv", "lock", "--check"],
         ["uv", "run", "ruff", "check"],
@@ -165,6 +168,24 @@ def test_python_checks(project: Path) -> None:
         ["uv", "run", "scripts/gen-wiki.py", "--check"],
     ):
         sh(*cmd, cwd=project)
+
+
+def test_none_checks(project: Path) -> None:
+    """No layer: the project's checks are its own scripts/check.sh, and version.txt (0008)."""
+    if not (project / "scripts/check.sh").exists():
+        pytest.skip("has a language layer")
+    assert quiet(["sh", "scripts/check.sh"], project) == ["scripts/check.sh: no checks defined yet"]
+    assert (project / "version.txt").read_text() == "0.0.0\n"
+    assert not (project / "pyproject.toml").exists() and not (project / "src").exists()
+    agents = (project / "AGENTS.md").read_text()
+    assert "sh scripts/check.sh" in agents and "``" not in agents.replace("```", "")
+
+
+def test_kind_other_needs_language_none(tmp_path: Path) -> None:
+    data = {"project_name": "demo", "description": "demo", "kind": "other"}
+    with pytest.raises(ValueError, match="language: none"):
+        run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+                 vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
 
 
 SUBGROUP = '''
