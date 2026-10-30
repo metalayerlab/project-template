@@ -12,3 +12,4 @@ Why the template is the way it is. Copy [0000-template.md](../../template/docs/d
 | [0005](0005-extra-ports.md) | Extra listener ports | Implemented | Copier question `extra_ports` (list of ints, default `[]`): exposed by the image and published by compose and k8s; no diff when empty |
 | [0006](0006-context-budget-review.md) | Context budget review | Implemented | Raise the AGENTS.md budget from 8,000 to 9,000 characters (skeleton ceiling 6,750), keep 75% headroom, and write down what a cut costs |
 | [0007](0007-terse-sessions.md) | Terse sessions | Implemented | Definition of done checks print one line when they pass; `AGENTS.md` rules for terse replies and a new session per unrelated task; users point rather than paste |
+| [0008](0008-no-language-layer.md) | A "None" language choice | Approved | `language: none` renders the core only, through a `layers/none/` with empty values the core skips; one project-owned `scripts/check.sh` holds the project's checks |
