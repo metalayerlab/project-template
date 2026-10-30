@@ -38,7 +38,7 @@ Each page starts from a skeleton: the fixed headings, prefilled text where it is
 
 ## Checks
 
-`scripts/check-wiki.py` (stdlib Python, template-owned), run by CI, by pre-commit, and as `python3 scripts/check-wiki.py` locally:
+`scripts/check-wiki.py` (stdlib Python, template-owned), run by CI, by pre-commit, and as `python3 scripts/check-wiki.py` locally. It prints one line when it passes, with a count of warnings; `--verbose` lists them:
 
 | Error (blocks the PR) | Warning (blocks a Release PR, via `--strict`) |
 |---|---|

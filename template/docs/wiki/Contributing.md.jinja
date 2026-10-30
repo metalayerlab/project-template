@@ -54,3 +54,6 @@ Assistants pay for what they read in every session, so the instruction files are
 - AGENTS.md's "Don't read" list (and the `Read` denies in `.claude/settings.json`) keep lock files, caches and generated output out of context. Add any large or generated path the project introduces.
 - `docs/design/README.md` indexes every design record, so an assistant reads one line per record instead of every record. CI checks the index is complete.
 - Pointer files only point: don't copy AGENTS.md content into them.
+- The checks print one line when they pass, and their detail only when they fail (`check-wiki.py --verbose` lists the warnings it counts). Keep new scripts that way: an assistant reads their output on every run.
+- Every turn sends the whole conversation again. Start each task in a new session (the assistant suggests it when one ends), and point to a file or a failing check by name instead of pasting it.
+- Assistants reply tersely: the result, then what they need from you. Terse means no preamble or recaps, not fewer reasons: recommendations and what was skipped still belong in the reply.
