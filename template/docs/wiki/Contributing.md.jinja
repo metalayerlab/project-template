@@ -14,6 +14,7 @@
 3. Open a PR against `main` with a **Conventional Commit title** (`feat: add retry to uploads`). It becomes the squash commit and the CHANGELOG line: see [Release Process](Release-Process).
 4. CI must be green: tests, lint, types, secret scan, manifests, and the wiki checks.
 5. A code owner reviews ([review checklist]([[ repo_url ]]/blob/main/docs/ai/review-checklist.md)), then squash-merge.
+   The only code owner and also the author? GitHub won't let you approve your own PR. Review it against the checklist yourself, then, if `main`'s ruleset lets admins bypass it, merge with `gh pr merge --squash --admin` once CI is green. Never push to `main` instead.
 
 Never edit `CHANGELOG.md` or the version, and never push tags: release-please does that.
 
