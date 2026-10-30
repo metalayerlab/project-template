@@ -64,6 +64,8 @@ uv run pytest                                                   # all variants
 uv run pytest -m docker                                         # images build, run and are healthy
 python3 template/scripts/check-wiki.py --wiki docs/wiki --strict
 docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12
+docker run --rm -v "$PWD:/workdir" davidanson/markdownlint-cli2:v0.24.0 \
+  --config template/.markdownlint-cli2.yaml "docs/wiki/*.md" "*.md" "!CHANGELOG.md"
 ```
 
 plus the matching `docs/wiki/` change.
