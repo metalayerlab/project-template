@@ -16,7 +16,7 @@
 5. A code owner reviews ([review checklist]([[ repo_url ]]/blob/main/docs/ai/review-checklist.md)), then squash-merge.
    The only code owner and also the author? GitHub won't let you approve your own PR. Review it against the checklist yourself, then, if `main`'s ruleset lets admins bypass it, merge with `gh pr merge --squash --admin` once CI is green. Never push to `main` instead.
 
-Never edit `CHANGELOG.md` or the version, and never push tags: release-please does that.
+Never edit `CHANGELOG.md` or the version, and never push tags: release-please does that. AI assistants push their own feature branches and open the PR; `main`'s ruleset, not `.claude/settings.json`, is what keeps them off `main`.
 
 ## Code style
 

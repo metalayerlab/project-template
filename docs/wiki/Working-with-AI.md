@@ -8,7 +8,7 @@ The template assumes most code is written by an AI assistant and every change is
 
 | Assistant | Entry point | How it reaches AGENTS.md |
 |---|---|---|
-| Claude Code | `CLAUDE.md` | `@AGENTS.md` import, plus `.claude/settings.json`: check commands pre-allowed; edits to CHANGELOG, the manifest and the answers file denied; `git push`/`tag` and `gh release` denied; `.env`/`secrets/` unreadable |
+| Claude Code | `CLAUDE.md` | `@AGENTS.md` import, plus `.claude/settings.json`: check commands pre-allowed; edits to CHANGELOG, the manifest and the answers file denied; pushes to feature branches allowed (asked each time), but pushes naming `main`, force pushes, `git tag` and `gh release` denied (the `main` ruleset is the real guard); `.env`/`secrets/` unreadable |
 | OpenAI Codex, ChatGPT with repo access | `AGENTS.md` | native |
 | ChatGPT / Claude.ai chat, no repo access | `docs/ai/prompts.md` | the "Context for a chat assistant" prompt, then paste AGENTS.md |
 | GitHub Copilot | `.github/copilot-instructions.md` | a pointer plus three critical rules; the coding agent reads AGENTS.md natively |
