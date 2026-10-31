@@ -25,6 +25,12 @@ would defend it.
 - [ ] Each behaviour change has a test that would fail without it. Ask for proof when it isn't obvious.
 - [ ] Tests assert outcomes. They don't merely run the code or mirror its implementation.
 - [ ] Nothing was skipped, xfailed, loosened or deleted to make the suite pass.
+- [ ] Anything a caller, hook or plugin may replace is tested through every later operation on the
+      replacement, not only where it's replaced.
+- [ ] A check that runs on two inputs (source and target, old and new) is tested with both hitting the
+      same check.
+- [ ] Config parsing is tested with every type the file format produces (int, float, bool, list,
+      mapping), not only with environment-variable strings.
 
 ## Security and supply chain
 
@@ -32,6 +38,11 @@ would defend it.
       docs and logs.
 - [ ] Input from users, files and the network is validated. No shell or SQL built from strings, and no
       `eval`, `pickle` or unsafe YAML loading of untrusted data.
+- [ ] Untrusted paths are confined by how the OS resolves them, not by comparing strings: no filesystem
+      call on a joined path an untrusted party can influence; use `*at` calls beneath a root directory
+      fd without following symlinks (or `openat2(RESOLVE_BENEATH)`).
+- [ ] A rule that keeps a value secret (masking, never logging) holds everywhere the value ends up:
+      derived values, logs, error messages and CLI output, not only one syntax.
 - [ ] New dependencies are justified, exist on the index under exactly that name (typosquatting), are
       maintained, and have a compatible licence.
 - [ ] Hardening is intact: Dockerfile user, k8s `securityContext`, systemd sandbox, NetworkPolicy.

@@ -9,6 +9,7 @@ Generated code reads fluently whether or not it is right, so the review has to g
 - **Read the diff, not the summary.** Assistants describe what they meant to do. The diff shows what they did.
 - **Look for scope creep.** Unrequested refactors, renamed things, and deleted "unused" code are the most common unwelcome extras.
 - **Distrust the tests a little.** Check that each would fail without the change, and that it asserts behaviour instead of mirroring the implementation. Ask the assistant to show a test failing first (prompt 3).
+- **Look past the case the change was written for.** A result a hook may replace still works in every later operation; a check shared by two inputs is tested with both on the same check; config is tested with every type its file format produces; paths are confined by how the OS resolves them; a secret stays hidden in every derived value, log and error message.
 - **Check every name it imports or calls** against the locked version's docs. Invented options and APIs are a classic failure mode.
 - **Check new dependencies** exist under exactly that name and are maintained.
 - **Hardening:** any change to the Dockerfile user, `securityContext`, the systemd sandbox or a NetworkPolicy needs a stated reason.
