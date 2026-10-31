@@ -6,8 +6,8 @@ left gets a line here or an issue.
 
 ## Open
 
-- [ ] `kind: web`, a Vite + React SPA in a static image, `typescript` only: needs its own design record
-  (design [0009](docs/design/0009-typescript-layer.md))
+- [ ] `kind: web`, a Vite + React SPA in a static image, `typescript` only: implement design
+  [0014](docs/design/0014-web-kind.md)
 
 ## Decided against (don't re-propose without reading this first)
 
@@ -19,3 +19,8 @@ left gets a line here or an issue.
 - A project-owned `contrib/image-extras.txt` for the image's Python extras: a Copier answer renders them with no parsing and no conflicts ([0012](docs/design/0012-image-extras.md))
 - Claude Code's sandbox on by default, to confine Bash to the project: it also blocks the `uv` cache, Docker and `gh` login ([0013](docs/design/0013-repository-boundary.md))
 - Firebase deploy, Storybook, Chrome extensions, Electron or npm workspaces in the skeleton: one project's choice, not a skeleton's ([0009](docs/design/0009-typescript-layer.md))
+- Node (Fastify) serving a `web` app's files, or Caddy/Alpine/unprivileged nginx images: the official Debian nginx with the core's uid 1000 user ([0014](docs/design/0014-web-kind.md))
+- Build-time `VITE_*` config or an entrypoint-written `window.__ENV__` for a `web` app: a mounted `/config.json` read at run time ([0014](docs/design/0014-web-kind.md))
+- TanStack Router, wouter, hash URLs or React Router's declarative/framework modes: React Router in data mode ([0014](docs/design/0014-web-kind.md))
+- TanStack Query, zustand, Tailwind, Storybook, msw or Playwright in the `web` skeleton: one project's choice ([0014](docs/design/0014-web-kind.md))
+- systemd for `kind: web`: a host's own nginx serves static files ([0014](docs/design/0014-web-kind.md))
