@@ -40,6 +40,8 @@
 [% set runtime = 'Node.js' %]
 [% set base_image = 'node' %]
 [% set container_base = 'node:' ~ node_version ~ '-slim' %]
+[#! the runtime stage's image: a web app's dist/ is served by nginx (design record 0014) !#]
+[% set runtime_base = 'nginx:1.30-trixie' if kind == 'web' else container_base %]
 [% set container_bin_dir = '/app/bin' %]
 [% set container_bin = '/app/bin/' ~ project_name %]
 [% set systemd_upgrade = '`npm install -g --prefix /opt/' ~ project_name ~ ' github:' ~ github_owner ~ '/' ~ project_name ~ '#vX.Y.Z`' %]

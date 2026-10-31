@@ -2,17 +2,17 @@
         name: eslint
         entry: npx eslint --fix --max-warnings 0
         language: system
-        types_or: [ts, javascript]
+        types_or: [ts, [% if kind == 'web' %]tsx, [% endif %]javascript]
       - id: prettier
         name: prettier
         entry: npx prettier --write
         language: system
-        types_or: [ts, javascript]
+        types_or: [ts, [% if kind == 'web' %]tsx, [% endif %]javascript]
       - id: tsc
         name: tsc
         entry: npx tsc --noEmit
         language: system
-        types_or: [ts, javascript]
+        types_or: [ts, [% if kind == 'web' %]tsx, [% endif %]javascript]
         pass_filenames: false
       - id: gen-wiki
         name: generated wiki sections

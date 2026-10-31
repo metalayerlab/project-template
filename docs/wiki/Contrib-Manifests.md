@@ -18,6 +18,7 @@
 - A Deployment: `runAsNonRoot`, uid 1000, `readOnlyRootFilesystem`, `capabilities: drop [ALL]`, `seccompProfile: RuntimeDefault`, `automountServiceAccountToken: false`, readiness on `/readyz`, liveness on `health_path`, requests/limits, and `Recreate` (state is single-writer).
 - A Service, and a NetworkPolicy admitting only the `traefik` namespace. Each of `extra_ports` is a named port (`tcp-3128`) in the Deployment and the Service, and a commented-out NetworkPolicy rule: an extra listener usually serves in-cluster clients rather than the ingress controller, so nothing reaches it until you uncomment the rule and name those clients.
 - A ConfigMap generated from `config.yaml`; its hash suffix rolls the Deployment on change. Secrets are never in the base: SOPS in the GitOps repo, mounted as files.
+- For `kind: web`: both probes on `health_path`, the default rolling update (no state), `config.json` from the ConfigMap mounted by `subPath` over the image's copy, and an `emptyDir` on `/tmp` for nginx. Its Compose file mounts `./config.json` the same way, with no state volume or environment.
 
 ## systemd
 

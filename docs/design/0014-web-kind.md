@@ -1,6 +1,6 @@
 # 0014: A `web` kind: a single-page app in a static image
 
-Status: Approved
+Status: Implemented
 Date: 2026-10-31
 Authors: Stephen Cox; drafted by Claude (Opus 5.5)
 

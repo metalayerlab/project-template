@@ -1,11 +1,18 @@
 
 - **Types:** `strict` plus typescript-eslint's strict type-checked rules. No `any`; any `eslint-disable` or `@ts-expect-error` states its reason.
 - **Style:** Prettier decides (width 100). Imports name the `.ts` file. Comments say *why*.
+[% if kind == 'web' %]
+- **Output:** no `console.log` in `src/`; errors show on the page (`errorElement`).
+- **Data:** from a route's `loader`, changes through its `action`; never `useEffect` + `fetch`.
+- **Config:** `SETTINGS` in `config.ts`, read from `/config.json` at run time, never `VITE_*`. Public: no secrets.
+- **Errors:** specific classes (`ConfigError`, ...). Never swallow an error.
+[% else %]
 - **Output:** only the CLI writes stdout[% if kind == 'service' %]; the service logs through Fastify's logger (pino)[% endif %]. No `console.log` elsewhere.
+[% endif %]
 [% if has_cli %]
 - **Config:** every setting goes through `SETTINGS` in `config.ts`: `[[ env_prefix ]]<KEY>_FILE` > `[[ env_prefix ]]<KEY>` > file > default. Secrets: `secret: true`, read from `_FILE`, never logged.
 - **Errors:** specific classes (`ConfigError`, ...); the CLI prints one line and exits 2. Never swallow an error.
-[% else %]
+[% elif kind != 'web' %]
 - **Errors:** specific `Error` subclasses, exported with the API. Never swallow an error.
 [% endif %]
 - **Dependencies:** only when Node or an existing dependency can't do it, justified in the PR. Check the exact package name exists (typosquatting).

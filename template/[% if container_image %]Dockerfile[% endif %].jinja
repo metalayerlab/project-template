@@ -22,7 +22,7 @@ RUN --mount=type=bind,source=contrib/system-packages.txt,target=/tmp/system-pack
 # ============================================================
 # Stage 2: runtime
 # ============================================================
-FROM [[ layer.container_base ]]
+FROM [[ layer.runtime_base ]]
 
 # Set by CI (docker-build.yml) from the release; OCI labels for `docker inspect`
 ARG VERSION=0.0.0
@@ -82,6 +82,16 @@ VOLUME ["/var/lib/[[ project_name ]]"]
 
 ENTRYPOINT ["[[ project_name ]]"]
 CMD ["serve"]
+[% elif kind == 'web' %]
+
+USER 1000:1000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD ["curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:[[ port ]][[ health_path ]]"]
+
+EXPOSE [[ port ]]
+
+CMD ["nginx", "-g", "daemon off;"]
 [% else %]
 
 USER 1000:1000

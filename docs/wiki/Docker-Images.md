@@ -2,6 +2,8 @@
 
 `ghcr.io/<owner>/<project>`, built by `docker-build.yml` from a multi-stage Dockerfile: a builder installs from the lock file (Python: uv into `/opt/venv`; TypeScript: `npm ci`, then `dist/` and the runtime dependencies into `/app`), and a slim runtime runs as uid 1000 with a `HEALTHCHECK` and OCI labels (version, revision and created, passed as build args).
 
+A TypeScript `web` app's runtime stage is `nginx:1.30-trixie` instead (the layer's `runtime_base`), with the stock site and start-up scripts removed, `dist/` in `/usr/share/nginx/html`, and the template-owned `docker/nginx.conf`: nginx answers `health_path` itself, Vite's hashed `/assets/` are cached for a year and a missing one is a 404, `index.html` and `config.json` are `no-cache`, and any other path is `index.html`, so a route survives a reload. The pid file and temp files are under `/tmp`, so it runs as uid 1000 on a read-only root. Headers, a Content-Security-Policy or extra locations go in the project-owned `docker/nginx-site.conf`, included in the `server` block. Dependabot proposes nginx patch updates only: odd minors are mainline, and the next stable line is a template release ([design 0014](https://github.com/metalayerlab/project-template/blob/main/docs/design/0014-web-kind.md)).
+
 ## System packages
 
 A dependency that builds from source needs compilers and headers, and some projects need a library or tool at run time. List them, as Debian/Ubuntu apt package names, in the project-owned `contrib/system-packages.txt`:
@@ -39,7 +41,7 @@ Both of the builder's `uv sync` lines then get `--extra fuse` (`--all-extras` fo
 
 ## Smoke test
 
-For a service, before anything is pushed, the image is built for the runner and started, and `health_path` must answer within 30 seconds. On failure the container logs are printed. Multi-arch builds (`linux/amd64,linux/arm64`) follow and reuse the cache.
+For a service or a web app, before anything is pushed, the image is built for the runner and started, and `health_path` must answer within 30 seconds; a web app's `/` and a route must also return `index.html`. On failure the container logs are printed. Multi-arch builds (`linux/amd64,linux/arm64`) follow and reuse the cache.
 
 **Ports:** the image `EXPOSE`s `port` and each of `extra_ports`, so `docker run -P` and `docker inspect` see every listener. The `<PREFIX>_LISTEN_HOST` default below covers `port` only: an extra listener's address is the project's own setting, so make it bind `0.0.0.0` in the image too.
 

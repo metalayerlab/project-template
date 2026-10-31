@@ -1,2 +1,8 @@
+[% if kind == 'web' %]
+| `src/` | The app: `main.tsx`, `routes.tsx` (route table), `pages/`, `config.ts` |
+| `index.html`, `public/` | Page shell; static files (`config.json`: run-time defaults) |
+| `docker/nginx.conf` | The server (T); `docker/nginx-site.conf` is yours |
+[% else %]
 | `src/` | The package: `index.ts` (public API)[% if has_cli %], `config.ts`, `cli.ts` (commander)[% endif %][% if kind == 'service' %], `api.ts` (Fastify)[% endif %] |
+[% endif %]
 | `tests/unit/`, `tests/integration/` | vitest; integration is opt-in (`RUN_INTEGRATION=1`) |

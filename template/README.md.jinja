@@ -27,7 +27,14 @@ curl http://127.0.0.1:[[ port ]][[ health_path ]]
 [[ layer.install_cli ]]
 [[ project_name ]] --help
 ```
-[% elif kind == 'other' %]
+[% elif kind == 'web' and container_image %]
+
+```sh
+docker run -d --name [[ project_name ]] -p 127.0.0.1:[[ port ]]:[[ port ]] [[ image ]]:latest
+```
+
+Then open <http://127.0.0.1:[[ port ]]/>.
+[% elif kind in ['other', 'web'] %]
 
 <!-- guidance: how to get it and run it, in a few commands. -->
 [% else %]
@@ -49,7 +56,7 @@ Everything is in the **[wiki]([[ repo_url ]]/wiki)**. Its source is [`docs/wiki/
 repository, reviewed with the code.
 
 - [Introduction]([[ repo_url ]]/wiki/Introduction): what it is and how it works
-[% if has_cli %]
+[% if has_cli or kind == 'web' %]
 - [In-Depth Configuration]([[ repo_url ]]/wiki/In-Depth-Configuration): every setting
 [% elif kind == 'library' %]
 - [API Reference]([[ repo_url ]]/wiki/API-Reference): the public API

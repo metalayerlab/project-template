@@ -26,7 +26,7 @@ Yes: TypeScript on Node.js (`language: typescript`), and any other language with
 
 ## Where is the front-end (web app) kind?
 
-Not yet. A front end uses the TypeScript toolchain, so it will be a `kind` (`web`: a Vite and React single-page app in a static image), not another language layer ([design 0009](https://github.com/metalayerlab/project-template/blob/main/docs/design/0009-typescript-layer.md)). It needs its own design record first.
+`kind: web`, with `language: typescript`: a Vite + React single-page app with React Router in data mode, served from an nginx image. It is a kind, not a layer, because it uses the TypeScript toolchain ([design 0009](https://github.com/metalayerlab/project-template/blob/main/docs/design/0009-typescript-layer.md)). Its settings come from `/config.json` at run time, never `VITE_*` at build time, so one image runs in every environment, and it calls its API at same-origin `/api` ([design 0014](https://github.com/metalayerlab/project-template/blob/main/docs/design/0014-web-kind.md)). A back end that also serves the files is a `service`.
 
 ## Why no Helm chart?
 

@@ -25,7 +25,9 @@
           fi
 
       # npm ci fails if package-lock.json is out of step with package.json: the lock check.
+[% if kind != 'web' %]
       # It also builds dist/ (the prepare script).
+[% endif %]
       - name: Install (from the lock file)
         run: npm ci --no-audit --no-fund
 
@@ -41,11 +43,18 @@
       - name: Tests (with coverage floor)
         run: npm test
 
+[% if kind == 'web' %]
+      - name: Build (Vite)
+        run: |
+          npm run build
+          test -f dist/index.html
+[% else %]
       - name: Import and entry-point smoke test
         run: |
           node --input-type=module -e 'import { VERSION } from "[[ project_name ]]"; console.log("[[ project_name ]]", VERSION)'
 [% if has_cli %]
           node dist/cli.js --help > /dev/null
+[% endif %]
 [% endif %]
 
       - name: Generated wiki sections are current

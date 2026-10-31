@@ -124,8 +124,10 @@ All pass, and your change's [Docs map](#docs-map) pages are updated in the same 
 
 | You changed | Update |
 |---|---|
-[% if has_cli %]
+[% if has_cli or kind == 'web' %]
 | a setting (`[[ layer.config_file ]]`) | In-Depth-Configuration (prose; the table is generated) |
+[% endif %]
+[% if has_cli %]
 | a command or option (`[[ layer.cli_file ]]`) | CLI-Reference (regenerate), Quick-Start if shown |
 [% endif %]
 [% if kind == 'service' %]

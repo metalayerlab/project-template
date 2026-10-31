@@ -9,6 +9,8 @@
 [% if has_cli %]
 - Secrets are read from files only (`[[ env_prefix ]]<KEY>_FILE`), never from the config file. See [In-Depth Configuration](In-Depth-Configuration#secrets).
 - Values are never logged. Logs and `[[ project_name ]] config` show where a value came from, never the value itself.
+[% elif kind == 'web' %]
+- None in the app: anyone who loads it can read its bundle and `config.json`. Credentials stay behind `/api`, on the server.
 [% else %]
 - The library never reads, logs or stores credentials on its own: callers pass them in.
 [% endif %]
@@ -20,6 +22,9 @@
 
 [% if container_image %]
 - **Container:** runs as uid 1000[% if puid_pgid %] (after root fixes the state directory's ownership)[% endif %], with a read-only root filesystem and all capabilities dropped (Compose/Kubernetes manifests).
+[% endif %]
+[% if container_image and kind == 'web' %]
+- **nginx:** no version in its headers, and `X-Content-Type-Options: nosniff` and `Referrer-Policy` on every response. No Content-Security-Policy yet: it depends on what the app loads, so add it in `docker/nginx-site.conf`.
 [% endif %]
 [% if 'k8s' in contrib %]
 - **Kubernetes:** *restricted* Pod Security Standard, `seccompProfile: RuntimeDefault`, no service-account token, and a NetworkPolicy that admits only the ingress controller.

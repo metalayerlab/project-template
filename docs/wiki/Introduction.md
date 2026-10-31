@@ -4,7 +4,7 @@
 
 A [Copier](https://copier.readthedocs.io/) template. Copier asks a few questions, renders `template/` into a new repository, and records the answers and the template version in `.copier-answers.yml`. Later, `copier update` replays the template's changes onto the project with a three-way merge. That last step is the reason for Copier: our earlier projects were each copied by hand from one another and drifted apart. Their action versions, lint strictness and version regexes all differ, and bugs fixed in one copy were never fixed in the others.
 
-It has a **language-agnostic core** (release, images, manifests, wiki, AI files) and **language layers**. The layers are Python and TypeScript (Node.js), and `none` gives the core alone ([Contributing to the Template](Contributing-to-the-Template#adding-a-language-layer)).
+It has a **language-agnostic core** (release, images, manifests, wiki, AI files) and **language layers**. The layers are Python and TypeScript (Node.js), and `none` gives the core alone. A project's `kind` (service, CLI, library, or a `web` front end for TypeScript) decides its shape ([Contributing to the Template](Contributing-to-the-Template#adding-a-language-layer)).
 
 ## What was taken from existing projects
 
