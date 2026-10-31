@@ -8,7 +8,7 @@ The template assumes most code is written by an AI assistant and every change is
 
 | Assistant | Entry point | How it reaches AGENTS.md |
 |---|---|---|
-| Claude Code | `CLAUDE.md` | `@AGENTS.md` import, plus `.claude/settings.json`: check commands pre-allowed; edits to CHANGELOG, the manifest and the answers file denied; pushes to feature branches allowed (asked each time), but pushes naming `main`, force pushes, `git tag` and `gh release` denied (the `main` ruleset is the real guard); `.env`/`secrets/` unreadable |
+| Claude Code | `CLAUDE.md` | `@AGENTS.md` import, plus `.claude/settings.json`: check commands pre-allowed; edits to CHANGELOG, the manifest and the answers file denied; pushes to feature branches allowed (asked each time), but pushes naming `main`, force pushes, `git tag` and `gh release` denied (the `main` ruleset is the real guard); `.env`/`secrets/` unreadable; a hook blocks edits outside the repository, and the dependency directories and `gh pr create -R` are denied |
 | OpenAI Codex, ChatGPT with repo access | `AGENTS.md` | native |
 | ChatGPT / Claude.ai chat, no repo access | `docs/ai/prompts.md` | the "Context for a chat assistant" prompt, then paste AGENTS.md |
 | GitHub Copilot | `.github/copilot-instructions.md` | a pointer plus three critical rules; the coding agent reads AGENTS.md natively |
@@ -51,6 +51,7 @@ The budget covers what an assistant reads first. Most of a session's tokens come
 ## Guard rails
 
 - **Checks the assistant can't talk its way past:** blocking CI, the coverage floor, mypy strict, the wiki standard, docs-touched, and PR-title linting.
+- **One repository per session:** another codebase (a sibling repository, a submodule, an installed dependency) is changed by an issue in its own repository, never from here, even when the user asks: they open a session there instead. The assistant searches that repository's issues, comments or drafts a new one for the user to confirm, and keeps any workaround minimal and linked to it. Generated projects receive such requests through their *Change request from another repository* issue form. In Claude Code, `scripts/repo-boundary.py` runs as a `PreToolUse` hook and blocks Edit, Write and NotebookEdit outside the repository, in every permission mode (the temp directory and `~/.claude` stay writable). Bash isn't checked: Claude Code's sandbox would confine it, but it also blocks the `uv` cache, Docker and `gh` login, so it is left for users to turn on in `.claude/settings.local.json` ([design record 0013](https://github.com/metalayerlab/project-template/blob/main/docs/design/0013-repository-boundary.md)).
 - **Boundaries in AGENTS.md:** never edit release-owned or template-owned files, never weaken a check (no unexplained `noqa` or `type: ignore`, no skipped tests, no loosened sandbox), never commit secrets, never push to main or tag.
 - **Supply chain:** dependencies must be justified, and checked to exist under exactly that name (typosquatting). The lock file pins them, and Dependabot updates them.
 - **Honesty:** the assistant must say what it didn't run or isn't sure of. A claimed green check must have been run.

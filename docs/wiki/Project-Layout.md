@@ -7,7 +7,7 @@ What a generated `service` contains (a `cli` lacks `api.py` and the HTTP pages; 
 ```text
 .github/
   workflows/          ci, docker-build, docker-cleanup, release-please, pr-title, wiki, template-update
-  ISSUE_TEMPLATE/     bug, feature, links (wiki, private security reports)
+  ISSUE_TEMPLATE/     bug, feature, change request from another repository, links (wiki, private security reports)
   CODEOWNERS  dependabot.yml  pull_request_template.md  copilot-instructions.md
   repository.toml     GitHub's About box: description, website, topics (scripts/repo-metadata.py)
 .claude/settings.json  .cursor/rules/project.mdc
@@ -16,7 +16,7 @@ README.md  CONTRIBUTING.md  SECURITY.md  LICENSE  CHANGELOG.md  TODO.md
 src/<pkg>/            __init__ (version)  config (settings)  cli (Typer)  api (FastAPI)  __main__      Python
 src/                  index (version)  config  cli (commander)  api (Fastify)                 TypeScript
 tests/unit/  tests/integration/  tests/conftest.py (Python) or tests/setup.ts, helpers.ts (TypeScript)
-scripts/              bootstrap.sh  check-wiki.py  repo-metadata.py  gen-wiki.py|.ts  check-manifests.sh  check-docs-secrets.sh  [check-personal-data.py]  [check.sh]
+scripts/              bootstrap.sh  check-wiki.py  repo-metadata.py  repo-boundary.py  gen-wiki.py|.ts  check-manifests.sh  check-docs-secrets.sh  [check-personal-data.py]  [check.sh]
 docs/wiki/            the project wiki + .standard.toml
 docs/design/          design records: README.md (the index), 0000-template.md
 docs/ai/              prompts.md  review-checklist.md

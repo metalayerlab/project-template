@@ -10,10 +10,12 @@ Definition of done (AGENTS.md) unchanged. That is the template's contract.
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import shutil
 import subprocess
+import tempfile
 import time
 import urllib.request
 from pathlib import Path
@@ -115,9 +117,10 @@ def test_always_loaded_files_leave_headroom(project: Path) -> None:
 
 
 def test_template_problems_are_reported(project: Path) -> None:
-    """A project that finds a template bug reports it, not only works around it (#23)."""
+    """A project that finds a template bug reports it, not only works around it (#23, 0013)."""
     agents = (project / "AGENTS.md").read_text()
-    assert "gh issue list -R metalayerlab/project-template --state all" in agents
+    assert "goes to `metalayerlab/project-template`" in agents
+    assert "gh issue list -R <owner/repo> --state all" in agents
     assert "Template problem found?" in (project / ".github/pull_request_template.md").read_text()
 
 
@@ -445,6 +448,38 @@ def test_labels_are_created(project: Path) -> None:
     created = set(re.findall(r"gh label create ([\w-]+)", text))
     assert {"no-docs-needed", "template-update"} <= used
     assert used <= created, used - created
+
+
+def edit_hook(project: Path, file_path: str) -> subprocess.CompletedProcess[str]:
+    event = json.dumps({"cwd": str(project), "tool_input": {"file_path": file_path}})
+    return subprocess.run(
+        ["python3", "scripts/repo-boundary.py"], cwd=project, input=event, capture_output=True,
+        text=True, env={**os.environ, "CLAUDE_PROJECT_DIR": str(project)},
+    )  # fmt: skip
+
+
+def test_edits_stay_in_the_repository(project: Path) -> None:
+    """Another codebase is changed by an issue in its own repository (0013)."""
+    settings = json.loads((project / ".claude/settings.json").read_text())
+    hook = settings["hooks"]["PreToolUse"][0]
+    assert "Write" in hook["matcher"] and "scripts/repo-boundary.py" in hook["hooks"][0]["command"]
+    nested = project / ".boundary-test"
+    try:
+        sh("git", "init", "-q", str(nested), cwd=project)
+        cases = {
+            "src/new.txt": 0,
+            str(project / "README.md"): 0,
+            f"{tempfile.gettempdir()}/scratch.txt": 0,
+            str(Path.home() / ".claude/memory.md"): 0,
+            str(Path.home() / "elsewhere/repo/file.txt"): 2,
+            ".boundary-test/file.txt": 2,
+        }
+        results = {p: edit_hook(project, p) for p in cases}
+    finally:
+        shutil.rmtree(nested)
+    assert {p: r.returncode for p, r in results.items()} == cases
+    assert all(r.stdout + r.stderr == "" for r in results.values() if r.returncode == 0)
+    assert all("issue in its own repository" in r.stderr for r in results.values() if r.returncode)
 
 
 def test_workflows_lint(project: Path) -> None:
