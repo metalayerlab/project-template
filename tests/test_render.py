@@ -148,7 +148,6 @@ def test_extra_ports_rejected(bad: object, tmp_path: Path) -> None:
                  vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
 
 
-
 @pytest.mark.parametrize(
     ("extras", "flags"),
     [([], ""), (["fuse", "gpu"], " --extra fuse --extra gpu"), (["*"], " --all-extras")],
@@ -174,6 +173,7 @@ def test_image_extras_rejected(bad: object, tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="image_extras"):
         run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
                  vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+
 
 def test_first_release_is_0_1_0(project: Path) -> None:
     """With the manifest at 0.0.0, release-please would otherwise propose 1.0.0."""
@@ -492,7 +492,6 @@ def test_image_installs_system_packages(project: Path, tmp_path: Path) -> None:
     sh("docker", "run", "--rm", "--entrypoint", "tini", tag, "--version", cwd=copy)
 
 
-
 @pytest.mark.docker
 def test_image_installs_extras(tmp_path: Path) -> None:
     """An extra named in `image_extras` is in the image (#63)."""
@@ -506,6 +505,7 @@ def test_image_installs_extras(tmp_path: Path) -> None:
     sh("docker", "build", "-q", "-t", "demo:extras", ".", cwd=dst)
     sh("docker", "run", "--rm", "--entrypoint", "python", "demo:extras", "-c", "import six",
        cwd=dst)  # fmt: skip
+
 
 @pytest.mark.docker
 def test_image_serves_when_app_binds_loopback(project: Path, tmp_path: Path) -> None:
