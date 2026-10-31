@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.14](https://github.com/metalayerlab/project-template/compare/v0.1.13...v0.1.14) (2026-10-31)
+
+
+### ✨ Features
+
+* let AI assistants push feature branches; keep main, force, tag and release pushes denied ([#61](https://github.com/metalayerlab/project-template/issues/61)) ([4da050c](https://github.com/metalayerlab/project-template/commit/4da050ca97a54a7a9526a0d9c4ab57dec71a0247))
+
 ## [0.1.13](https://github.com/metalayerlab/project-template/compare/v0.1.12...v0.1.13) (2026-10-30)
 
 
