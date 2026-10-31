@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.15](https://github.com/metalayerlab/project-template/compare/v0.1.14...v0.1.15) (2026-10-31)
+
+
+### ✨ Features
+
+* name the optional extras the image installs (image_extras) ([#64](https://github.com/metalayerlab/project-template/issues/64)) ([3632a75](https://github.com/metalayerlab/project-template/commit/3632a75205db93629f7d3715388bcbe1cd1624ed))
+
+
+### 📚 Documentation
+
+* prompts for working on the template (docs/ai/prompts.md) ([#66](https://github.com/metalayerlab/project-template/issues/66)) ([5c37e26](https://github.com/metalayerlab/project-template/commit/5c37e266e6d8d7ccecfce2bf2a938568d24be8e9))
+
 ## [0.1.14](https://github.com/metalayerlab/project-template/compare/v0.1.13...v0.1.14) (2026-10-31)
 
 
