@@ -22,7 +22,7 @@ The README's "For AI assistants" section lists the same table for humans. Person
 1. **Design:** prompt 1 in `docs/ai/prompts.md`. The assistant writes a `docs/design/` record and stops. A human approves or corrects it. Rejected ideas go into `TODO.md` "Decided against", so they aren't proposed again.
 2. **Build:** in small Conventional Commits, each passing the Definition of done (`ruff`, `mypy`, `pytest`, `gen-wiki --check`, `check-wiki`, `check-manifests`, and `check-docs-secrets` where Docker is available).
 3. **Document:** the same PR updates the pages the docs map names, and replaces skeleton guidance with real text (prompt 4 audits the whole wiki).
-4. **Review:** the PR template records how much was generated. A code owner reviews with the [Human Review Checklist](Human-Review-Checklist). Optionally, a second assistant reviews first (prompt 5).
+4. **Review:** the PR template records how much was generated. A code owner reviews with the [Human Review Checklist](Human-Review-Checklist). Optionally, a second assistant reviews first (prompt 5). Prompt 6 works through the open issues with one sub-agent each, merging only green bug fixes.
 5. **Release:** release-please's Release PR, also reviewed, is blocked until the wiki is complete.
 
 ## Context budget
