@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.16](https://github.com/metalayerlab/project-template/compare/v0.1.15...v0.1.16) (2026-10-31)
+
+
+### ✨ Features
+
+* keep AI assistants' edits inside the repository; ask other codebases for changes by issue ([#71](https://github.com/metalayerlab/project-template/issues/71)) ([97178d5](https://github.com/metalayerlab/project-template/commit/97178d59093049c6d4880e4d156274c1300ce526))
+* review checklist items for replaced results, shared two-sided checks, typed config, path and secret leaks ([#69](https://github.com/metalayerlab/project-template/issues/69)) ([8ea3073](https://github.com/metalayerlab/project-template/commit/8ea3073a1de7c39cf611b3218d01ac2dbf3c973f))
+
 ## [0.1.15](https://github.com/metalayerlab/project-template/compare/v0.1.14...v0.1.15) (2026-10-31)
 
 
