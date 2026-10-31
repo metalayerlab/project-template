@@ -15,6 +15,7 @@ get are in `template/AGENTS.md.jinja`.
 | `tests/test_render.py` | Renders each variant and runs that project's own Definition of done |
 | `tests/test_layers.py` | Enforces the core/layer boundary |
 | `docs/wiki/` | This template's wiki (published to the GitHub wiki), checked by the same script projects use |
+| `docs/ai/prompts.md` | Copy-paste prompts for changing this template (triage, design, questions, fixes, PR body, review) |
 | `docs/design/` | Design records for the template; `README.md` is the index (read it, not every record) |
 | `TODO.md` | The template's outstanding work and rejected ideas |
 
@@ -74,7 +75,7 @@ uv run pytest -m docker                                         # images build, 
 python3 template/scripts/check-wiki.py --wiki docs/wiki --strict
 docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12
 docker run --rm -v "$PWD:/workdir" davidanson/markdownlint-cli2:v0.24.0 \
-  --config template/.markdownlint-cli2.yaml "docs/wiki/*.md" "*.md" "!CHANGELOG.md"
+  --config template/.markdownlint-cli2.yaml "docs/wiki/*.md" "docs/ai/*.md" "docs/design/*.md" "*.md" "!CHANGELOG.md"
 ```
 
 plus the matching `docs/wiki/` change.
