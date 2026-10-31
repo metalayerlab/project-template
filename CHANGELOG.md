@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.17](https://github.com/metalayerlab/project-template/compare/v0.1.16...v0.1.17) (2026-10-31)
+
+
+### ✨ Features
+
+* prompt to work through the open issues with one sub-agent each ([#73](https://github.com/metalayerlab/project-template/issues/73)) ([5b5923f](https://github.com/metalayerlab/project-template/commit/5b5923f621e938a2311cd39a15c79cc494a2d94b))
+
 ## [0.1.16](https://github.com/metalayerlab/project-template/compare/v0.1.15...v0.1.16) (2026-10-31)
 
 
