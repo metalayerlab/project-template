@@ -1,1 +1,5 @@
+[% if kind == 'web' %]
+TypeScript, React 19, React Router 8 (data mode); Vite builds `dist/` (never edited; dev server: `npm run dev`), nginx serves it. Node >= [[ node_version ]] runs tooling and `scripts/` (type stripping: no `enum` or `namespace`).
+[% else %]
 TypeScript on Node.js >= [[ node_version ]] with npm. Node runs the `.ts` sources directly (type stripping, so only erasable syntax: no `enum` or `namespace`); `tsc` builds `dist/`, which is never edited.
+[% endif %]

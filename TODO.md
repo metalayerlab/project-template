@@ -6,8 +6,7 @@ left gets a line here or an issue.
 
 ## Open
 
-- [ ] `kind: web`, a Vite + React SPA in a static image, `typescript` only: implement design
-  [0014](docs/design/0014-web-kind.md)
+Nothing open: new work starts as an issue or a design record.
 
 ## Decided against (don't re-propose without reading this first)
 

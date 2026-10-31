@@ -37,6 +37,9 @@ _skip_if_exists:
   - "tests/**"
   - "contrib/*.example.yaml"
   - contrib/system-packages.txt
+  - docker/nginx-site.conf
+  - public/config.json
+  - index.html
   - docs/design/README.md
   - docs/wiki/Home.md
   - docs/wiki/Introduction.md
@@ -116,6 +119,10 @@ kind:
     "service: long-running, HTTP API (FastAPI / Fastify), health endpoints": service
     "cli: command-line tool (Typer / commander)": cli
     "library: importable package only": library
+    # A Vite + React single-page app in an nginx image (design record 0014).
+    "web: single-page app (Vite + React), served by nginx (language: typescript only)":
+      value: web
+      validator: "[% if language != 'typescript' %]Only with language: typescript[% endif %]"
     # What `language: none` gets: no generated code at all (design record 0008).
     "other: no language layer (language: none only)":
       value: other
@@ -139,9 +146,9 @@ node_version:
 
 port:
   type: int
-  help: HTTP port the service listens on
+  help: HTTP port the service (or a web app's nginx) listens on
   default: 8080
-  when: "[[ kind == 'service' ]]"
+  when: "[[ kind in ['service', 'web'] ]]"
 
 extra_ports:
   type: yaml
@@ -163,7 +170,7 @@ health_path:
   type: str
   help: Liveness endpoint (Docker HEALTHCHECK, k8s probes, CI smoke test)
   default: /healthz
-  when: "[[ kind == 'service' ]]"
+  when: "[[ kind in ['service', 'web'] ]]"
   validator: "[% if not health_path.startswith('/') %]Must start with /[% endif %]"
 
 container_image:
@@ -204,9 +211,12 @@ contrib:
   choices:
     "docker: compose.yml": docker
     "k8s: kustomize base (Flux-friendly)": k8s
-    "systemd: hardened unit + sysusers": systemd
-  default: "[[ ['docker', 'k8s', 'systemd'] if kind == 'service' else [] ]]"
-  when: "[[ kind == 'service' ]]"
+    # A web app's static files on a host are that host's nginx's job (design record 0014).
+    "systemd: hardened unit + sysusers":
+      value: systemd
+      validator: "[% if kind != 'service' %]Only with kind: service[% endif %]"
+  default: "[[ ['docker', 'k8s', 'systemd'] if kind == 'service' else ['docker', 'k8s'] if kind == 'web' else [] ]]"
+  when: "[[ kind in ['service', 'web'] ]]"
   validator: >-
     [% if not container_image and ('docker' in contrib or 'k8s' in contrib) %]
     docker and k8s need a container image

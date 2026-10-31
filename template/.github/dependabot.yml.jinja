@@ -24,6 +24,11 @@ updates:
     ignore:
       - dependency-name: [[ layer.base_image ]]
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
+[% if kind == 'web' %]
+      # nginx's odd minor versions are mainline: moving to the next stable line is a template release.
+      - dependency-name: nginx
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+[% endif %]
     commit-message:
       prefix: chore(deps)
 [% endif %]

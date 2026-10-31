@@ -1,6 +1,6 @@
 # Project Layout
 
-What a generated `service` contains (a `cli` lacks `api.py` and the HTTP pages; a `library` also lacks the CLI, image and contrib).
+What a generated `service` contains (a `cli` lacks `api.py` and the HTTP pages; a `library` also lacks the CLI, image and contrib). A TypeScript `web` app has no CLI or `config.yaml`: it has the files under *web* below, and `docker/nginx.conf` in place of `docker/entrypoint.sh`.
 
 ## Files
 
@@ -15,6 +15,8 @@ AGENTS.md  CLAUDE.md  GEMINI.md          instructions for AI assistants (AGENTS.
 README.md  CONTRIBUTING.md  SECURITY.md  LICENSE  CHANGELOG.md  TODO.md
 src/<pkg>/            __init__ (version)  config (settings)  cli (Typer)  api (FastAPI)  __main__      Python
 src/                  index (version)  config  cli (commander)  api (Fastify)                 TypeScript
+src/                  main.tsx  routes.tsx  pages/  config.ts (/config.json)  vite-env.d.ts       web
+index.html  public/config.json  vite.config.ts  docker/nginx.conf  docker/nginx-site.conf     web
 tests/unit/  tests/integration/  tests/conftest.py (Python) or tests/setup.ts, helpers.ts (TypeScript)
 scripts/              bootstrap.sh  check-wiki.py  repo-metadata.py  repo-boundary.py  gen-wiki.py|.ts  check-manifests.sh  check-docs-secrets.sh  [check-personal-data.py]  [check.sh]
 docs/wiki/            the project wiki + .standard.toml

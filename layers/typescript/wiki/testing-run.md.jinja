@@ -1,6 +1,8 @@
 ```sh
 npm test                                        # unit tests, with an 80% coverage floor
-[% if has_cli %]
+[% if kind == 'web' %]
+npx vitest run tests/unit/routes.test.tsx       # a subset
+[% elif has_cli %]
 npx vitest run tests/unit/config.test.ts -t env # a subset
 [% else %]
 npx vitest run tests/unit/version.test.ts       # a subset

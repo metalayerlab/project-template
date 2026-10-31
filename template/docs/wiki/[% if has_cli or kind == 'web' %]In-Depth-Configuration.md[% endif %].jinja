@@ -1,5 +1,37 @@
 [% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]
 # In-Depth Configuration
+[% if kind == 'web' %]
+
+## Where configuration comes from
+
+The app reads `config.json` when it starts, at run time, so one image or one `dist/` runs in every environment. Each setting comes from the first of:
+
+1. the deployment's `config.json`, served next to `index.html`[[ ' (mounted over `/usr/share/nginx/html/config.json` in the image)' if container_image else '' ]]
+2. the built-in default (`public/config.json` holds the same defaults)
+
+A missing file means the defaults. A value of the wrong type stops the app with an error page that names the setting. nginx serves `config.json` with `Cache-Control: no-cache`, so a changed file reaches the next page load.
+
+## Settings
+
+Generated from the code: don't edit the table, run `[[ layer.gen_wiki ]]`.
+
+<!-- generated:start settings -->
+<!-- generated:end settings -->
+
+<!-- guidance: below the table, explain anything a one-line description can't: how settings interact, valid values. -->
+
+## Secrets
+
+None, ever: anyone who can load the app can read `config.json` and the bundle. Credentials stay on the server side of `/api`.
+
+## Examples
+
+```json
+{ "apiBaseUrl": "/api" }
+```
+
+<!-- guidance: two or three real-world configurations, each with a sentence on when you'd use it. -->
+[% else %]
 
 ## Where configuration comes from
 
@@ -37,3 +69,4 @@ Never put a secret in the config file or in a plain environment variable that `d
 A complete config file with every default is in [contrib/[[ project_name ]].example.yaml]([[ repo_url ]]/blob/main/contrib/[[ project_name ]].example.yaml).
 
 <!-- guidance: two or three real-world configurations, each with a sentence on when you'd use it. -->
+[% endif %]

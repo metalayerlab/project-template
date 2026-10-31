@@ -15,10 +15,12 @@ headings = ["What it is", "How it works", "When not to use it"]
 
 [pages.Quick-Start]
 headings = ["Prerequisites", "Install", "First run", "Next steps"]
-[% if has_cli %]
+[% if has_cli or kind == 'web' %]
 
 [pages.In-Depth-Configuration]
 headings = ["Where configuration comes from", "Settings", "Secrets", "Examples"]
+[% endif %]
+[% if has_cli %]
 
 [pages.CLI-Reference]
 headings = ["Commands", "Exit codes"]

@@ -63,6 +63,7 @@ VARIANTS: dict[str, dict[str, object]] = {
     },
     "ts-cli": {"language": "typescript", "kind": "cli", "license": "MIT", "node_version": "26"},
     "ts-library": {"language": "typescript", "kind": "library", "license": "Proprietary"},
+    "ts-web": {"language": "typescript", "kind": "web", "dependabot_automerge": "patch"},
 }
 
 
@@ -223,9 +224,14 @@ def test_typescript_checks(project: Path) -> None:
         ["npm", "test"],
         ["npm", "run", "test:integration"],
         ["node", "scripts/gen-wiki.ts", "--check"],
-        ["node", "--input-type=module", "-e", f'import {{ VERSION }} from "{project.name}";'],
     ):
         sh(*cmd, cwd=project)
+    if (project / "vite.config.ts").exists():
+        sh("npm", "run", "build", cwd=project)
+        assert '<div id="root">' in (project / "dist/index.html").read_text()
+        assert "[]" not in (project / "docs/wiki/In-Depth-Configuration.md").read_text()
+        return
+    sh("node", "--input-type=module", "-e", f'import {{ VERSION }} from "{project.name}";', cwd=project)
     if (project / "src/cli.ts").exists():
         sh("node", "dist/cli.js", "--help", cwd=project)
         assert sh("npm", "start", "--silent", "--", "version", cwd=project).strip() == "0.0.0"
@@ -240,6 +246,22 @@ def test_none_checks(project: Path) -> None:
     assert not (project / "pyproject.toml").exists() and not (project / "src").exists()
     agents = (project / "AGENTS.md").read_text()
     assert "sh scripts/check.sh" in agents and "``" not in agents.replace("```", "")
+
+
+@pytest.mark.parametrize("language", ["python", "none"])
+def test_kind_web_needs_typescript(language: str, tmp_path: Path) -> None:
+    data = {"project_name": "demo", "description": "demo", "language": language, "kind": "web"}
+    with pytest.raises(ValueError, match="language: typescript"):
+        run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+                 vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+
+
+def test_systemd_is_service_only(tmp_path: Path) -> None:
+    data = {"project_name": "demo", "description": "demo", "language": "typescript",
+            "kind": "web", "contrib": ["systemd"]}  # fmt: skip
+    with pytest.raises(ValueError, match="kind: service"):
+        run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+                 vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
 
 
 def test_kind_other_needs_language_none(tmp_path: Path) -> None:
@@ -501,6 +523,9 @@ def test_image_runs(project: Path) -> None:
     extra = VARIANTS[project.name.removeprefix("demo-")].get("extra_ports", [])
     exposed = sh("docker", "inspect", "-f", "{{json .Config.ExposedPorts}}", tag, cwd=project)
     assert all(f'"{p}/tcp"' in exposed for p in extra), exposed
+    if project.name.endswith("web"):
+        _probe_healthz(project, tag, shell=True)
+        return
     if "service" not in project.name:
         sh("docker", "run", "--rm", tag, "version", cwd=project)
         return
@@ -564,18 +589,26 @@ def test_image_serves_when_app_binds_loopback(project: Path, tmp_path: Path) -> 
     _probe_healthz(copy, tag)
 
 
-def _probe_healthz(project: Path, tag: str) -> None:
-    """Run the image as docker-build.yml's smoke test does and wait for /healthz."""
+def _probe_healthz(project: Path, tag: str, shell: bool = False) -> None:
+    """Run the image as docker-build.yml's smoke test does and wait for /healthz.
+
+    shell: also check that / and any route are the app's index.html (a web app, 0014),
+    with the manifests' hardening: a read-only root and no capabilities.
+    """
     name = f"{project.name}-test"
     subprocess.run(["docker", "rm", "-f", name], capture_output=True)
-    sh("docker", "run", "-d", "--name", name, "-p", "127.0.0.1::8080", tag, cwd=project)
+    hardening = ["--read-only", "--tmpfs", "/tmp", "--cap-drop", "ALL"] if shell else []
+    sh("docker", "run", "-d", "--name", name, *hardening, "-p", "127.0.0.1::8080", tag, cwd=project)
     try:
         port = sh("docker", "port", name, "8080", cwd=project).split(":")[-1].strip()
         for _ in range(30):
             try:
                 with urllib.request.urlopen(f"http://127.0.0.1:{port}/healthz", timeout=2) as r:
                     assert r.status == 200
-                    return
+                for path in ["/", "/some/route"] if shell else []:
+                    with urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=2) as r:
+                        assert '<div id="root">' in r.read().decode(), path
+                return
             except OSError:
                 time.sleep(1)
         pytest.fail(sh("docker", "logs", name, cwd=project))

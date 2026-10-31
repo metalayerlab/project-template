@@ -41,6 +41,8 @@
 [% set runtime = 'Python' %]
 [% set base_image = 'python' %]
 [% set container_base = 'python:' ~ python_version ~ '-slim' %]
+[#! the runtime stage's image: the builder's, for every kind !#]
+[% set runtime_base = container_base %]
 [% set container_bin_dir = '/opt/venv/bin' %]
 [% set container_bin = '/opt/venv/bin/' ~ project_name %]
 [% set systemd_upgrade = '`uv pip install --python /opt/' ~ project_name ~ ' git+' ~ repo_url ~ '@vX.Y.Z`' %]

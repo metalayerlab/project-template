@@ -39,6 +39,8 @@
 [% set runtime = '' %]
 [% set base_image = '' %]
 [% set container_base = '' %]
+[#! the runtime stage's image: the builder's, for every kind !#]
+[% set runtime_base = container_base %]
 [% set container_bin_dir = '' %]
 [% set container_bin = '' %]
 [% set systemd_upgrade = '' %]

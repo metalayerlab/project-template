@@ -25,6 +25,9 @@ import { createApp } from "../src/api.ts";
 [% endif %]
 import { program } from "../src/cli.ts";
 import { SETTINGS, envName[% if kind == 'service' %], loadConfig[% endif %] } from "../src/config.ts";
+[% elif kind == 'web' %]
+
+import { SETTINGS } from "../src/config.ts";
 [% endif %]
 
 const WIKI = "docs/wiki";
@@ -79,6 +82,20 @@ export function cli(root: Command = program()): string {
   }
   return out.join("\n").trimEnd();
 }
+[% elif kind == 'web' %]
+
+function cell(text: string): string {
+  return text.replaceAll("|", "\\|").replaceAll("\n", " ");
+}
+
+export function settings(): string {
+  const rows = ["| Key | Default | Description |", "|---|---|---|"];
+  for (const s of SETTINGS) {
+    const value = JSON.stringify(s.default);
+    rows.push(`| \`${s.key}\` | \`${value}\` | ${cell(s.help)} |`);
+  }
+  return rows.join("\n");
+}
 [% endif %]
 [% if kind == 'service' %]
 
@@ -108,6 +125,8 @@ const BLOCKS: Record<string, () => string | Promise<string>> = {
   "http-api": httpApi,
 [% endif %]
 };
+[% elif kind == 'web' %]
+const BLOCKS: Record<string, () => string | Promise<string>> = { settings };
 [% else %]
 const BLOCKS: Record<string, () => string | Promise<string>> = {};
 [% endif %]

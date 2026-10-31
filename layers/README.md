@@ -57,6 +57,7 @@ A layer `layers/<lang>/` provides:
 | `release_lock_note` | `. A follow-up job refreshes uv.lock…` | `''` (release-please bumps the lock too) | Release-Process |
 | `runtime`, `base_image` | `Python`, `python` | `Node.js`, `node` | dependabot.yml (the base image's held-back updates) |
 | `container_base`, `container_bin_dir`, `container_bin` | `python:3.13-slim`, `/opt/venv/bin`, … | `node:24-slim`, `/app/bin`, `/app/bin/<name>` | Dockerfile, docker/entrypoint.sh |
+| `runtime_base` | `container_base` | `container_base`; `nginx:1.30-trixie` for `kind: web` (design record 0014) | Dockerfile: the runtime stage's `FROM` |
 | `systemd_upgrade` | `` `uv pip install --python /opt/<name> …` `` | `` `npm install -g --prefix /opt/<name> …` `` | Deployment |
 
 **Empty values.** A value may be `''` (or `[]` for `noread`) when the language has no such step. The core

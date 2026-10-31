@@ -11,16 +11,16 @@ Copier asks these when you run `copier copy`. Pass answers non-interactively wit
 | `package_name` | from `project_name` | Python only: the import name, snake_case. A TypeScript package is named `project_name` |
 | `description` | (none) | One line, any length; quotes are fine. Appears in the README, the package manifest, OCI labels and the wiki footer. The CLI's `--help` and the API's OpenAPI document read it from the manifest at run time |
 | `github_owner` | `metalayerlab` | Organisation or user. Sets the image path and all links |
-| `kind` | `service` | `service`: long-running HTTP app (FastAPI, or Fastify for TypeScript) with health endpoints and a `serve` command. `cli`: a command (Typer, or commander). `library`: import only, with no CLI, image or contrib. Not asked for `language: none`, which is `other`: no generated code |
+| `kind` | `service` | `service`: long-running HTTP app (FastAPI, or Fastify for TypeScript) with health endpoints and a `serve` command. `cli`: a command (Typer, or commander). `library`: import only, with no CLI, image or contrib. `web` (TypeScript only): a Vite + React single-page app with React Router, configured at run time by `/config.json` and served by nginx; no CLI ([design 0014](https://github.com/metalayerlab/project-template/blob/main/docs/design/0014-web-kind.md)). Not asked for `language: none`, which is `other`: no generated code |
 | `python_version` | `3.13` | Python only. Minimum version: the Docker base image and the first CI matrix entry. CI also tests every newer supported version |
 | `node_version` | `24` | TypeScript only. Minimum Node.js LTS line (`24` or `26`): the Docker base image and the first CI matrix entry. CI also tests every newer one |
-| `port` | `8080` | service only |
+| `port` | `8080` | service and web (nginx's port) |
 | `extra_ports` | `[]` | service only. Other TCP ports it listens on, e.g. `[3128]`: exposed by the image and published by Compose and Kubernetes ([Contrib Manifests](Contrib-Manifests)). Each is 1–65535, listed once, and not `port` |
-| `health_path` | `/healthz` | service only: the liveness route, Docker `HEALTHCHECK`, k8s liveness probe and CI smoke test |
+| `health_path` | `/healthz` | service and web (answered by nginx): the liveness route, Docker `HEALTHCHECK`, k8s liveness probe and CI smoke test |
 | `container_image` | yes (no for library) | Builds and publishes to GHCR |
 | `multi_arch` | yes | Adds `linux/arm64` (built with QEMU; slower) |
 | `image_extras` | `[]` | Python with an image only. Optional extras (`[project.optional-dependencies]`) the image installs, e.g. `[fuse]`, or `["*"]` for all of them. CI's tests don't install them ([Docker Images](Docker-Images#optional-extras)) |
-| `contrib` | all three for a service | `docker`, `k8s`, `systemd`: see [Contrib Manifests](Contrib-Manifests) |
+| `contrib` | all three for a service; `docker` and `k8s` for web | `docker`, `k8s`, `systemd` (service only): see [Contrib Manifests](Contrib-Manifests) |
 | `puid_pgid` | no | No: the image runs as `USER 1000:1000`. Yes: the container starts as root to chown the state directory, then drops to `PUID:PGID`, for hosts where bind-mounted state must match a host user. Either way it runs as uid 1000 under Kubernetes |
 | `timezone` | `Europe/London` | `TZ` in the Compose, k8s and systemd manifests |
 | `code_owners` | `@<owner>/maintainers` | CODEOWNERS for every path. The team must exist and have write access |

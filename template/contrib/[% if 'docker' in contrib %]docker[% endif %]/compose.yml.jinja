@@ -2,10 +2,16 @@
 # Deployment page.
 #
 #   docker compose -f contrib/docker/compose.yml up -d
+[% if kind == 'web' %]
+#
+# Config: ./config.json (from public/config.json), mounted read-only over the
+# image's. No secrets: anyone who loads the app can read it.
+[% else %]
 #   docker exec [[ project_name ]] [[ project_name ]] config     # effective config and sources
 #
 # Config: ./config/config.yaml (from contrib/[[ project_name ]].example.yaml), mounted
 # read-only. Secrets: as files under ./secrets, passed with [[ env_prefix ]]<KEY>_FILE.
+[% endif %]
 
 services:
   [[ project_name ]]:
@@ -20,6 +26,9 @@ services:
 [% endfor %]
 
     volumes:
+[% if kind == 'web' %]
+      - ./config.json:/usr/share/nginx/html/config.json:ro
+[% else %]
       - ./config:/etc/[[ project_name ]]:ro
       - ./state:/var/lib/[[ project_name ]]
       # - ./secrets:/run/secrets/[[ project_name ]]:ro
@@ -32,6 +41,7 @@ services:
       TZ: "[[ timezone ]]"
       # [[ env_prefix ]]LOG_LEVEL: DEBUG
       # [[ env_prefix ]]SOME_TOKEN_FILE: /run/secrets/[[ project_name ]]/some-token
+[% endif %]
 
     # Hardening: read-only root, no new privileges, only the capabilities it needs
     read_only: true

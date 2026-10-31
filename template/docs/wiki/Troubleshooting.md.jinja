@@ -9,6 +9,12 @@
 [% if kind == 'service' %]
 - **Health:** `curl http://127.0.0.1:[[ port ]][[ health_path ]]` (alive) and `/readyz` (ready to serve).
 [% endif %]
+[% if kind == 'web' %]
+- **Run-time configuration:** fetch `/config.json` from where the app is served: it is what the app reads. The browser's developer tools (Console, Network) show the rest.
+[% if container_image %]
+- **Health:** `curl http://127.0.0.1:[[ port ]][[ health_path ]]` (nginx is up).
+[% endif %]
+[% endif %]
 [% if container_image %]
 - **Container:** `docker logs [[ project_name ]]`, and `docker inspect --format '{{json .State.Health}}' [[ project_name ]]`.
 [% endif %]
@@ -18,7 +24,7 @@
 [% if 'systemd' in contrib %]
 - **systemd:** `journalctl -u [[ project_name ]] -e` and `systemctl status [[ project_name ]]`.
 [% endif %]
-[% if not (has_cli or container_image or contrib) %]
+[% if not (has_cli or container_image or contrib or kind == 'web') %]
 <!-- guidance: how a user sees what the library is doing: its logger names, and any debug switches. -->
 [% endif %]
 
