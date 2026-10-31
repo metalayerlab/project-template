@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.18](https://github.com/metalayerlab/project-template/compare/v0.1.17...v0.1.18) (2026-10-31)
+
+
+### ✨ Features
+
+* kind web, a Vite + React single-page app served by nginx ([#77](https://github.com/metalayerlab/project-template/issues/77)) ([64cedf8](https://github.com/metalayerlab/project-template/commit/64cedf81b6211f7e0310003fb5402a60f438a612))
+
+
+### 📚 Documentation
+
+* design record 0014, a web kind ([#75](https://github.com/metalayerlab/project-template/issues/75)) ([b1f5b87](https://github.com/metalayerlab/project-template/commit/b1f5b870b25bb8513379f7c0b616e8d43bc62397))
+
 ## [0.1.17](https://github.com/metalayerlab/project-template/compare/v0.1.16...v0.1.17) (2026-10-31)
 
 
