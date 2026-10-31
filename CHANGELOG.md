@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.13](https://github.com/metalayerlab/project-template/compare/v0.1.12...v0.1.13) (2026-10-30)
+
+
+### ✨ Features
+
+* install system packages from contrib/system-packages.txt in CI and the image ([#59](https://github.com/metalayerlab/project-template/issues/59)) ([d52258e](https://github.com/metalayerlab/project-template/commit/d52258e691ab4a037df926a0731d22c8981327d4))
+* keep GitHub's About box (description, wiki link, topics) in .github/repository.toml ([#54](https://github.com/metalayerlab/project-template/issues/54)) ([c6d93fb](https://github.com/metalayerlab/project-template/commit/c6d93fb35dff5f573000b93e84fae3c8baf1286c))
+
+
+### 🐛 Bug Fixes
+
+* a long or quoted description no longer breaks the generated project ([#58](https://github.com/metalayerlab/project-template/issues/58)) ([e5088a4](https://github.com/metalayerlab/project-template/commit/e5088a4b00acb758c3dce29a95470ed17740f15f))
+* workflows create the labels they rely on (no-docs-needed, template-update) ([#57](https://github.com/metalayerlab/project-template/issues/57)) ([0aa772f](https://github.com/metalayerlab/project-template/commit/0aa772f4db8cc38d58eb31d5209f65becd0aefe4))
+
 ## [0.1.12](https://github.com/metalayerlab/project-template/compare/v0.1.11...v0.1.12) (2026-10-30)
 
 
