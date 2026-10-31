@@ -178,6 +178,25 @@ multi_arch:
   default: true
   when: "[[ container_image ]]"
 
+image_extras:
+  type: yaml
+  help: Optional extras (pyproject's [project.optional-dependencies]) the image installs, for example [fuse], or ["*"] for all. CI's tests don't install them.
+  default: "[]"
+  when: "[[ container_image and language == 'python' ]]"
+  validator: >-
+    [% if image_extras is string or image_extras is not sequence %]
+    A list of extra names: [fuse]
+    [% elif image_extras | reject('string') | list or '' in image_extras %]
+    Each extra is a name
+    [% elif '*' in image_extras and image_extras | length > 1 %]
+    "*" (all extras) stands alone
+    [% elif image_extras | reject('eq', '*') | map('lower') | map('trim', 'abcdefghijklmnopqrstuvwxyz0123456789._-') | select | list
+        or image_extras | reject('eq', '*') | map('first') | map('lower') | reject('in', 'abcdefghijklmnopqrstuvwxyz0123456789') | list %]
+    Names start with a letter or digit and use letters, digits, ".", "_" and "-"
+    [% elif image_extras | unique | list | length != image_extras | length %]
+    An extra is listed twice
+    [% endif %]
+
 contrib:
   type: str
   help: Deployment manifests to include under contrib/

@@ -19,6 +19,7 @@ Copier asks these when you run `copier copy`. Pass answers non-interactively wit
 | `health_path` | `/healthz` | service only: the liveness route, Docker `HEALTHCHECK`, k8s liveness probe and CI smoke test |
 | `container_image` | yes (no for library) | Builds and publishes to GHCR |
 | `multi_arch` | yes | Adds `linux/arm64` (built with QEMU; slower) |
+| `image_extras` | `[]` | Python with an image only. Optional extras (`[project.optional-dependencies]`) the image installs, e.g. `[fuse]`, or `["*"]` for all of them. CI's tests don't install them ([Docker Images](Docker-Images#optional-extras)) |
 | `contrib` | all three for a service | `docker`, `k8s`, `systemd`: see [Contrib Manifests](Contrib-Manifests) |
 | `puid_pgid` | no | No: the image runs as `USER 1000:1000`. Yes: the container starts as root to chown the state directory, then drops to `PUID:PGID`, for hosts where bind-mounted state must match a host user. Either way it runs as uid 1000 under Kubernetes |
 | `timezone` | `Europe/London` | `TZ` in the Compose, k8s and systemd manifests |
