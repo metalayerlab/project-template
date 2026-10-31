@@ -148,6 +148,33 @@ def test_extra_ports_rejected(bad: object, tmp_path: Path) -> None:
                  vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
 
 
+@pytest.mark.parametrize(
+    ("extras", "flags"),
+    [([], ""), (["fuse", "gpu"], " --extra fuse --extra gpu"), (["*"], " --all-extras")],
+)
+def test_image_extras(extras: list[str], flags: str, tmp_path: Path) -> None:
+    """`image_extras` (#63) reaches both of the builder's `uv sync` lines; none adds nothing."""
+    data = {"project_name": "demo", "description": "demo", "kind": "cli", "image_extras": extras}
+    run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+             vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+    syncs = [ln for ln in (tmp_path / "p/Dockerfile").read_text().splitlines() if "uv sync" in ln]
+    assert syncs == [
+        f"RUN uv sync --frozen --no-dev --no-install-project{flags}",
+        f"RUN uv sync --frozen --no-dev --no-editable{flags}",
+    ]
+    assert ("image_extras" in (tmp_path / "p/Dockerfile").read_text()) == bool(extras)
+
+
+@pytest.mark.parametrize(
+    "bad", ["fuse", [1], [""], ["*", "fuse"], ["a b"], ["fuse;rm"], ["-x"], ["fuse", "fuse"]]
+)
+def test_image_extras_rejected(bad: object, tmp_path: Path) -> None:
+    data = {"project_name": "demo", "description": "demo", "kind": "cli", "image_extras": bad}
+    with pytest.raises(ValueError, match="image_extras"):
+        run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+                 vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+
+
 def test_first_release_is_0_1_0(project: Path) -> None:
     """With the manifest at 0.0.0, release-please would otherwise propose 1.0.0."""
     import json
@@ -463,6 +490,21 @@ def test_image_installs_system_packages(project: Path, tmp_path: Path) -> None:
     tag = f"{project.name}:packages"
     sh("docker", "build", "-q", "-t", tag, ".", cwd=copy)
     sh("docker", "run", "--rm", "--entrypoint", "tini", tag, "--version", cwd=copy)
+
+
+@pytest.mark.docker
+def test_image_installs_extras(tmp_path: Path) -> None:
+    """An extra named in `image_extras` is in the image (#63)."""
+    data = {"project_name": "demo", "description": "demo", "kind": "cli", "image_extras": ["six"]}
+    dst = tmp_path / "demo"
+    run_copy(str(ROOT), dst, data=data, defaults=True, unsafe=True, quiet=True,
+             vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+    with (dst / "pyproject.toml").open("a") as f:
+        f.write('\n[project.optional-dependencies]\nsix = ["six>=1.16"]\n')
+    sh("uv", "lock", "-q", cwd=dst)
+    sh("docker", "build", "-q", "-t", "demo:extras", ".", cwd=dst)
+    sh("docker", "run", "--rm", "--entrypoint", "python", "demo:extras", "-c", "import six",
+       cwd=dst)  # fmt: skip
 
 
 @pytest.mark.docker

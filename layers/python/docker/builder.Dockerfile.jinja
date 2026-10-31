@@ -11,10 +11,16 @@ ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
 
 WORKDIR /build
 
+[#! The optional extras named by the Copier answer `image_extras` (#63). None: no flag,
+    so the rendered file is unchanged. !#]
+[% set extras = ' --all-extras' if image_extras == ['*'] else ((' --extra ' ~ image_extras | join(' --extra ')) if image_extras else '') %]
 # Dependencies first, so a source change doesn't reinstall them
+[% if image_extras %]
+# with the optional extras the Copier answer `image_extras` names
+[% endif %]
 COPY pyproject.toml uv.lock README.md ./
-RUN uv sync --frozen --no-dev --no-install-project
+RUN uv sync --frozen --no-dev --no-install-project[[ extras ]]
 
 COPY src/ ./src/
-RUN uv sync --frozen --no-dev --no-editable
+RUN uv sync --frozen --no-dev --no-editable[[ extras ]]
 

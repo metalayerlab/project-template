@@ -13,6 +13,16 @@ runtime: fuse3 libfuse3-3
 
 The `build:` packages are installed in the builder stage, and in CI's test job before the dependencies are installed (see [CI Pipeline](CI-Pipeline)). The `runtime:` packages are installed in the runtime stage, so they are in the image. Both lists are empty by default, and an empty list installs nothing. Repeat a line to add more. Both base images (`python:<v>-slim`, `node:<v>-slim`) are Debian, so the names are Debian's. To run from source, install the `build:` packages yourself; to deploy without the image (systemd), the `runtime:` ones.
 
+## Optional extras
+
+A Python dependency that only the image needs, such as one that compiles against a C library, can stay an optional extra, so the core, its tests and lint need no C toolchain. Name the extras the image installs in the Copier answer `image_extras`:
+
+```sh
+uvx copier update --trust -d image_extras='[fuse]'     # or '["*"]' for every extra
+```
+
+Both of the builder's `uv sync` lines then get `--extra fuse` (`--all-extras` for `"*"`). It is an answer, not a project file, so the Dockerfile stays template-owned and updates without conflicts ([design 0012](https://github.com/metalayerlab/project-template/blob/main/docs/design/0012-image-extras.md)). CI's test job installs no extras. List the extra's build and runtime apt packages in `contrib/system-packages.txt` as above.
+
 ## Tags
 
 | Trigger | Tags |
