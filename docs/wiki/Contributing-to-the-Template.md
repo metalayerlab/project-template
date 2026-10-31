@@ -20,6 +20,8 @@ Blank issues are off. Don't report a security problem in a public issue: contact
 5. Update this wiki (CI checks it with `--strict` and markdownlint; `AGENTS.md` has the local commands), and open a PR whose Conventional Commit title describes the effect on *projects*. Use `!` for anything that will fail a project's CI after the update (a new required heading, a stricter check, a renamed question).
 6. Release with the template's own Release PR. Projects pick it up at their next update.
 
+With an AI assistant, start from the template's own prompts in [`docs/ai/prompts.md`](https://github.com/metalayerlab/project-template/blob/main/docs/ai/prompts.md): triaging a project's report, a design record, a new Copier question, a project-owned file, a bug fix, a workflow change, an `AGENTS.md` change, the PR body, a review and the checks after a merge.
+
 `main` is protected by a ruleset: changes arrive only by PR, squash-merged, with every Template CI check, the wiki checks and the PR-title check passing, and an approval from `@metalayerlab/maintainers` (`.github/CODEOWNERS`). Organisation admins can merge a PR without the approval, for when the only maintainer is the author, but can't push to `main` directly.
 
 When deciding whether a file is template-owned or project-owned (`_skip_if_exists`): make it project-owned only if projects must diverge from it. Project-owned files never receive another fix.

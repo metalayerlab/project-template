@@ -8,8 +8,6 @@ left gets a line here or an issue.
 
 - [ ] `kind: web`, a Vite + React SPA in a static image, `typescript` only: needs its own design record
   (design [0009](docs/design/0009-typescript-layer.md))
-- [ ] A `description` containing `"` breaks rendering: `pyproject.toml` (and probably `package.json`) puts it in a
-  string unescaped. Use `| tojson` wherever it's rendered, and give one test variant a quoted description
 
 ## Decided against (don't re-propose without reading this first)
 
