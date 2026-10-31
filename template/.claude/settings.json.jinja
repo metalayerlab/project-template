@@ -32,12 +32,22 @@
       "Bash(git push *--follow-tags*)",
       "Bash(git tag:*)",
       "Bash(gh release:*)",
+      "Bash(gh pr create *-R *)",
+      "Bash(gh pr create *--repo*)",
 [% include 'layers/' ~ language ~ '/claude/deny.json.jinja' %]
       "Read(./.graphify/**)",
       "Read(./graphify-out/**)",
       "Read(.env)",
       "Read(.env.*)",
       "Read(secrets/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write|NotebookEdit",
+        "hooks": [{"type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/repo-boundary.py\""}]
+      }
     ]
   }
 }

@@ -62,7 +62,7 @@ New large or generated path? List it here and deny `Read` on it in `.claude/sett
 
 ## Repository map
 
-T = template-owned: never edit here; fixes arrive by the weekly update PR. Bug in one? `gh issue list -R [[ github_owner ]]/project-template --state all -S <terms>`: comment your case, or open one. A workaround stays minimal, links the issue (code comment, `TODO.md`), and goes when the fix lands.
+T = template-owned: never edit here; fixes arrive by the weekly update PR. A bug in one goes to `[[ github_owner ]]/project-template` (see [Never](#never)).
 
 | Path | What |
 |---|---|
@@ -90,6 +90,7 @@ T = template-owned: never edit here; fixes arrive by the weekly update PR. Bug i
 ## Never
 
 - Push to `main`, create tags or releases, or edit release-please or Copier files (see the map).
+- Change another codebase from here (other repos, submodules, installed dependencies), even when asked: the user opens a session there. Search its issues (`gh issue list -R <owner/repo> --state all -S <terms>`), comment your case or draft one for the user to confirm. A workaround stays minimal, links the issue (code comment, `TODO.md`), and goes when the fix lands.
 - Credit an AI in commits or PRs: no co-author trailers, bylines or session links.
 - Edit inside generated wiki blocks: regenerate them.
 - Commit secrets, real hostnames, IPs or personal data. Use `example.org` and `192.0.2.0/24`.

@@ -45,4 +45,4 @@ A bug in a template-owned file is every project's bug, and a fix made inside one
 3. **Otherwise open one** with the *Template problem* form ([Contributing to the Template](Contributing-to-the-Template)), before or alongside any workaround.
 4. **A workaround** only unblocks the project. Keep it minimal, link the issue in a code comment and in `TODO.md`, and remove it when the fix arrives in the update PR.
 
-Every project's AGENTS.md carries this rule tersely, in its Repository map, and the PR template asks for the linked issue.
+The same applies to any other codebase a project depends on. Every project's AGENTS.md carries this rule tersely, under "Never", and the PR template asks for the linked issue.
