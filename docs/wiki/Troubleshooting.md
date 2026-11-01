@@ -6,13 +6,21 @@
 
 Usually uv is missing or can't reach the package index. Copier removes the half-made project on a failed task, so re-run with `--skip-tasks`, then run `sh scripts/bootstrap.sh` and read its error.
 
+### `copier update` stopped with an error, or dropped your edits
+
+An update that stops part-way is incomplete: Copier has written the new template over your files but not put your edits back, and no conflict markers show it. Templates up to v0.1.20 ran `scripts/bootstrap.sh` during the update, so a failing `uv sync` or `npm install` stopped it there ([#82](https://github.com/metalayerlab/project-template/issues/82)). Don't commit the result. Reset with `git checkout -- . && git clean -fd`, then run `uvx copier update --trust --skip-tasks` and `sh scripts/bootstrap.sh` ([Updating from the Template](Updating-from-the-Template#an-update-that-stops-with-an-error-is-incomplete)).
+
+### "Directory not empty" (os error 39) from uv or npm after an update
+
+An update from v0.1.20 or earlier without `--skip-tasks` can delete files from `.venv` or `node_modules` and leave the directories. Delete the directory and run `sh scripts/bootstrap.sh` again.
+
 ### The wiki publish job fails with "No wiki repository yet"
 
 The GitHub wiki's git repository exists only after its first page is created in the web UI. Enable the wiki, create any page, and re-run the job: it replaces that page.
 
 ### Template update opened an issue, not a PR
 
-The update changes `.github/workflows/`, and without the release GitHub App the workflow can't push those files ("refusing to allow a GitHub App to create or update workflow"). Run `uvx copier update --trust --conflict inline` locally, push a branch and open the PR. Set up the App ([Release Process](Release-Process#the-release-github-app)) to stop this.
+The update changes `.github/workflows/`, and without the release GitHub App the workflow can't push those files ("refusing to allow a GitHub App to create or update workflow"). Run `uvx copier update --trust --skip-tasks --conflict inline` and then `sh scripts/bootstrap.sh` locally, push a branch and open the PR. Set up the App ([Release Process](Release-Process#the-release-github-app)) to stop this.
 
 ### `unauthorized` pulling a public project's image
 
@@ -77,6 +85,10 @@ Starlette 1.x builds its `TestClient` on `httpx2`. A service project's dev group
 ### pytest fails on a warning after a dependency bump
 
 `filterwarnings = ["error"]` makes every warning a failure, so a deprecation shows up in the PR that brings it. Fix the cause (usually what the warning says to use instead). If it comes from a library you can't change yet, ignore that one warning in `pyproject.toml`, narrowly and with a reason, for example `` "ignore:Using `httpx` with:UserWarning" `` (the category must be the warning's real class or a parent of it: check where it is defined), and add a `TODO.md` line to remove it.
+
+### `Required test coverage of 80.0% not reached` running integration tests or a subset
+
+The coverage floor in `addopts` is for the whole unit suite: integration tests alone, or a few unit tests, can't reach it. Add `--no-cov`: `RUN_INTEGRATION=1 uv run pytest -m integration --no-cov`. `copier update` brings the fix to AGENTS.md, but `Testing-Guide.md` is your own page: add `--no-cov` to its commands yourself. TypeScript is unaffected: only `npm test` measures coverage.
 
 ### Secret scan flags a value that isn't a secret
 

@@ -75,7 +75,7 @@ one command the Definition of done always runs. A layer whose only kind drops re
 | `editorconfig` | .editorconfig: extra sections (TypeScript: 2-space `.ts`/`.js`, which Prettier reads) | optional |
 | `dependabot.yml` | dependabot.yml: the package ecosystem | yes |
 | `pre-commit/hooks.yaml` | .pre-commit-config.yaml: lint, format, typecheck and gen-wiki hooks | yes |
-| `bootstrap.sh` | scripts/bootstrap.sh: lock, then fill the generated wiki sections | yes |
+| `bootstrap.sh` | scripts/bootstrap.sh: lock, then fill the generated wiki sections. Copier runs it on copy only; after an update, template-update.yml or the user does (#82) | yes |
 | `claude/allow.json` | .claude/settings.json: allow-listed commands | yes |
 | `docker/builder.Dockerfile`, `docker/runtime.Dockerfile`, `docker/healthcheck.Dockerfile` | Dockerfile stage 1 after the core's `FROM <container_base> AS builder` and system packages, the runtime install, the HEALTHCHECK command | yes |
 | `ignore/gitignore`, `ignore/dockerignore` | the language's ignore entries | yes |

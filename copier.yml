@@ -1,7 +1,7 @@
 # project-template: start a new metalayerlab project.
 #
 #   uvx copier copy --trust gh:metalayerlab/project-template my-project
-#   cd my-project && uvx copier update --trust      # later: pull template fixes in
+#   cd my-project && uvx copier update --trust --skip-tasks && sh scripts/bootstrap.sh   # later: template fixes
 #
 # See the wiki: Quick-Start and Answering-the-Questions.
 
@@ -89,8 +89,24 @@ _exclude:
 
 # Lock dependencies, fill the generated wiki sections, git init. Needs --trust;
 # without it, run scripts/bootstrap.sh yourself.
+# Only on copy: `copier update` runs tasks before it reapplies the project's
+# edits, so a failing task there silently drops them (#82). After an update, run
+# scripts/bootstrap.sh yourself (template-update.yml does).
 _tasks:
   - command: "sh scripts/bootstrap.sh"
+    when: "[[ _copier_operation == 'copy' ]]"
+
+# Updating from a version whose bootstrap still ran on update: Copier's copy of
+# the old version has a lock file and the new one doesn't, so the update deletes
+# the project's. Restore it. `when` is explicit: older Copier defaults it
+# with {{ }} delimiters.
+_migrations:
+  - version: "0.1.21"
+    when: "[[ _stage == 'after' ]]"
+    command: >-
+      for f in uv.lock package-lock.json; do
+      if [ ! -e "$f" ] && git cat-file -e "HEAD:$f" 2>/dev/null;
+      then git checkout HEAD -- "$f"; fi; done
 
 _message_after_copy: |
   [[ project_name ]] is ready.
@@ -102,6 +118,10 @@ _message_after_copy: |
 
   Then read AGENTS.md (it is what your AI assistant reads too) and
   docs/ai/prompts.md for the kick-off prompt. Wiki: docs/wiki/.
+
+_message_after_update: |
+  Next: resolve any <<<<<<< markers, then run sh scripts/bootstrap.sh
+  (lock file, generated wiki sections), review git diff and commit.
 
 # ---------------------------------------------------------------- questions
 

@@ -14,6 +14,7 @@ A brain: notes, not code. Single source of instructions for AI assistants; the t
 3. A human reviews every change. Report what you skipped or couldn't check; never claim an unrun check passed.
 4. Asking the user something? Give your recommendation and why.
 5. Reply tersely: the result, then what you need from the user. No preamble, recaps or restated plans.
+6. Ending a session? List what you left (worktrees, local and remote branches, temp files, processes, containers), whether each is safe to remove and why, and remove only what the user approves.
 
 ## Don't read
 
@@ -37,7 +38,7 @@ Single source of instructions for AI assistants; the tool files point here. Reas
 6. Asking the user something? Give your recommendation and why.
 7. Finished a bug or enhancement? Say what let it happen and what should change (a test, a check, this file, the template), or "none".
 8. Reply tersely: the result, then what you need from the user. No preamble, recaps or restated plans.
-9. Task done and the next is unrelated? Make sure the PR, `TODO.md` or design record holds what's needed, then suggest a new session.
+9. Task done and the next is unrelated? Make sure the PR, `TODO.md` or design record holds what's needed. List what you left (worktrees, local and remote branches, temp files, processes, containers), whether each is safe to remove and why, and remove only what the user approves. Then suggest a new session.
 
 ## Don't read
 
@@ -114,7 +115,7 @@ T = template-owned: never edit here; fixes arrive by the weekly update PR. A bug
 ## Conventions
 [% include 'layers/' ~ language ~ '/agents/conventions.md.jinja' %]
 - **Tests:** each behaviour change gets a test that fails without it. Assert behaviour; no network in unit tests.
-- **PR titles:** Conventional Commits (`feat:` `fix:` `docs:` `refactor:` `perf:` `test:` `build:` `ci:` `chore:`, `!` = breaking), lower-case subject, no full stop. The title becomes the CHANGELOG line.
+- **PR titles:** Conventional Commits, `!` = breaking (CI-checked).
 - **Branches:** `feat/<topic>` or `dev/<topic>`.
 
 [% endif %]

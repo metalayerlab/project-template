@@ -72,8 +72,8 @@ def slug(text: str) -> str:
     return text.replace(" ", "-")
 
 
-def prose_lines(text: str) -> list[tuple[int, str]]:
-    """(line number, line) outside fenced code blocks, with inline code removed."""
+def unfenced_lines(text: str) -> list[tuple[int, str]]:
+    """(line number, line) outside fenced code blocks."""
     out: list[tuple[int, str]] = []
     fenced = False
     for n, line in enumerate(text.splitlines(), 1):
@@ -81,8 +81,13 @@ def prose_lines(text: str) -> list[tuple[int, str]]:
             fenced = not fenced
             continue
         if not fenced:
-            out.append((n, INLINE_CODE.sub("", line)))
+            out.append((n, line))
     return out
+
+
+def prose_lines(text: str) -> list[tuple[int, str]]:
+    """(line number, line) outside fenced code blocks, with inline code removed."""
+    return [(n, INLINE_CODE.sub("", line)) for n, line in unfenced_lines(text)]
 
 
 def strip_comments(text: str) -> str:
@@ -91,11 +96,12 @@ def strip_comments(text: str) -> str:
 
 
 def headings(text: str) -> list[str]:
+    """Heading texts. GitHub keeps inline code's text in the anchor, so only the backticks go."""
     found = []
-    for _, line in prose_lines(strip_comments(text)):
+    for _, line in unfenced_lines(strip_comments(text)):
         m = HEADING.match(line)
         if m:
-            found.append(m.group(2))
+            found.append(m.group(2).replace("`", ""))
     return found
 
 

@@ -19,7 +19,7 @@
 [% set format_check = 'uv run ruff format --check' %]
 [% set typecheck = 'uv run mypy' %]
 [% set test = 'uv run pytest' %]
-[% set test_integration = 'RUN_INTEGRATION=1 uv run pytest -m integration' %]
+[% set test_integration = 'RUN_INTEGRATION=1 uv run pytest -m integration --no-cov' %]
 [% set gen_wiki = 'uv run scripts/gen-wiki.py' %]
 [% set run = 'uv run ' ~ project_name %]
 [% set install_cli = 'uv tool install git+' ~ repo_url %]
