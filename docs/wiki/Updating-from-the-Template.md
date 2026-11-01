@@ -40,7 +40,7 @@ When your change and the template's touch the same lines, Copier leaves `<<<<<<<
 
 ## Fixes to project-owned files
 
-A fix to a file the project owns, such as `src/<package>/config.py`, never arrives through an update. The release notes name it, and you apply it by hand. The config engine's type checks are one: a YAML `0.5` or `true` for an integer setting, or a list or mapping for a string setting, is now an error that names the setting instead of a silent `0`, `1` or Python repr. Copy `_coerce` and its tests from a freshly rendered project.
+A fix to a file the project owns, such as `src/<package>/config.py`, never arrives through an update. The release notes name it, and you apply it by hand. The config engine's type checks are one: a YAML `0.5` or `true` for an integer setting, or a list or mapping for a string setting, is now an error that names the setting instead of a silent `0`, `1` or Python repr. Copy `_coerce` and its tests from a freshly rendered project. List settings are another: `Setting(..., is_list=True)` takes a YAML list or a comma-separated string and resolves to a tuple. Copy `Setting`, `_coerce`, `resolve` and the list tests, and the `settings` block of `scripts/gen-wiki.py` arrives with the update.
 
 ## Moving from `none` to a language layer
 

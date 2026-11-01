@@ -6,7 +6,7 @@ left gets a line here or an issue.
 
 ## Open
 
-Nothing open: new work starts as an issue or a design record.
+- A thin `config.py` on interpose's settings engine (#84 part 2, [0020](docs/design/0020-thin-config-on-interpose.md)): blocked on interpose v0.1.0
 
 ## Decided against (don't re-propose without reading this first)
 
