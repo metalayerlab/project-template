@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.1.20](https://github.com/metalayerlab/project-template/compare/v0.1.19...v0.1.20) (2026-11-01)
+
+
+### ✨ Features
+
+* kind knowledge, a notes repository with the agent guard rails ([#89](https://github.com/metalayerlab/project-template/issues/89)) ([4c0c225](https://github.com/metalayerlab/project-template/commit/4c0c225e2bb67dec9d15d5912b7c40ec1077f435))
+* language obsidian, a vault layer whose kind is brain, replacing kind knowledge ([#92](https://github.com/metalayerlab/project-template/issues/92)) ([89ae367](https://github.com/metalayerlab/project-template/commit/89ae3674857d5efc42ee0e9aaae99cec18cfe5d9))
+
+
+### 🐛 Bug Fixes
+
+* separate Home wiki contents lines and list every choice in the template problem form ([#87](https://github.com/metalayerlab/project-template/issues/87)) ([0ec97df](https://github.com/metalayerlab/project-template/commit/0ec97df3a4902e9864a32edcd3d7d70f7937eda8))
+
+
+### 📚 Documentation
+
+* design record 0015, a knowledge kind ([#88](https://github.com/metalayerlab/project-template/issues/88)) ([2fef77a](https://github.com/metalayerlab/project-template/commit/2fef77ad8b113cdfb5b668ecff270f268236036a))
+* design record 0016, an obsidian language layer ([#91](https://github.com/metalayerlab/project-template/issues/91)) ([c5fbe07](https://github.com/metalayerlab/project-template/commit/c5fbe07f3c8eabd00955183616da87f5fd36e9d1))
+* run the docs-touched wiki check in the Definition of done ([#93](https://github.com/metalayerlab/project-template/issues/93)) ([60ccad1](https://github.com/metalayerlab/project-template/commit/60ccad1d45dbd7341c897c73dbace299e8fea466))
+
 ## [0.1.19](https://github.com/metalayerlab/project-template/compare/v0.1.18...v0.1.19) (2026-11-01)
 
 
