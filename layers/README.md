@@ -2,7 +2,7 @@
 
 The template is a **language-agnostic core** plus one **layer** per language: `python` and `typescript`
 (design record 0009), and `obsidian`, a vault of notes whose only kind is `brain` (design record 0016).
-The obsidian layer's opt-in Brain pull workflow is two gated whole files (design record 0018).
+The obsidian layer's opt-in Brain pull workflow is three gated whole files: the workflow, its gate and the vault's `🛰️ Subscriptions` note (design records 0018, 0019).
 `none` is the layer for a language without one: every value is defined, most of them empty (design record 0008). `tests/test_layers.py` enforces the boundary: core files may not contain
 language tooling, and every layer must provide everything the core asks for.
 

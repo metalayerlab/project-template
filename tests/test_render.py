@@ -475,12 +475,14 @@ def test_brain_keeps_guard_rails_only(project: Path) -> None:
     assert [p for p in BRAIN_DROPS if (project / p).exists()] == []
     skip = {".git", "__pycache__"}
     files = [p for p in project.rglob("*") if p.is_file() and not skip & set(p.parts)]
+    # Brain pull follows other repositories' docs/wiki/ and docs/design/, not its own (0019).
+    files = [p for p in files if str(p.relative_to(project)) not in PULL_FILES]
     text = "\n".join(p.read_text(errors="ignore") for p in files)
     dropped = r"check-wiki|release-please|docs/wiki|docs/design|CHANGELOG|markdownlint"
     assert not re.search(dropped, text)
     sh("uv", "run", "scripts/check-vault.py", cwd=project)
     assert quiet(["uv", "run", "scripts/check-vault.py"], project) == [
-        "check-vault OK: 4 files, 0 design records"
+        "check-vault OK: 5 files, 0 design records"  # with 🛰️ Subscriptions (0019)
     ]
     assert "**/.obsidian/workspace*.json" in (project / ".gitignore").read_text()
     assert "proprietary" in (project / "LICENSE").read_text()
@@ -492,6 +494,7 @@ VAULT_OWNERS = {
     "knowledge/📐 Conventions.md": True,
     "knowledge/.obsidian/app.json": True,
     "knowledge/.obsidian/templates.json": True,
+    "knowledge/🛰️ Subscriptions.md": True,  # with brain_pull (0019)
     "knowledge/decisions/Decisions.base": False,
     "knowledge/_templates/📝 Design Record.md": False,
 }
@@ -502,7 +505,8 @@ def test_brain_ownership(tmp_path: Path) -> None:
     and still updates the design index and template (0015, 0016)."""
     for language, owned in (("obsidian", VAULT_OWNERS), ("none", {"README.md": False})):
         dst = tmp_path / language
-        data = {"project_name": "demo", "description": "demo", "language": language}
+        data = {"project_name": "demo", "description": "demo", "language": language,
+                "brain_pull": language == "obsidian"}  # fmt: skip
         run_copy(str(ROOT), dst, data=data, defaults=True, unsafe=True, quiet=True, vcs_ref="HEAD",
                  skip_tasks=True)  # fmt: skip
         for name in owned:
@@ -594,13 +598,14 @@ def test_vault_check(case: str, project: Path, tmp_path: Path) -> None:
     result = subprocess.run(["uv", "run", "scripts/check-vault.py"], cwd=copy, capture_output=True, text=True)
     if not error:
         assert result.returncode == 0, result.stdout + result.stderr
-        assert result.stdout == "check-vault OK: 7 files, 2 design records\n"
+        assert result.stdout == "check-vault OK: 8 files, 2 design records\n"
     else:
         assert result.returncode == 1 and error in result.stdout, result.stdout + result.stderr
 
 
 PULL = ".github/workflows/brain-pull.yml"
-PULL_FILES = [PULL, "scripts/followed-repos.py"]
+GATE = "scripts/brain-pull-gate.py"
+PULL_FILES = [PULL, GATE, "knowledge/🛰️ Subscriptions.md"]
 
 
 @pytest.mark.parametrize("data", [{"language": "obsidian"}, {"language": "python", "brain_pull": True},
@@ -614,7 +619,7 @@ def test_brain_pull_is_opt_in(data: dict[str, object], tmp_path: Path) -> None:
 
 
 def test_brain_pull_workflow(project: Path) -> None:
-    """Claude runs read-only; only propose writes, after checking the patch's scope (0018)."""
+    """Claude runs read-only; only propose writes, after checking the patch's scope (0018, 0019)."""
     if not brain(project):
         assert [f for f in PULL_FILES if (project / f).exists()] == []
         return
@@ -626,8 +631,14 @@ def test_brain_pull_workflow(project: Path) -> None:
                                               "issues": "write", "actions": "write"}  # fmt: skip
     steps = {s.get("name") or s["uses"].split("@")[0]: s for s in jobs["update"]["steps"]}
     assert "secrets.CLAUDE_CODE_OAUTH_TOKEN != ''" in steps["Is Claude Code set up?"]["env"]["HAS_TOKEN"]
-    assert steps["Which followed repositories changed?"]["if"] == "steps.secret.outputs.ok == 'true'"
+    gate = steps["Which followed sources changed?"]
+    assert gate["if"] == "steps.secret.outputs.ok == 'true'"
+    assert "--workflow brain-pull.yml --branch main --status success" in gate["run"]
+    assert 'scripts/brain-pull-gate.py "$since" brain-pull-out/changes.md' in gate["run"]
     claude = steps["Claude Code updates the notes"]
+    prompt = claude["with"]["prompt"]
+    for needed in ["brain-pull-out/changes.md", "`knowledge/🛰️ Subscriptions.md`", "the `📐` note in the folder"]:
+        assert needed in prompt, needed
     assert claude["with"]["show_full_output"] == "${{ inputs.debug == true }}"
     assert "Edit(./knowledge/**/*.md)" in claude["with"]["claude_args"]
     assert "python3" not in claude["with"]["claude_args"]
@@ -677,12 +688,13 @@ SCOPE_CASES = {
     "outside the vault": ({"README.md": "x\n"}, OUTSIDE),
     "a workflow": ({".github/workflows/ci.yml": "x\n"}, OUTSIDE),
     "a new note": ({"knowledge/🧭 New.md": "x\n"}, "adds, removes or renames"),
+    "the subscriptions": ({"knowledge/🛰️ Subscriptions.md": "x\n"}, OUTSIDE),
 }  # fmt: skip
 
 
 @pytest.mark.parametrize("case", SCOPE_CASES)
 def test_brain_pull_scope(case: str, project: Path, tmp_path: Path) -> None:
-    """The propose job applies only edits to existing notes in the vault (0018)."""
+    """The propose job applies only edits to existing notes in the vault, never to what it follows (0018, 0019)."""
     if not brain(project):
         pytest.skip("no Brain pull")
     copy = tmp_path / project.name
@@ -704,10 +716,10 @@ def test_brain_pull_with_the_vault_at_the_root(tmp_path: Path) -> None:
     run_copy(str(ROOT), dst, data=data, defaults=True, unsafe=True, quiet=True, vcs_ref="HEAD")
     (dst / "decisions/🧭 Topic.md").write_text("---\nrepos: [a/b]\n---\n", encoding="utf-8")
     sh("git", "add", "-A", cwd=dst)
-    assert sh("uv", "run", "-q", "scripts/followed-repos.py", cwd=dst) == "a/b\n"
+    assert sh("uv", "run", "-q", GATE, "--list", cwd=dst) == "a/b: everything\n"
     patch_for(dst, tmp_path / "ok", {"🏠 Home.md": "edited\n", "decisions/🧭 Topic.md": "x\n"})
     assert scope_check(dst, tmp_path / "ok", "").returncode == 0
-    for name in ["AGENTS.md", "README.md", ".obsidian/app.json", "scripts/check.sh"]:
+    for name in ["AGENTS.md", "README.md", ".obsidian/app.json", "scripts/check.sh", "🛰️ Subscriptions.md"]:
         sh("git", "checkout", "--", ".", cwd=dst)
         patch_for(dst, tmp_path / name.replace("/", "-"), {name: "x\n"})
         result = scope_check(dst, tmp_path / name.replace("/", "-"), "")
@@ -721,22 +733,119 @@ FOLLOWED = {
     "_templates/🧭 Skipped.md": "---\nrepos: [z/skipped]\n---\n",
     "🧭 None.md": "No front matter.\n",
 }
+SUBSCRIBED = """---
+kind: subscriptions
+subscriptions:
+  - source: a/one
+    follow: [releases]
+  - source: d/four
+    follow: ["wiki:Security", design-records]
+---
+"""
 
 
-def test_followed_repos(project: Path, tmp_path: Path) -> None:
-    """The gate's list: inline and block lists, distinct and sorted; templates and bad entries skipped (0018)."""
-    if not brain(project):
-        pytest.skip("no Brain pull")
+def gate(project: Path, tmp_path: Path, notes: dict[str, str], *args: str,
+         env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:  # fmt: skip
+    """Run the gate in a copy of the brain with these notes added (or replaced)."""
     copy = tmp_path / project.name
     shutil.copytree(project, copy)
-    for name, text in FOLLOWED.items():
+    for name, text in notes.items():
         (copy / "knowledge" / name).parent.mkdir(parents=True, exist_ok=True)
         (copy / "knowledge" / name).write_text(text, encoding="utf-8")
-    result = subprocess.run(["uv", "run", "-q", "scripts/followed-repos.py"], cwd=copy, capture_output=True,
-                            text=True)  # fmt: skip
+    return subprocess.run(["uv", "run", "-q", GATE, *args], cwd=copy, capture_output=True, text=True,
+                          env={**os.environ, **(env or {})})  # fmt: skip
+
+
+def test_gate_follows(project: Path, tmp_path: Path) -> None:
+    """`repos:` is an implicit `everything` and a subscription replaces it; templates and bad
+    entries are skipped (0018, 0019)."""
+    if not brain(project):
+        pytest.skip("no Brain pull")
+    assert gate(project, tmp_path / "empty", {}, "--list").stdout == ""
+    result = gate(project, tmp_path / "both", {**FOLLOWED, "🛰️ Subscriptions.md": SUBSCRIBED}, "--list")
     assert result.returncode == 0, result.stderr
-    assert result.stdout == "a/one\nb/two\nc/three\n"
+    assert result.stdout == "a/one: releases\nb/two: everything\nc/three: everything\n" \
+                            "d/four: wiki:Security, design-records\n"  # fmt: skip
     assert "repos entry 'not a repo' is not owner/name" in result.stderr
+
+
+BAD_SUBSCRIPTIONS = {
+    "not a list": ("subscriptions: {a/one: everything}", "must be a list"),
+    "bad source": ("subscriptions:\n  - source: one\n    follow: [everything]", "must be owner/name"),
+    "twice": ("subscriptions:\n  - {source: a/one, follow: [releases]}\n  - {source: a/one, follow: [releases]}",
+              "listed twice"),
+    "no parts": ("subscriptions:\n  - {source: a/one, follow: []}", "non-empty list"),
+    "unknown part": ("subscriptions:\n  - {source: a/one, follow: [wiki]}", "unknown part 'wiki'"),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("case", BAD_SUBSCRIPTIONS)
+def test_gate_rejects_bad_subscriptions(case: str, project: Path, tmp_path: Path) -> None:
+    """A typo fails the run before Claude runs, rather than silently following nothing (0019)."""
+    if not brain(project):
+        pytest.skip("no Brain pull")
+    props, error = BAD_SUBSCRIPTIONS[case]
+    result = gate(project, tmp_path, {"🛰️ Subscriptions.md": f"---\n{props}\n---\n"}, "--list")
+    assert result.returncode == 2 and error in result.stderr, result.stdout + result.stderr
+
+
+GATE_GH = r"""#!/usr/bin/env python3
+import json, sys
+path = sys.argv[-1]
+repo = "/".join(path.split("/")[1:3])
+if repo == "gone/repo":
+    sys.exit(print("gh: Not Found (HTTP 404)", file=sys.stderr) or 1)
+if repo == "down/repo":
+    sys.exit(print("gh: Server Error (HTTP 502)", file=sys.stderr) or 1)
+if "/releases" in path:
+    found = [{"tag_name": "v2", "published_at": "2026-11-02T00:00:00Z"},
+             {"tag_name": "v1", "published_at": "2026-10-01T00:00:00Z"}, {"tag_name": "draft", "published_at": None}]
+    print(json.dumps([] if repo == "quiet/repo" else found))
+    sys.exit()
+part = path.split("&path=")[1] if "&path=" in path else ""
+commits = {"": "feat: anything", "docs/design": "docs: a record", "docs/wiki/Security.md": "docs: security"}
+found = [{"sha": "abcdef1234", "commit": {"message": commits[part] + "\n\nbody"}}] if part in commits else []
+print(json.dumps([[] if repo == "quiet/repo" else found]))  # --slurp: a list of pages
+"""
+CHANGES_NOTES = {
+    "🧭 Named.md": "---\nrepos: [a/all, quiet/repo]\n---\n",
+    "🛰️ Subscriptions.md": """---
+subscriptions:
+  - source: b/parts
+    follow: [releases, design-records, "wiki:Security", "wiki:Quiet"]
+  - source: gone/repo
+    follow: [everything]
+---
+""",
+}
+
+
+def test_gate_reads_only_the_parts_followed(project: Path, tmp_path: Path) -> None:
+    """Each part maps onto one API query; changes.md lists, per changed source, what changed and
+    which notes name it. A missing source is a warning, a failing API call fails the run (0019)."""
+    if not brain(project):
+        pytest.skip("no Brain pull")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    (bin_dir / "gh").write_text(GATE_GH)
+    (bin_dir / "gh").chmod(0o755)
+    env = {"PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}"}
+    out = tmp_path / "changes.md"
+    result = gate(project, tmp_path / "ok", CHANGES_NOTES, "2026-11-01T00:00:00Z", str(out), env=env)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "a/all b/parts\n"
+    assert "::warning::gone/repo: not found" in result.stderr
+    changes = out.read_text(encoding="utf-8")
+    assert "## quiet/repo" not in changes and "wiki:Quiet" not in changes
+    for needed in ["# What changed since 2026-11-01T00:00:00Z", "## a/all", "Notes naming it in `repos:`: `🧭 Named`",
+                   "- **everything** (2):\n  - abcdef1 feat: anything\n  - release v2", "## b/parts",
+                   "Notes naming it in `repos:`: none", "- **releases** (1):\n  - v2",
+                   "- **design-records** (1):\n  - abcdef1 docs: a record",
+                   "- **wiki:Security** (1):\n  - abcdef1 docs: security"]:  # fmt: skip
+        assert needed in changes, needed
+    down = {**CHANGES_NOTES, "🧭 Down.md": "---\nrepos: [down/repo]\n---\n"}
+    result = gate(project, tmp_path / "down", down, "2026-11-01T00:00:00Z", str(out), env=env)
+    assert result.returncode == 1 and "::error::down/repo: gh: Server Error (HTTP 502)" in result.stderr
 
 
 SUBGROUP = '''
