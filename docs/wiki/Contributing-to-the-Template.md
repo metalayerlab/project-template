@@ -6,7 +6,7 @@ The template is a shared dependency of every project. A change here reaches all 
 
 Search the [open and closed issues](https://github.com/metalayerlab/project-template/issues?q=is%3Aissue) first. If one matches, add your project's case to it: what you saw, and the workaround you used. Otherwise open one with a form:
 
-- **Template problem**: a rendered file, workflow or check that's wrong. It asks for the template version (`_commit` in `.copier-answers.yml`), the language layer and kind, the file, and whether it shows in a fresh render or only after `copier update`.
+- **Template problem**: a rendered file, workflow or check that's wrong. It asks for the template version (`_commit` in `.copier-answers.yml`), the language layers and kinds it shows with (every choice `copier.yml` offers; a test keeps them in step), the file, and whether it shows in a fresh render or only after `copier update`.
 - **Feature request**: something every project should get.
 
 Blank issues are off. Don't report a security problem in a public issue: contact a maintainer of `@metalayerlab/maintainers` directly.
