@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.22](https://github.com/metalayerlab/project-template/compare/v0.1.21...v0.1.22) (2026-11-01)
+
+
+### ✨ Features
+
+* brain_pull follows a Subscriptions note, and only main runs move the date ([#106](https://github.com/metalayerlab/project-template/issues/106)) ([6568081](https://github.com/metalayerlab/project-template/commit/65680818ef10bce1774b074ab620a84d12085401)), closes [#105](https://github.com/metalayerlab/project-template/issues/105)
+* list settings (is_list) in the generated config engine, and design 0019 for a thin config.py ([#107](https://github.com/metalayerlab/project-template/issues/107)) ([7e9142f](https://github.com/metalayerlab/project-template/commit/7e9142f8716d361e63a4fc28f33062a1dd7126af))
+
 ## [0.1.21](https://github.com/metalayerlab/project-template/compare/v0.1.20...v0.1.21) (2026-11-01)
 
 
