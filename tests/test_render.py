@@ -55,6 +55,7 @@ VARIANTS: dict[str, dict[str, object]] = {
     "cli": {"kind": "cli", "license": "MIT", "dependabot_automerge": "patch"},
     "library": {"kind": "library", "license": "Apache-2.0"},
     "none": {"language": "none", "license": "MIT"},
+    "knowledge": {"language": "none", "kind": "knowledge"},
     "ts-service": {
         "language": "typescript",
         "kind": "service",
@@ -65,6 +66,16 @@ VARIANTS: dict[str, dict[str, object]] = {
     "ts-library": {"language": "typescript", "kind": "library", "license": "Proprietary"},
     "ts-web": {"language": "typescript", "kind": "web", "dependabot_automerge": "patch"},
 }
+
+
+def knowledge(project: Path) -> bool:
+    """A notes repository: no releases, wiki or design records (0015)."""
+    return project.name.endswith("-knowledge")
+
+
+def wiki_only(project: Path) -> None:
+    if knowledge(project):
+        pytest.skip("a knowledge repository has no wiki")
 
 
 def sh(*cmd: str, cwd: Path, env: dict[str, str] | None = None) -> str:
@@ -105,16 +116,43 @@ HEADROOM = 0.75  # the skeleton may use at most 75% of each budget, leaving room
 
 
 def test_always_loaded_files_leave_headroom(project: Path) -> None:
-    """The budget itself is in the rendered docs/wiki/.standard.toml, enforced by check-wiki.py."""
-    import tomllib
-
-    budget = tomllib.loads((project / "docs/wiki/.standard.toml").read_text())["context_budget"]
+    """The budget is in the rendered docs/wiki/.standard.toml, enforced by check-wiki.py, or in
+    scripts/check-context-budget.py for a knowledge repository (0015)."""
+    budget = context_budget(project)
     over = {
         name: (size, int(limit * HEADROOM))
         for name, limit in budget.items()
         if (size := len((project / name).read_text(encoding="utf-8"))) > limit * HEADROOM
     }
     assert not over, f"skeleton uses too much of the context budget (chars, allowed): {over}"
+
+
+def context_budget(project: Path) -> dict[str, int]:
+    import importlib.util
+    import tomllib
+
+    if not knowledge(project):
+        return tomllib.loads((project / "docs/wiki/.standard.toml").read_text())["context_budget"]
+    script = project / "scripts/check-context-budget.py"
+    spec = importlib.util.spec_from_file_location("budget", script)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.BUDGET  # type: ignore[no-any-return]
+
+
+def test_budget_is_the_same_without_a_wiki(project: Path) -> None:
+    """A knowledge repository's budget script and every wiki's standard agree (0015)."""
+    import ast
+    import tomllib
+
+    if knowledge(project):
+        pytest.skip("compared from the projects with a wiki")
+    standard = tomllib.loads((project / "docs/wiki/.standard.toml").read_text())["context_budget"]
+    name = "[% if kind == 'knowledge' %]check-context-budget.py[% endif %]"
+    script = ROOT / "template/scripts" / name
+    budget = re.search(r"BUDGET = (\{.*?\})", script.read_text(), re.S)
+    assert budget and ast.literal_eval(budget.group(1)) == standard
 
 
 def test_template_problems_are_reported(project: Path) -> None:
@@ -183,6 +221,8 @@ def test_first_release_is_0_1_0(project: Path) -> None:
     """With the manifest at 0.0.0, release-please would otherwise propose 1.0.0."""
     import json
 
+    if knowledge(project):
+        pytest.skip("a knowledge repository has no releases")
     config = json.loads((project / "release-please-config.json").read_text())
     assert config["packages"]["."]["initial-version"] == "0.1.0"
 
@@ -242,7 +282,7 @@ def test_none_checks(project: Path) -> None:
     if not (project / "scripts/check.sh").exists():
         pytest.skip("has a language layer")
     assert quiet(["sh", "scripts/check.sh"], project) == ["scripts/check.sh: no checks defined yet"]
-    assert (project / "version.txt").read_text() == "0.0.0\n"
+    assert knowledge(project) or (project / "version.txt").read_text() == "0.0.0\n"
     assert not (project / "pyproject.toml").exists() and not (project / "src").exists()
     agents = (project / "AGENTS.md").read_text()
     assert "sh scripts/check.sh" in agents and "``" not in agents.replace("```", "")
@@ -264,11 +304,58 @@ def test_systemd_is_service_only(tmp_path: Path) -> None:
                  vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
 
 
-def test_kind_other_needs_language_none(tmp_path: Path) -> None:
-    data = {"project_name": "demo", "description": "demo", "kind": "other"}
+@pytest.mark.parametrize("kind", ["other", "knowledge"])
+def test_kind_other_needs_language_none(kind: str, tmp_path: Path) -> None:
+    data = {"project_name": "demo", "description": "demo", "kind": kind}
     with pytest.raises(ValueError, match="language: none"):
         run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
                  vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+
+
+@pytest.mark.parametrize("kind", ["service", "cli", "library"])
+def test_kind_with_code_needs_a_layer(kind: str, tmp_path: Path) -> None:
+    data = {"project_name": "demo", "description": "demo", "language": "none", "kind": kind}
+    with pytest.raises(ValueError, match="Needs a language layer"):
+        run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+                 vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+
+
+KNOWLEDGE_DROPS = [
+    "CHANGELOG.md", "CONTRIBUTING.md", "SECURITY.md", "TODO.md", "version.txt", "contrib", "docs",
+    "release-please-config.json", ".release-please-manifest.json", ".markdownlint-cli2.yaml",
+    "scripts/check-wiki.py", ".github/workflows/release-please.yml", ".github/workflows/pr-title.yml",
+    ".github/workflows/wiki.yml", ".github/ISSUE_TEMPLATE/bug_report.yml",
+    ".github/ISSUE_TEMPLATE/feature_request.yml",
+]  # fmt: skip
+
+
+def test_knowledge_keeps_guard_rails_only(project: Path) -> None:
+    """Releases, the wiki, design records and markdownlint go; the guard rails stay (0015)."""
+    if not knowledge(project):
+        assert not (project / "scripts/check-context-budget.py").exists()
+        return
+    assert [p for p in KNOWLEDGE_DROPS if (project / p).exists()] == []
+    skip = {".git", "__pycache__"}
+    files = [p for p in project.rglob("*") if p.is_file() and not skip & set(p.parts)]
+    text = "\n".join(p.read_text(errors="ignore") for p in files)
+    dropped = r"check-wiki|release-please|docs/wiki|docs/design|CHANGELOG|markdownlint"
+    assert not re.search(dropped, text)
+    assert quiet(["python3", "scripts/check-context-budget.py"], project) == ["context budget OK"]
+    assert "**/.obsidian/workspace*.json" in (project / ".gitignore").read_text()
+    assert "proprietary" in (project / "LICENSE").read_text()
+
+
+def test_knowledge_readme_is_project_owned(tmp_path: Path) -> None:
+    """copier update leaves a knowledge repository's README.md alone, not other kinds' (0015)."""
+    for kind, owned in (("knowledge", True), ("other", False)):
+        dst = tmp_path / kind
+        data = {"project_name": "demo", "description": "demo", "language": "none", "kind": kind}
+        run_copy(str(ROOT), dst, data=data, defaults=True, unsafe=True, quiet=True, vcs_ref="HEAD",
+                 skip_tasks=True)  # fmt: skip
+        (dst / "README.md").write_text("mine\n")
+        run_copy(str(ROOT), dst, data=data, defaults=True, unsafe=True, quiet=True, vcs_ref="HEAD",
+                 skip_tasks=True, overwrite=True)  # fmt: skip
+        assert ((dst / "README.md").read_text() == "mine\n") == owned, kind
 
 
 SUBGROUP = '''
@@ -341,17 +428,20 @@ def test_no_double_blank_lines_in_markdown(project: Path) -> None:
 
 def test_readme_links_existing_wiki_pages(project: Path) -> None:
     """The README links the wiki by URL, which check-wiki.py doesn't follow."""
+    wiki_only(project)
     pages = re.findall(r"/wiki/([\w-]+)\)", (project / "README.md").read_text())
     missing = [p for p in pages if not (project / "docs/wiki" / f"{p}.md").exists()]
     assert pages and not missing
 
 
 def test_wiki_standard(project: Path) -> None:
+    wiki_only(project)
     sh("python3", "scripts/check-wiki.py", cwd=project)
 
 
 def test_fresh_wiki_blocks_a_release(project: Path) -> None:
     """Skeleton guidance must fail strict mode (Release PRs) until it is written."""
+    wiki_only(project)
     result = subprocess.run(
         ["python3", "scripts/check-wiki.py", "--strict"], cwd=project, capture_output=True
     )
@@ -359,6 +449,7 @@ def test_fresh_wiki_blocks_a_release(project: Path) -> None:
 
 
 def test_written_wiki_passes_strict(project: Path, tmp_path: Path) -> None:
+    wiki_only(project)
     copy = tmp_path / "p"
     shutil.copytree(project / "docs", copy / "docs")
     shutil.copytree(project / "scripts", copy / "scripts")
@@ -389,8 +480,11 @@ def test_repository_metadata(project: Path, tmp_path: Path) -> None:
     want = tomllib.loads((project / ".github/repository.toml").read_text())
     variant = VARIANTS[project.name.removeprefix("demo-")]
     topics = [variant.get("language", "python"), variant["kind"]] if "kind" in variant else []
+    topics = [t for t in topics if t not in ("none", "other")]
     assert want == {"description": variant.get("description", f"A demo {project.name.removeprefix('demo-')}"),
-                    "homepage": f"https://github.com/metalayerlab/{project.name}/wiki", "topics": topics}  # fmt: skip
+                    "homepage": "" if knowledge(project) else
+                                f"https://github.com/metalayerlab/{project.name}/wiki",
+                    "topics": topics}  # fmt: skip
 
     (tmp_path / "gh").write_text(FAKE_GH)
     (tmp_path / "gh").chmod(0o755)
@@ -417,7 +511,8 @@ def quiet(cmd: list[str], cwd: Path) -> list[str]:
 
 def test_checks_are_quiet_when_they_pass(project: Path) -> None:
     """Every Definition of done run is read by an assistant: one line on a pass (0007)."""
-    checks = [["python3", "scripts/check-wiki.py"]]
+    script = "scripts/check-context-budget.py" if knowledge(project) else "scripts/check-wiki.py"
+    checks = [["python3", script]]
     if (project / "scripts/check-manifests.sh").exists():
         checks.append(["scripts/check-manifests.sh"])
     noisy = {" ".join(c): lines for c in checks if len(lines := quiet(c, project)) > 1}
@@ -450,6 +545,7 @@ def test_gitleaks_pins_match(project: Path) -> None:
 def test_docs_secrets_match_ci(project: Path, tmp_path: Path) -> None:
     """The skeleton passes in one line (0007), and an MD014 `$` prompt fails locally as in CI (#21)."""
     assert len(quiet(["scripts/check-docs-secrets.sh"], project)) == 1
+    wiki_only(project)
     copy = tmp_path / project.name
     shutil.copytree(project, copy, ignore=shutil.ignore_patterns(".venv", "node_modules"))
     page = copy / "docs/wiki/Home.md"
@@ -463,12 +559,12 @@ def test_docs_secrets_match_ci(project: Path, tmp_path: Path) -> None:
 def test_labels_are_created(project: Path) -> None:
     """Copier copies files, not labels: a workflow creates each label the checks use (#56)."""
     files = [*(project / ".github/workflows").glob("*.yml"), project / "scripts/check-wiki.py"]
-    text = "\n".join(f.read_text() for f in files)
+    text = "\n".join(f.read_text() for f in files if f.exists())
     use = r"--label ([\w-]+)|^\s+labels: ([\w-]+)|labels\.\*\.name, '([\w-]+)'"
     used = set(re.findall(use, text, re.M))
     used = {name for group in used for name in group if name}
     created = set(re.findall(r"gh label create ([\w-]+)", text))
-    assert {"no-docs-needed", "template-update"} <= used
+    assert {"template-update"} | (set() if knowledge(project) else {"no-docs-needed"}) <= used
     assert used <= created, used - created
 
 
@@ -533,7 +629,9 @@ def test_image_runs(project: Path) -> None:
 
 
 def test_system_packages_are_empty_by_default(project: Path) -> None:
-    """contrib/system-packages.txt (#53) exists in every project and lists nothing."""
+    """contrib/system-packages.txt (#53) exists in every project with code and lists nothing."""
+    if knowledge(project):
+        pytest.skip("no code to build")
     lines = (project / "contrib/system-packages.txt").read_text().splitlines()
     assert [ln for ln in lines if not ln.startswith("#") and ln.strip()] == ["build:", "runtime:"]
 

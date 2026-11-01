@@ -1,8 +1,10 @@
 blank_issues_enabled: true
 contact_links:
+[% if kind != 'knowledge' %]
   - name: Documentation
     url: [[ repo_url ]]/wiki
     about: Configuration, deployment, troubleshooting and FAQ.
+[% endif %]
   - name: Security vulnerability
     url: [[ repo_url ]]/security/advisories/new
     about: Report privately, never in a public issue.

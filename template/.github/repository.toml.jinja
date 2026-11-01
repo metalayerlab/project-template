@@ -3,5 +3,5 @@
 #   python3 scripts/repo-metadata.py
 # CI warns on each push to main while GitHub differs from this file.
 description = [[ description | tojson ]]
-homepage = "[[ repo_url ]]/wiki"
+homepage = "[[ '' if kind == 'knowledge' else repo_url ~ '/wiki' ]]"
 topics = [[ [layer.topic, kind] | select | reject('equalto', 'other') | list | tojson ]]

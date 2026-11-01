@@ -1,4 +1,36 @@
 [% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]
+[% if kind == 'knowledge' %]
+# [[ project_name ]]
+
+[[ description ]]
+
+<!-- guidance: this README is yours (copier update never touches it): it is the map every
+assistant reads first. Say what the notes are for, fill the table, and name the note
+that holds your conventions. Then delete this comment. -->
+
+| Folder | What | In git |
+|---|---|---|
+| `notes/` | the notes | yes |
+
+Start at `notes/Home.md`. Note conventions (file names, front matter, links): `notes/Conventions.md`.
+
+## For AI assistants
+
+**[AGENTS.md](AGENTS.md) is the only instruction file**; [CLAUDE.md](CLAUDE.md), [GEMINI.md](GEMINI.md) and
+the Copilot and Cursor pointers import it. Every change gets human review.
+
+## Checks
+
+```sh
+sh scripts/check.sh                       # this repository's own checks
+python3 scripts/check-context-budget.py   # the AI instruction files stay small
+scripts/check-docs-secrets.sh             # the secret scan (Docker)
+```
+
+This repository was generated from [project-template](https://github.com/[[ github_owner ]]/project-template).
+Template fixes arrive as a weekly *Template update* PR.
+
+[% else %]
 # [[ project_name ]]
 
 [% if container_image %]
@@ -91,6 +123,7 @@ release-please. See [Contributing]([[ repo_url ]]/wiki/Contributing).
 This project was generated from [project-template](https://github.com/[[ github_owner ]]/project-template).
 Template fixes arrive as a weekly *Template update* PR.
 
+[% endif %]
 ## License
 
 [% if license == 'Unlicense' %]

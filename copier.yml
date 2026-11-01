@@ -56,6 +56,31 @@ _skip_if_exists:
   - docs/wiki/Deployment.md
   - docs/wiki/_Sidebar.md
   - docs/wiki/_Footer.md
+  # A knowledge repository's README.md is its own map (design record 0015).
+  - "[[ 'README.md' if kind == 'knowledge' else '' ]]"
+
+# A knowledge repository keeps the agent guard rails and the secret scan, and
+# drops releases, the wiki, design records and markdownlint (design record 0015).
+_exclude:
+  - |
+    [% if kind == 'knowledge' %]
+    /CHANGELOG.md
+    /CONTRIBUTING.md
+    /SECURITY.md
+    /TODO.md
+    /version.txt
+    /release-please-config.json
+    /.release-please-manifest.json
+    /.markdownlint-cli2.yaml
+    /contrib
+    /docs
+    /scripts/check-wiki.py
+    /.github/workflows/release-please.yml
+    /.github/workflows/pr-title.yml
+    /.github/workflows/wiki.yml
+    /.github/ISSUE_TEMPLATE/bug_report.yml
+    /.github/ISSUE_TEMPLATE/feature_request.yml
+    [% endif %]
 
 # Lock dependencies, fill the generated wiki sections, git init. Needs --trust;
 # without it, run scripts/bootstrap.sh yourself.
@@ -116,9 +141,15 @@ kind:
   type: str
   help: What it is
   choices:
-    "service: long-running, HTTP API (FastAPI / Fastify), health endpoints": service
-    "cli: command-line tool (Typer / commander)": cli
-    "library: importable package only": library
+    "service: long-running, HTTP API (FastAPI / Fastify), health endpoints":
+      value: service
+      validator: "[% if language == 'none' %]Needs a language layer[% endif %]"
+    "cli: command-line tool (Typer / commander)":
+      value: cli
+      validator: "[% if language == 'none' %]Needs a language layer[% endif %]"
+    "library: importable package only":
+      value: library
+      validator: "[% if language == 'none' %]Needs a language layer[% endif %]"
     # A Vite + React single-page app in an nginx image (design record 0014).
     "web: single-page app (Vite + React), served by nginx (language: typescript only)":
       value: web
@@ -127,8 +158,11 @@ kind:
     "other: no language layer (language: none only)":
       value: other
       validator: "[% if language != 'none' %]Only with language: none[% endif %]"
+    # A notes repository, such as an Obsidian vault: the agent guard rails only (design record 0015).
+    "knowledge: a notes repository, such as an Obsidian vault (language: none only)":
+      value: knowledge
+      validator: "[% if language != 'none' %]Only with language: none[% endif %]"
   default: "[[ 'other' if language == 'none' else 'service' ]]"
-  when: "[[ language != 'none' ]]"
 
 python_version:
   type: str
@@ -176,8 +210,8 @@ health_path:
 container_image:
   type: bool
   help: Build and publish a container image to GHCR?
-  default: "[[ kind not in ['library', 'other'] ]]"
-  when: "[[ kind not in ['library', 'other'] ]]"
+  default: "[[ kind not in ['library', 'other', 'knowledge'] ]]"
+  when: "[[ kind not in ['library', 'other', 'knowledge'] ]]"
 
 multi_arch:
   type: bool
@@ -256,7 +290,7 @@ license:
     MIT: MIT
     Apache-2.0: Apache-2.0
     Proprietary (all rights reserved): Proprietary
-  default: Unlicense
+  default: "[[ 'Proprietary' if kind == 'knowledge' else 'Unlicense' ]]"
 
 copyright_holder:
   type: str

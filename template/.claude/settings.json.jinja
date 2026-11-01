@@ -8,15 +8,21 @@
 [% if container_image or contrib %]
       "Bash(scripts/check-manifests.sh)",
 [% endif %]
+[% if kind == 'knowledge' %]
+      "Bash(python3 scripts/check-context-budget.py)",
+[% else %]
       "Bash(python3 scripts/check-wiki.py:*)",
+[% endif %]
       "Bash(scripts/check-docs-secrets.sh:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)"
     ],
     "deny": [
+[% if kind != 'knowledge' %]
       "Edit(CHANGELOG.md)",
       "Edit(.release-please-manifest.json)",
+[% endif %]
       "Edit(.copier-answers.yml)",
       "Bash(git push * main)",
       "Bash(git push * main *)",
