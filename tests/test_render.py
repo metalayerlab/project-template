@@ -29,6 +29,7 @@ import pytest
 for _var in ("UV_PYTHON", "VIRTUAL_ENV", "UV_PROJECT_ENVIRONMENT"):
     os.environ.pop(_var, None)
 
+import yaml  # noqa: E402  (Copier's own dependency)
 from copier import run_copy  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -56,7 +57,7 @@ VARIANTS: dict[str, dict[str, object]] = {
     "cli": {"kind": "cli", "license": "MIT", "dependabot_automerge": "patch"},
     "library": {"kind": "library", "license": "Apache-2.0"},
     "none": {"language": "none", "license": "MIT"},
-    "obsidian": {"language": "obsidian"},
+    "obsidian": {"language": "obsidian", "brain_pull": True},
     "ts-service": {
         "language": "typescript",
         "kind": "service",
@@ -596,6 +597,146 @@ def test_vault_check(case: str, project: Path, tmp_path: Path) -> None:
         assert result.stdout == "check-vault OK: 7 files, 2 design records\n"
     else:
         assert result.returncode == 1 and error in result.stdout, result.stdout + result.stderr
+
+
+PULL = ".github/workflows/brain-pull.yml"
+PULL_FILES = [PULL, "scripts/followed-repos.py"]
+
+
+@pytest.mark.parametrize("data", [{"language": "obsidian"}, {"language": "python", "brain_pull": True},
+                                  {"language": "none", "brain_pull": True}])  # fmt: skip
+def test_brain_pull_is_opt_in(data: dict[str, object], tmp_path: Path) -> None:
+    """Only a brain that answers brain_pull gets the workflow; an answer can't add it elsewhere (0018)."""
+    dst = tmp_path / "p"
+    run_copy(str(ROOT), dst, data={"project_name": "demo", "description": "demo", **data}, defaults=True,
+             unsafe=True, quiet=True, vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+    assert [f for f in PULL_FILES if (dst / f).exists()] == []
+
+
+def test_brain_pull_workflow(project: Path) -> None:
+    """Claude runs read-only; only propose writes, after checking the patch's scope (0018)."""
+    if not brain(project):
+        assert [f for f in PULL_FILES if (project / f).exists()] == []
+        return
+    flow = yaml.safe_load((project / PULL).read_text())
+    jobs = flow["jobs"]
+    assert flow["permissions"] == {} and set(jobs) == {"update", "propose"}
+    assert jobs["update"]["permissions"] == {"contents": "read", "pull-requests": "read", "actions": "read"}
+    assert jobs["propose"]["permissions"] == {"contents": "write", "pull-requests": "write",
+                                              "issues": "write", "actions": "write"}  # fmt: skip
+    steps = {s.get("name") or s["uses"].split("@")[0]: s for s in jobs["update"]["steps"]}
+    assert "secrets.CLAUDE_CODE_OAUTH_TOKEN != ''" in steps["Is Claude Code set up?"]["env"]["HAS_TOKEN"]
+    assert steps["Which followed repositories changed?"]["if"] == "steps.secret.outputs.ok == 'true'"
+    claude = steps["Claude Code updates the notes"]
+    assert claude["with"]["show_full_output"] == "${{ inputs.debug == true }}"
+    assert "Edit(./knowledge/**/*.md)" in claude["with"]["claude_args"]
+    assert "python3" not in claude["with"]["claude_args"]
+    run = "\n".join(s.get("run", "") for s in jobs["propose"]["steps"])
+    for needed in ["core.quotePath=false apply --numstat", "apply --summary", "uv run scripts/check-vault.py",
+                   "gh workflow run ci.yml", "--label brain-pull"]:  # fmt: skip
+        assert needed in run, needed
+
+
+def test_actions_are_pinned(project: Path) -> None:
+    """Every action is pinned to a commit SHA, with its version in a comment."""
+    uses = [line.strip() for f in (project / ".github/workflows").glob("*.yml")
+            for line in f.read_text().splitlines() if re.match(r"\s*(- )?uses: ", line)]  # fmt: skip
+    pin = re.compile(r"^(- )?uses: (\./\S+|[\w.-]+/[\w./-]+@[0-9a-f]{40} # v\d\S*)$")
+    assert uses and [u for u in uses if not pin.match(u)] == []
+
+
+def scope_check(project: Path, out: Path, prefix: str) -> subprocess.CompletedProcess[str]:
+    """Run the propose job's scope step on out/vault.patch, as the workflow does."""
+    flow = yaml.safe_load((project / PULL).read_text())
+    step = next(s for s in flow["jobs"]["propose"]["steps"] if s.get("name") == "The patch only edits notes")
+    assert step["env"]["PREFIX"] == prefix
+    return subprocess.run(["bash", "-c", step["run"]], cwd=project, capture_output=True, text=True,
+                          env={**os.environ, "OUT": str(out), "PREFIX": prefix})  # fmt: skip
+
+
+def patch_for(project: Path, out: Path, edits: dict[str, str]) -> None:
+    """Make edits in a checkout and write them as out/vault.patch, as the update job does."""
+    for name, text in edits.items():
+        path = project / name
+        new = not path.exists()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        if new:
+            sh("git", "add", "-N", name, cwd=project)
+    out.mkdir(exist_ok=True)
+    (out / "vault.patch").write_text(sh("git", "diff", "--binary", cwd=project))
+
+
+OUTSIDE = "outside the vault's notes"
+SCOPE_CASES = {
+    "a note": ({"knowledge/🏠 Home.md": "edited\n"}, ""),
+    "two notes": ({"knowledge/🏠 Home.md": "x\n", "knowledge/📐 Conventions.md": "y\n"}, ""),
+    "obsidian settings": ({"knowledge/.obsidian/app.json": "{}\n"}, OUTSIDE),
+    "the design index": ({"knowledge/decisions/Decisions.base": "x\n"}, OUTSIDE),
+    "the record template": ({"knowledge/_templates/📝 Design Record.md": "x\n"}, OUTSIDE),
+    "outside the vault": ({"README.md": "x\n"}, OUTSIDE),
+    "a workflow": ({".github/workflows/ci.yml": "x\n"}, OUTSIDE),
+    "a new note": ({"knowledge/🧭 New.md": "x\n"}, "adds, removes or renames"),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("case", SCOPE_CASES)
+def test_brain_pull_scope(case: str, project: Path, tmp_path: Path) -> None:
+    """The propose job applies only edits to existing notes in the vault (0018)."""
+    if not brain(project):
+        pytest.skip("no Brain pull")
+    copy = tmp_path / project.name
+    shutil.copytree(project, copy)
+    edits, error = SCOPE_CASES[case]
+    patch_for(copy, tmp_path / "out", edits)
+    result = scope_check(copy, tmp_path / "out", "knowledge/")
+    if error:
+        assert result.returncode == 1 and error in result.stdout, result.stdout + result.stderr
+    else:
+        assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_brain_pull_with_the_vault_at_the_root(tmp_path: Path) -> None:
+    """`vault_dir: .`: notes at the root are in scope; the AI files and README.md are not (0018)."""
+    dst = tmp_path / "demo"
+    data = {"project_name": "demo", "description": "demo", "language": "obsidian", "vault_dir": ".",
+            "brain_pull": True}  # fmt: skip
+    run_copy(str(ROOT), dst, data=data, defaults=True, unsafe=True, quiet=True, vcs_ref="HEAD")
+    (dst / "decisions/🧭 Topic.md").write_text("---\nrepos: [a/b]\n---\n", encoding="utf-8")
+    sh("git", "add", "-A", cwd=dst)
+    assert sh("uv", "run", "-q", "scripts/followed-repos.py", cwd=dst) == "a/b\n"
+    patch_for(dst, tmp_path / "ok", {"🏠 Home.md": "edited\n", "decisions/🧭 Topic.md": "x\n"})
+    assert scope_check(dst, tmp_path / "ok", "").returncode == 0
+    for name in ["AGENTS.md", "README.md", ".obsidian/app.json", "scripts/check.sh"]:
+        sh("git", "checkout", "--", ".", cwd=dst)
+        patch_for(dst, tmp_path / name.replace("/", "-"), {name: "x\n"})
+        result = scope_check(dst, tmp_path / name.replace("/", "-"), "")
+        assert result.returncode == 1 and name in result.stdout, name
+
+
+FOLLOWED = {
+    "🧭 Inline.md": '---\nrepos: [a/one, "b/two"]\n---\n',
+    "sub/🧭 Block.md": "---\nrepos:\n  - c/three\n  - not a repo\n---\n",
+    "🧭 One.md": "---\nrepos: a/one\n---\n",
+    "_templates/🧭 Skipped.md": "---\nrepos: [z/skipped]\n---\n",
+    "🧭 None.md": "No front matter.\n",
+}
+
+
+def test_followed_repos(project: Path, tmp_path: Path) -> None:
+    """The gate's list: inline and block lists, distinct and sorted; templates and bad entries skipped (0018)."""
+    if not brain(project):
+        pytest.skip("no Brain pull")
+    copy = tmp_path / project.name
+    shutil.copytree(project, copy)
+    for name, text in FOLLOWED.items():
+        (copy / "knowledge" / name).parent.mkdir(parents=True, exist_ok=True)
+        (copy / "knowledge" / name).write_text(text, encoding="utf-8")
+    result = subprocess.run(["uv", "run", "-q", "scripts/followed-repos.py"], cwd=copy, capture_output=True,
+                            text=True)  # fmt: skip
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "a/one\nb/two\nc/three\n"
+    assert "repos entry 'not a repo' is not owner/name" in result.stderr
 
 
 SUBGROUP = '''
