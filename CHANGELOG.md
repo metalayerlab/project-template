@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.19](https://github.com/metalayerlab/project-template/compare/v0.1.18...v0.1.19) (2026-11-01)
+
+
+### 🐛 Bug Fixes
+
+* config rejects a YAML float or bool for an int setting, and a list or mapping for a string ([#85](https://github.com/metalayerlab/project-template/issues/85)) ([4d11ed9](https://github.com/metalayerlab/project-template/commit/4d11ed9b03dbf06aa7c1dfc15a5d526dbea37d23))
+
 ## [0.1.18](https://github.com/metalayerlab/project-template/compare/v0.1.17...v0.1.18) (2026-10-31)
 
 
