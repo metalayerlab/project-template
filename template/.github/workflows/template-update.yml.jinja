@@ -46,12 +46,23 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           before=$(grep '^_commit:' .copier-answers.yml)
-          uvx --from 'copier>=9.6,<10' copier update --trust --defaults --conflict inline
+          # --skip-tasks: Copier runs tasks before it reapplies the project's
+          # edits, so a failing task would drop them (#82). Bootstrap runs next.
+          uvx --from 'copier>=9.6,<10' copier update --trust --skip-tasks --defaults --conflict inline
           after=$(grep '^_commit:' .copier-answers.yml)
           echo "FROM=${before#_commit: }" >> "$GITHUB_ENV"
           echo "TO=${after#_commit: }" >> "$GITHUB_ENV"
           if [ "$HAS_APP" != true ] && [ -n "$(git status --porcelain .github/workflows)" ]; then
             echo "NEEDS_LOCAL=1" >> "$GITHUB_ENV"
+          fi
+
+      # After the merge, so the project's edits are already in. It can fail on
+      # an inline conflict (in the lock's manifest, say); the PR still opens and says so.
+      - name: Bootstrap (lock file, generated wiki sections)
+        run: |
+          if ! sh scripts/bootstrap.sh; then
+            echo "::warning::scripts/bootstrap.sh failed after the update"
+            echo "BOOTSTRAP_FAILED=1" >> "$GITHUB_ENV"
           fi
 
       # Copier copies files, not labels; the issue and the PR below need this one.
@@ -68,7 +79,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           title="chore: update from project-template ${TO} (run locally)"
-          body="project-template **${FROM}** → **${TO}** changes \`.github/workflows/\`, which \`GITHUB_TOKEN\` can't push. Run \`uvx copier update --trust --conflict inline\` locally and open the PR, or set up the release GitHub App (project-template wiki: Release-Process)."
+          body="project-template **${FROM}** → **${TO}** changes \`.github/workflows/\`, which \`GITHUB_TOKEN\` can't push. Run \`uvx copier update --trust --skip-tasks --conflict inline\` then \`sh scripts/bootstrap.sh\` locally and open the PR, or set up the release GitHub App (project-template wiki: Release-Process)."
           n=$(gh issue list --label template-update --state open --json number -q '.[0].number')
           if [ -n "$n" ]; then gh issue edit "$n" --title "$title" --body "$body"
           else gh issue create --label template-update --title "$title" --body "$body"; fi
@@ -84,6 +95,7 @@ jobs:
           labels: template-update
           body: |
             `copier update` from project-template **${{ env.FROM }}** to **${{ env.TO }}**.
+            ${{ env.BOOTSTRAP_FAILED == '1' && '**`scripts/bootstrap.sh` failed after the update** (see the workflow log): resolve any conflicts, run it, and commit what it changes.' || '' }}
 
             - Search the diff for `<<<<<<<`: conflicts are left inline for you to resolve.
 [% if kind == 'brain' %]

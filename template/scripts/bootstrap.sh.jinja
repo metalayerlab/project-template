@@ -1,7 +1,7 @@
 [% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]
 #!/bin/sh
 # One-off setup after `copier copy` (Copier runs it for you with --trust).
-# Safe to re-run: `copier update` runs it again.
+# Safe to re-run. Run it after `copier update` too: Copier runs it only on copy.
 set -eu
 cd "$(dirname "$0")/.."
 

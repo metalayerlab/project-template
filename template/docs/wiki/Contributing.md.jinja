@@ -11,7 +11,7 @@
 
 1. Branch from `main`: `feat/<topic>` or `dev/<topic>`. Pushes build `:<branch>` images[% if not container_image %] (when there is an image)[% endif %].
 2. Non-trivial change (a new feature or dependency, or a change to a public interface): write a [design record]([[ repo_url ]]/tree/main/docs/design) first, and get it approved.
-3. Open a PR against `main` with a **Conventional Commit title** (`feat: add retry to uploads`). It becomes the squash commit and the CHANGELOG line: see [Release Process](Release-Process).
+3. Open a PR against `main` with a **Conventional Commit title** (`feat: add retry to uploads`; `feat!:` for a breaking change). It becomes the squash commit and the CHANGELOG line, so CI wants a lower-case subject with no full stop: see [Release Process](Release-Process).
 4. CI must be green: tests, lint, types, secret scan, manifests, and the wiki checks.
 5. A code owner reviews ([review checklist]([[ repo_url ]]/blob/main/docs/ai/review-checklist.md)), then squash-merge.
    The only code owner and also the author? GitHub won't let you approve your own PR. Review it against the checklist yourself, then, if `main`'s ruleset lets admins bypass it, merge with `gh pr merge --squash --admin` once CI is green. Never push to `main` instead.
@@ -34,6 +34,7 @@ AI assistants are welcome and expected, under the same rules as anyone else:
 - The PR template asks how much was generated. Say so honestly: it tells the reviewer how closely to read.
 - An assistant that asks you something gives its own recommendation and why, so you can say "yes" or argue with a stated reason instead of having to ask. It still waits for your answer.
 - A human who understands the change approves every PR. "The AI wrote it" is never a reason to merge.
+- An assistant ending a session lists what it left behind (worktrees, local and remote branches, temp files, processes, containers), says whether each is safe to remove and why (merged as #N, already in `main`, unpushed work), and removes only what you approve. Left alone, these pile up: a branch with an unpushed commit can look like a merged one, and deleting a worktree while another agent still works in it breaks that agent's run. The assistant's own scratch directory is out of scope: the tool manages it.
 - Assistants change only this repository. A change another codebase needs (another repository, a submodule, an installed dependency) is asked for in an issue there; a bug in a template-owned file goes to project-template, because every other project has it too. The steps are in the template wiki's [Updating from the Template](https://github.com/[[ github_owner ]]/project-template/wiki/Updating-from-the-Template#reporting-a-template-problem).
 
 ## Documentation

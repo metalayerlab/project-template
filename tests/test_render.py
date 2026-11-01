@@ -2,7 +2,7 @@
 
     uv run pytest                    # every variant: lint, types, tests, wiki, manifests
     uv run pytest -m docker          # also build each image and probe its health endpoint
-    uv run pytest -k service         # one variant
+    uv run pytest --variant service  # one variant (tests/conftest.py)
 
 Each variant is a project as `copier copy` would create it, and must pass its own
 Definition of done (AGENTS.md) unchanged. That is the template's contract.
@@ -52,6 +52,7 @@ VARIANTS: dict[str, dict[str, object]] = {
         "python_version": "3.14",
         "personal_data_guard": True,
         "license": "Proprietary",
+        "integration_ci": True,
     },
     "cli": {"kind": "cli", "license": "MIT", "dependabot_automerge": "patch"},
     "library": {"kind": "library", "license": "Apache-2.0"},
@@ -218,6 +219,92 @@ def test_image_extras_rejected(bad: object, tmp_path: Path) -> None:
                  vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
 
 
+def integration_steps(project: Path) -> dict[str, str] | None:
+    """The `run` of each named step of ci.yml's Integration tests job, or None without one."""
+    import yaml
+
+    job = yaml.safe_load((project / ".github/workflows/ci.yml").read_text())["jobs"].get("integration")
+    return job and {s["name"]: s["run"] for s in job["steps"] if "run" in s}
+
+
+@pytest.mark.parametrize(
+    ("answers", "sync"),
+    [
+        ({}, None),
+        ({"integration_ci": True}, "uv sync --locked"),
+        ({"integration_ci": True, "integration_extras": ["fuse", "gpu"]},
+         "uv sync --locked --extra fuse --extra gpu"),
+        ({"integration_ci": True, "integration_extras": ["*"]}, "uv sync --locked --all-extras"),
+    ],
+)  # fmt: skip
+def test_integration_ci(answers: dict[str, object], sync: str | None, tmp_path: Path) -> None:
+    """`integration_ci` (#81, 0017) adds the job, with both package lists and the extras; off adds nothing."""
+    data = {"project_name": "demo", "description": "demo", "kind": "cli", **answers}
+    run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+             vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+    steps = integration_steps(tmp_path / "p")
+    ci = (tmp_path / "p/.github/workflows/ci.yml").read_text()
+    if sync is None:
+        assert steps is None and "integration" not in ci and "runtime" not in ci
+        return
+    assert steps is not None
+    assert steps["Install (from the lock file)"] == sync
+    assert "^(build|runtime):" in steps["System packages"]
+    assert "--no-cov" in steps["Integration tests"]
+    assert ("integration_extras" in ci) == ("integration_extras" in answers)
+
+
+@pytest.mark.parametrize(
+    "answers",
+    [
+        {"language": "typescript", "kind": "cli", "integration_ci": True},
+        {"language": "none", "integration_ci": True},
+        {"kind": "cli", "integration_extras": ["fuse"]},
+        *({"kind": "cli", "integration_ci": True, "integration_extras": bad}
+          for bad in ["fuse", [1], [""], ["*", "fuse"], ["a b"], ["fuse;rm"], ["-x"], ["fuse", "fuse"]]),
+    ],
+)  # fmt: skip
+def test_integration_ci_rejected(answers: dict[str, object], tmp_path: Path) -> None:
+    data = {"project_name": "demo", "description": "demo", **answers}
+    with pytest.raises(ValueError, match="integration_"):
+        run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+                 vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+
+
+INTEGRATION_TESTS = {
+    # (tests/integration/test_x.py, the failing step or None, what it prints)
+    "none": ("", "Integration tests", ""),
+    "pass": ("@pytest.mark.integration\ndef test_a() -> None:\n    assert True\n\n\n"
+             "@pytest.mark.integration\n@pytest.mark.xfail(reason='known')\n"
+             "def test_b() -> None:\n    raise AssertionError\n", None, ""),
+    "skip": ("@pytest.mark.integration\ndef test_a() -> None:\n    assert True\n\n\n"
+             "@pytest.mark.integration\ndef test_b() -> None:\n    pytest.skip('no /dev/fuse')\n",
+             "No integration test was skipped", "::error::skipped tests.integration.test_x.test_b"),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("case", sorted(INTEGRATION_TESTS))
+def test_integration_job_fails_rather_than_skips(case: str, project: Path, tmp_path: Path) -> None:
+    """The job runs the tests, and fails when none runs or one is skipped (#81)."""
+    steps = integration_steps(project)
+    if steps is None:
+        pytest.skip("no integration job")
+    code, failing, printed = INTEGRATION_TESTS[case]
+    copy = tmp_path / project.name
+    shutil.copytree(project, copy, ignore=shutil.ignore_patterns(".venv"))
+    if code:
+        (copy / "tests/integration/test_x.py").write_text(f"import pytest\n\n\n{code}")
+    env = {**os.environ, "RUN_INTEGRATION": "1", "RUNNER_TEMP": str(tmp_path)}
+    for name in ("Integration tests", "No integration test was skipped"):
+        result = subprocess.run(["sh", "-c", steps[name]], cwd=copy, env=env,
+                                capture_output=True, text=True)  # fmt: skip
+        if name == failing:
+            assert result.returncode != 0 and printed in result.stdout, result.stdout
+            return
+        assert result.returncode == 0, f"{name}:\n{result.stdout}\n{result.stderr}"
+    assert failing is None
+
+
 def test_first_release_is_0_1_0(project: Path) -> None:
     """With the manifest at 0.0.0, release-please would otherwise propose 1.0.0."""
     import json
@@ -251,6 +338,35 @@ def test_python_checks(project: Path) -> None:
         ["uv", "run", "scripts/gen-wiki.py", "--check"],
     ):
         sh(*cmd, cwd=project)
+
+
+INTEGRATION_TEST = '''import pytest
+
+
+@pytest.mark.integration
+def test_upstream() -> None:
+    assert True
+'''
+
+
+def test_python_test_commands(project: Path, tmp_path: Path) -> None:
+    """Every test command AGENTS.md and the Testing Guide give passes once there is an
+    integration test: a subset, or the integration tests alone, cannot reach the coverage floor."""
+    if not (project / "pyproject.toml").exists():
+        pytest.skip("not a Python project")
+    row = re.search(r"^\| Tests \(80% floor\) / integration \| `[^`]+` / `([^`]+)` \|$",
+                    (project / "AGENTS.md").read_text(), re.M)
+    guide = (project / "docs/wiki/Testing-Guide.md").read_text()
+    block = re.search(r"```sh\n(uv run pytest .*?)```", guide, re.S)
+    assert row and block
+    commands = [line.split("  #")[0].strip() for line in block.group(1).splitlines()]
+    assert row.group(1) in commands
+    copy = tmp_path / project.name
+    shutil.copytree(project, copy, ignore=shutil.ignore_patterns(".venv"))
+    (copy / "tests/integration/test_upstream.py").write_text(INTEGRATION_TEST)
+    for command in commands:
+        sh("sh", "-c", command, cwd=copy)
+    assert "1 passed" in sh("sh", "-c", row.group(1), cwd=copy)
 
 
 def test_typescript_checks(project: Path) -> None:
@@ -712,6 +828,23 @@ def test_issue_form_offers_every_choice() -> None:
         assert dropdowns[question] == choices, question
 
 
+def test_template_ci_runs_every_test() -> None:
+    """Template CI's jobs between them select every test once (#98): one render job per variant
+    plus `rest` (tests/conftest.py), and the layer job for tests/test_layers.py."""
+    import yaml
+
+    from conftest import REST
+
+    jobs = yaml.safe_load((ROOT / ".github/workflows/template-ci.yml").read_text())["jobs"]
+    matrix = jobs["render"]["strategy"]["matrix"]["variant"]
+    assert REST not in VARIANTS
+    assert sorted(matrix) == sorted([*VARIANTS, REST])
+    runs = [s["run"] for s in jobs["render"]["steps"] if "pytest" in s.get("run", "")]
+    assert runs == ["uv run pytest -v -m '' --ignore tests/test_layers.py --variant \"${{ matrix.variant }}\""]
+    layers = [s["run"] for s in jobs["layers"]["steps"] if "pytest" in s.get("run", "")]
+    assert layers == ["uv run pytest -v tests/test_layers.py"]
+
+
 def test_readme_links_existing_wiki_pages(project: Path) -> None:
     """The README links the wiki by URL, which check-wiki.py doesn't follow."""
     wiki_only(project)
@@ -743,6 +876,31 @@ def test_written_wiki_passes_strict(project: Path, tmp_path: Path) -> None:
         text = page.read_text(encoding="utf-8")
         page.write_text(re.sub(r"<!-- guidance:.*?-->\n?", "", text, flags=re.S), encoding="utf-8")
     sh("python3", "scripts/check-wiki.py", "--strict", cwd=copy)
+
+
+@pytest.mark.parametrize(
+    ("anchor", "ok"),
+    [("where-did-auth-and-access_log-go", True), ("in-a-fence", False), ("in-a-comment", False)],
+)
+def test_wiki_anchors_keep_inline_code(anchor: str, ok: bool, project: Path, tmp_path: Path) -> None:
+    """GitHub keeps inline code's text in a heading's anchor; fences and comments have none (#83)."""
+    wiki_only(project)
+    copy = tmp_path / "p"
+    shutil.copytree(project / "docs", copy / "docs")
+    shutil.copytree(project / "scripts", copy / "scripts")
+    faq = copy / "docs/wiki/Frequently-Asked-Questions.md"
+    faq.write_text(
+        faq.read_text(encoding="utf-8")
+        + "\n## Where did `auth()` and `access_log()` go?\n\n```text\n## In a fence\n```\n"
+        + "\n<!--\n## In a comment\n-->\n"
+        + f"\nSee [the answer](Frequently-Asked-Questions#{anchor}).\n",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        ["python3", "scripts/check-wiki.py"], cwd=copy, capture_output=True, text=True
+    )
+    assert (result.returncode == 0) == ok, result.stdout + result.stderr
+    assert ok or f"missing anchor #{anchor}" in result.stdout + result.stderr
 
 
 def test_manifests(project: Path) -> None:
@@ -853,6 +1011,77 @@ def test_labels_are_created(project: Path) -> None:
     created = set(re.findall(r"gh label create ([\w-]+)", text))
     assert {"template-update"} | (set() if brain(project) else {"no-docs-needed"}) <= used
     assert used <= created, used - created
+
+
+def test_bootstrap_runs_on_copy_only() -> None:
+    """Copier runs tasks before it puts a project's edits back, so a task that fails during
+    `copier update` drops them silently: tasks run on copy only (#82)."""
+    import yaml
+
+    tasks = yaml.safe_load((ROOT / "copier.yml").read_text())["_tasks"]
+    assert tasks and all(t.get("when") == "[[ _copier_operation == 'copy' ]]" for t in tasks), tasks
+
+
+def test_template_update_bootstraps_after_the_merge(project: Path) -> None:
+    """The update workflow skips Copier's tasks and runs bootstrap once the edits are back (#82)."""
+    workflow = (project / ".github/workflows/template-update.yml").read_text()
+    updates = re.findall(r"copier update --trust[^\n`]*", workflow)
+    assert updates and all("--skip-tasks" in u for u in updates), updates
+    assert workflow.index("copier update --trust") < workflow.index("run: |\n          if ! sh scripts/bootstrap.sh")
+
+
+def test_documented_updates_skip_tasks() -> None:
+    """Every `copier update --trust` the wiki shows skips tasks, then says to run bootstrap (#82)."""
+    pages = [*(ROOT / "docs/wiki").glob("*.md"), ROOT / "copier.yml"]
+    commands = [(p.name, c) for p in pages for c in re.findall(r"copier update --trust[^\n`]*", p.read_text())]
+    assert commands and [c for c in commands if "--skip-tasks" not in c[1]] == []
+
+
+def test_update_keeps_edits_when_bootstrap_fails(tmp_path: Path) -> None:
+    """A bootstrap that fails in the project (a stale .venv, #82) can't drop the project's edits:
+    copier update runs no task there, and bootstrap runs after it."""
+    from copier import run_update
+
+    tpl = tmp_path / "template"
+    tpl.mkdir()
+    for name in ("copier.yml", "template", "layers"):
+        (shutil.copytree if (ROOT / name).is_dir() else shutil.copy)(ROOT / name, tpl / name)
+    git = ("git", "-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false")
+    sh("git", "init", "-q", "-b", "main", cwd=tpl)
+    sh("git", "add", "-A", cwd=tpl)
+    sh(*git, "commit", "-qm", "old", cwd=tpl)
+    sh("git", "tag", "v1.0.0", cwd=tpl)
+    with (tpl / "template/.github/workflows/pr-title.yml").open("a") as f:
+        f.write("# a template change\n")
+    sh(*git, "commit", "-qam", "new", cwd=tpl)
+    sh("git", "tag", "v1.0.1", cwd=tpl)
+
+    # pre-commit, bootstrap's last step, fails only in the project, never in Copier's scratch
+    # copies. Copier runs tasks with plumbum's environment, so PATH goes through local.env.
+    from plumbum import local
+
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    (bin_dir / "pre-commit").write_text("#!/bin/sh\n[ ! -e .git/fail-bootstrap ]\n")
+    (bin_dir / "pre-commit").chmod(0o755)
+    path = f"{bin_dir}{os.pathsep}{os.environ['PATH']}"
+
+    dst = tmp_path / "project"
+    edited = dst / ".gitleaks.toml"
+    data = {"project_name": "demo", "description": "demo", "language": "none"}
+    with local.env(PATH=path):
+        run_copy(str(tpl), dst, data=data, defaults=True, unsafe=True, quiet=True, vcs_ref="v1.0.0")
+        edited.write_text(edited.read_text() + "# a project edit\n")
+        sh("git", "add", "-A", cwd=dst)
+        sh(*git, "commit", "-qm", "init", cwd=dst)
+        (dst / ".git/fail-bootstrap").touch()
+        run_update(dst, defaults=True, unsafe=True, quiet=True, overwrite=True, vcs_ref="v1.0.1",
+                   conflict="inline")  # fmt: skip
+    assert "# a project edit" in edited.read_text()
+    assert "# a template change" in (dst / ".github/workflows/pr-title.yml").read_text()
+    bootstrap = subprocess.run(["sh", "scripts/bootstrap.sh"], cwd=dst, capture_output=True,
+                               env={**os.environ, "PATH": path})  # fmt: skip
+    assert bootstrap.returncode != 0, "the fake pre-commit fails in the project"
 
 
 def edit_hook(project: Path, file_path: str) -> subprocess.CompletedProcess[str]:

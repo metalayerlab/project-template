@@ -1,6 +1,6 @@
 # Answering the Questions
 
-Copier asks these when you run `copier copy`. Pass answers non-interactively with `-d key=value`, for example `-d kind=cli`. The answers are saved in `.copier-answers.yml`, and `copier update` reuses them. To change one later, run `copier update --trust -d key=new-value`, or `copier update --trust --vcs-ref=HEAD -A` to answer everything again.
+Copier asks these when you run `copier copy`. Pass answers non-interactively with `-d key=value`, for example `-d kind=cli`. The answers are saved in `.copier-answers.yml`, and `copier update` reuses them. To change one later, run `copier update --trust --skip-tasks -d key=new-value`, or `copier update --trust --skip-tasks --vcs-ref=HEAD -A` to answer everything again.
 
 ## Questions
 
@@ -30,6 +30,8 @@ Copier asks these when you run `copier copy`. Pass answers non-interactively wit
 | `license` | `Unlicense` (`Proprietary` for `obsidian`) | `Unlicense`, `MIT`, `Apache-2.0`, `Proprietary` |
 | `copyright_holder` | the owner | Not asked for the Unlicense |
 | `personal_data_guard` | no | A CI job that fails on public IPv4 addresses or on strings from a `PERSONAL_DATA_DENYLIST` secret. Use it when tests carry fixtures captured from real systems |
+| `integration_ci` | no | Python only. Adds CI's **Integration tests** job: it installs both lists in `contrib/system-packages.txt` (`build:` and `runtime:`), runs the tests marked `integration` with `RUN_INTEGRATION=1`, and fails if none runs or one is skipped ([CI Pipeline](CI-Pipeline#integration-tests), [design 0017](https://github.com/metalayerlab/project-template/blob/main/docs/design/0017-integration-ci-job.md)) |
+| `integration_extras` | `[]` | With `integration_ci` only. Optional extras the job installs, e.g. `[fuse]`, or `["*"]` for all of them. Separate from `image_extras`: the image and the tests can need different extras |
 
 ## Derived values
 
