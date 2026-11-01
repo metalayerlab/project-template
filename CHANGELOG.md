@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.23](https://github.com/metalayerlab/project-template/compare/v0.1.22...v0.1.23) (2026-11-01)
+
+
+### ✨ Features
+
+* issues on other repos use that repo's issue form; hand-written only with the user's yes ([#112](https://github.com/metalayerlab/project-template/issues/112)) ([5bd6756](https://github.com/metalayerlab/project-template/commit/5bd67567dd41cfa2779e31cb012ba6824e7eba42))
+
 ## [0.1.22](https://github.com/metalayerlab/project-template/compare/v0.1.21...v0.1.22) (2026-11-01)
 
 
