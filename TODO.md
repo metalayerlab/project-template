@@ -6,7 +6,7 @@ left gets a line here or an issue.
 
 ## Open
 
-Nothing open: new work starts as an issue or a design record.
+- Build `kind: knowledge` ([0015](docs/design/0015-knowledge-kind.md)): the question, the gated files, the budget check outside the wiki standard, the `knowledge` variant and the wiki pages
 
 ## Decided against (don't re-propose without reading this first)
 
@@ -22,4 +22,6 @@ Nothing open: new work starts as an issue or a design record.
 - Build-time `VITE_*` config or an entrypoint-written `window.__ENV__` for a `web` app: a mounted `/config.json` read at run time ([0014](docs/design/0014-web-kind.md))
 - TanStack Router, wouter, hash URLs or React Router's declarative/framework modes: React Router in data mode ([0014](docs/design/0014-web-kind.md))
 - TanStack Query, zustand, Tailwind, Storybook, msw or Playwright in the `web` skeleton: one project's choice ([0014](docs/design/0014-web-kind.md))
+- A `notes_dir` question letting code projects edit a notes vault directly: the boundary hook blocks it and it costs every project's budget; a brain pulls instead ([0015](docs/design/0015-knowledge-kind.md))
+- Markdownlint in a `knowledge` repository: each vault's conventions decide its Markdown ([0015](docs/design/0015-knowledge-kind.md))
 - systemd for `kind: web`: a host's own nginx serves static files ([0014](docs/design/0014-web-kind.md))
