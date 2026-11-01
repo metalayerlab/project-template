@@ -40,8 +40,11 @@ body:
     id: language
     attributes:
       label: Language layer
+      multiple: true
       options:
         - python
+        - typescript
+        - none
   - type: dropdown
     id: kind
     attributes:
@@ -51,6 +54,8 @@ body:
         - service
         - cli
         - library
+        - web
+        - other
   - type: dropdown
     id: when
     attributes:

@@ -339,6 +339,26 @@ def test_no_double_blank_lines_in_markdown(project: Path) -> None:
     assert not doubled
 
 
+def test_home_toc_lines_are_separate_paragraphs(project: Path) -> None:
+    """A missing blank line joins two Table of Contents lines into one paragraph (#78)."""
+    lines = (project / "docs/wiki/Home.md").read_text(encoding="utf-8").splitlines()
+    toc = re.compile(r"\*\*[^*]+\*\*:")
+    joined = [b for a, b in zip(lines, lines[1:]) if toc.match(a) and toc.match(b)]
+    assert not joined
+
+
+def test_issue_form_offers_every_choice() -> None:
+    """The Template problem form lists every language and kind copier.yml offers (#79)."""
+    import yaml
+
+    questions = yaml.safe_load((ROOT / "copier.yml").read_text())
+    form = yaml.safe_load((ROOT / ".github/ISSUE_TEMPLATE/template_problem.yml").read_text())
+    dropdowns = {f["id"]: f["attributes"]["options"] for f in form["body"] if f["type"] == "dropdown"}
+    for question in ("language", "kind"):
+        choices = [c["value"] if isinstance(c, dict) else c for c in questions[question]["choices"].values()]
+        assert dropdowns[question] == choices, question
+
+
 def test_readme_links_existing_wiki_pages(project: Path) -> None:
     """The README links the wiki by URL, which check-wiki.py doesn't follow."""
     pages = re.findall(r"/wiki/([\w-]+)\)", (project / "README.md").read_text())
