@@ -60,8 +60,9 @@ pytest's temporary directories: render a variant yourself instead.
 - Finished a bug or enhancement? Say what let it happen, and whether `template/`, a check or this file should
   change. Propose it, with your recommendation, or say "none".
 - Reply tersely: the result, then what you need from the user. No preamble, recaps or restated plans.
-- Task done and the next is unrelated? Make sure the PR, `TODO.md` or a design record holds what's needed,
-  then suggest a new session.
+- Task done and the next is unrelated? Make sure the PR, `TODO.md` or a design record holds what's needed.
+  List what you left (worktrees, local and remote branches, temp files, processes, containers), whether each
+  is safe to remove and why, and remove only what the user approves. Then suggest a new session.
 - An Approved design record with work left gets a `TODO.md` line or an issue, not just wording in the record.
 - Keep the generated code small. It's a skeleton for AI-assisted build-out, not a framework.
 - AI-facing files have a budget: `[context_budget]` in `template/docs/wiki/.standard.toml`, enforced in every

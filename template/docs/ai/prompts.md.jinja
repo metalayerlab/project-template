@@ -114,9 +114,10 @@ git switch -c dev/issue-<n> --no-track origin/main. Give each this brief:
   Reply with one line: the issue, what you did, the PR link, and its state.
 
 Merge one PR at a time. Before each, the next agent updates its branch onto
-main and waits for CI again. When all are done, give me a table: issue,
-outcome, PR, merged or waiting for me, and what each fix says should change
-to stop it happening again. Then stop.
+main and waits for CI again. Remove an agent's worktree only after that
+agent has finished: removing it earlier breaks its run. When all are done,
+give me a table: issue, outcome, PR, merged or waiting for me, and what
+each fix says should change to stop it happening again. Then stop.
 ```
 
 ## Context for a chat assistant
