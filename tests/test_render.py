@@ -714,6 +714,77 @@ def test_labels_are_created(project: Path) -> None:
     assert used <= created, used - created
 
 
+def test_bootstrap_runs_on_copy_only() -> None:
+    """Copier runs tasks before it puts a project's edits back, so a task that fails during
+    `copier update` drops them silently: tasks run on copy only (#82)."""
+    import yaml
+
+    tasks = yaml.safe_load((ROOT / "copier.yml").read_text())["_tasks"]
+    assert tasks and all(t.get("when") == "[[ _copier_operation == 'copy' ]]" for t in tasks), tasks
+
+
+def test_template_update_bootstraps_after_the_merge(project: Path) -> None:
+    """The update workflow skips Copier's tasks and runs bootstrap once the edits are back (#82)."""
+    workflow = (project / ".github/workflows/template-update.yml").read_text()
+    updates = re.findall(r"copier update --trust[^\n`]*", workflow)
+    assert updates and all("--skip-tasks" in u for u in updates), updates
+    assert workflow.index("copier update --trust") < workflow.index("run: |\n          if ! sh scripts/bootstrap.sh")
+
+
+def test_documented_updates_skip_tasks() -> None:
+    """Every `copier update --trust` the wiki shows skips tasks, then says to run bootstrap (#82)."""
+    pages = [*(ROOT / "docs/wiki").glob("*.md"), ROOT / "copier.yml"]
+    commands = [(p.name, c) for p in pages for c in re.findall(r"copier update --trust[^\n`]*", p.read_text())]
+    assert commands and [c for c in commands if "--skip-tasks" not in c[1]] == []
+
+
+def test_update_keeps_edits_when_bootstrap_fails(tmp_path: Path) -> None:
+    """A bootstrap that fails in the project (a stale .venv, #82) can't drop the project's edits:
+    copier update runs no task there, and bootstrap runs after it."""
+    from copier import run_update
+
+    tpl = tmp_path / "template"
+    tpl.mkdir()
+    for name in ("copier.yml", "template", "layers"):
+        (shutil.copytree if (ROOT / name).is_dir() else shutil.copy)(ROOT / name, tpl / name)
+    git = ("git", "-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false")
+    sh("git", "init", "-q", "-b", "main", cwd=tpl)
+    sh("git", "add", "-A", cwd=tpl)
+    sh(*git, "commit", "-qm", "old", cwd=tpl)
+    sh("git", "tag", "v1.0.0", cwd=tpl)
+    with (tpl / "template/.github/workflows/pr-title.yml").open("a") as f:
+        f.write("# a template change\n")
+    sh(*git, "commit", "-qam", "new", cwd=tpl)
+    sh("git", "tag", "v1.0.1", cwd=tpl)
+
+    # pre-commit, bootstrap's last step, fails only in the project, never in Copier's scratch
+    # copies. Copier runs tasks with plumbum's environment, so PATH goes through local.env.
+    from plumbum import local
+
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    (bin_dir / "pre-commit").write_text("#!/bin/sh\n[ ! -e .git/fail-bootstrap ]\n")
+    (bin_dir / "pre-commit").chmod(0o755)
+    path = f"{bin_dir}{os.pathsep}{os.environ['PATH']}"
+
+    dst = tmp_path / "project"
+    edited = dst / ".gitleaks.toml"
+    data = {"project_name": "demo", "description": "demo", "language": "none"}
+    with local.env(PATH=path):
+        run_copy(str(tpl), dst, data=data, defaults=True, unsafe=True, quiet=True, vcs_ref="v1.0.0")
+        edited.write_text(edited.read_text() + "# a project edit\n")
+        sh("git", "add", "-A", cwd=dst)
+        sh(*git, "commit", "-qm", "init", cwd=dst)
+        (dst / ".git/fail-bootstrap").touch()
+        run_update(dst, defaults=True, unsafe=True, quiet=True, overwrite=True, vcs_ref="v1.0.1",
+                   conflict="inline")  # fmt: skip
+    assert "# a project edit" in edited.read_text()
+    assert "# a template change" in (dst / ".github/workflows/pr-title.yml").read_text()
+    bootstrap = subprocess.run(["sh", "scripts/bootstrap.sh"], cwd=dst, capture_output=True,
+                               env={**os.environ, "PATH": path})  # fmt: skip
+    assert bootstrap.returncode != 0, "the fake pre-commit fails in the project"
+
+
 def edit_hook(project: Path, file_path: str) -> subprocess.CompletedProcess[str]:
     event = json.dumps({"cwd": str(project), "tool_input": {"file_path": file_path}})
     return subprocess.run(

@@ -6,13 +6,21 @@
 
 Usually uv is missing or can't reach the package index. Copier removes the half-made project on a failed task, so re-run with `--skip-tasks`, then run `sh scripts/bootstrap.sh` and read its error.
 
+### `copier update` stopped with an error, or dropped your edits
+
+An update that stops part-way is incomplete: Copier has written the new template over your files but not put your edits back, and no conflict markers show it. Templates up to v0.1.20 ran `scripts/bootstrap.sh` during the update, so a failing `uv sync` or `npm install` stopped it there ([#82](https://github.com/metalayerlab/project-template/issues/82)). Don't commit the result. Reset with `git checkout -- . && git clean -fd`, then run `uvx copier update --trust --skip-tasks` and `sh scripts/bootstrap.sh` ([Updating from the Template](Updating-from-the-Template#an-update-that-stops-with-an-error-is-incomplete)).
+
+### "Directory not empty" (os error 39) from uv or npm after an update
+
+An update from v0.1.20 or earlier without `--skip-tasks` can delete files from `.venv` or `node_modules` and leave the directories. Delete the directory and run `sh scripts/bootstrap.sh` again.
+
 ### The wiki publish job fails with "No wiki repository yet"
 
 The GitHub wiki's git repository exists only after its first page is created in the web UI. Enable the wiki, create any page, and re-run the job: it replaces that page.
 
 ### Template update opened an issue, not a PR
 
-The update changes `.github/workflows/`, and without the release GitHub App the workflow can't push those files ("refusing to allow a GitHub App to create or update workflow"). Run `uvx copier update --trust --conflict inline` locally, push a branch and open the PR. Set up the App ([Release Process](Release-Process#the-release-github-app)) to stop this.
+The update changes `.github/workflows/`, and without the release GitHub App the workflow can't push those files ("refusing to allow a GitHub App to create or update workflow"). Run `uvx copier update --trust --skip-tasks --conflict inline` and then `sh scripts/bootstrap.sh` locally, push a branch and open the PR. Set up the App ([Release Process](Release-Process#the-release-github-app)) to stop this.
 
 ### `unauthorized` pulling a public project's image
 
