@@ -56,6 +56,18 @@ def test_core_file_is_language_neutral(path: Path) -> None:
     assert not hits, f"language-specific text in a core file (move it to layers/): {hits}"
 
 
+def test_brain_pull_is_an_obsidian_file() -> None:
+    """The Brain pull workflow and its script render only for obsidian, and no core file reads
+    the answer (design record 0017)."""
+    gated = [p.relative_to(TEMPLATE) for p in TEMPLATE.rglob("*") if "brain_pull" in str(p.relative_to(TEMPLATE))]
+    assert {p.name for p in gated} >= {
+        "[% if language == 'obsidian' and brain_pull %]brain-pull.yml[% endif %].jinja",
+        "[% if language == 'obsidian' and brain_pull %]followed-repos.py[% endif %].jinja",
+    }
+    assert [p for p in gated if "language == 'obsidian' and brain_pull" not in str(p)] == []
+    assert [p for p in core_files() if "brain_pull" in p.read_text(encoding="utf-8", errors="ignore")] == []
+
+
 @pytest.mark.parametrize("layer", LAYERS)
 def test_layer_defines_every_name_the_core_uses(layer: str) -> None:
     defined = set(DEFINE.findall((ROOT / "layers" / layer / "layer.jinja").read_text()))
