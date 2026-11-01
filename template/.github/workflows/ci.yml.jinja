@@ -45,16 +45,14 @@ jobs:
         run: python3 scripts/check-personal-data.py
 [% endif %]
 [% include 'layers/' ~ language ~ '/ci/jobs.yml.jinja' %]
-[% if kind == 'knowledge' %]
+[% if kind == 'brain' %]
 
-  budget:
-    name: Context budget
+  repository:
+    name: Repository metadata
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # Projects with a wiki check this in their Wiki workflow; without one, it is its own job (0015).
-      - name: AI instruction files
-        run: python3 scripts/check-context-budget.py
       - name: .github/repository.toml is valid
         run: python3 scripts/repo-metadata.py --validate
 

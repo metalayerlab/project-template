@@ -5,14 +5,7 @@ repos:
   - repo: local
     hooks:
 [% include 'layers/' ~ language ~ '/pre-commit/hooks.yaml.jinja' %]
-[% if kind == 'knowledge' %]
-      - id: check-context-budget
-        name: context budget
-        entry: python3 scripts/check-context-budget.py
-        language: system
-        pass_filenames: false
-        files: ^(AGENTS\.md|CLAUDE\.md|GEMINI\.md|\.cursor/|\.github/copilot-instructions\.md)
-[% else %]
+[% if kind != 'brain' %]
       - id: check-wiki
         name: wiki standard
         entry: python3 scripts/check-wiki.py
@@ -24,7 +17,7 @@ repos:
     rev: v8.30.1
     hooks:
       - id: gitleaks
-[% if kind != 'knowledge' %]
+[% if kind != 'brain' %]
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v4.4.0
     hooks:

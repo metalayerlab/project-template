@@ -24,6 +24,7 @@ FORBIDDEN = {
                r"pyproject", r"python:\S+-slim", r"/opt/venv", r"\bpip install\b"],  # fmt: skip
     "typescript": [r"\bnpm (ci|run|test|install)\b", r"\bnpx\b", r"node_modules", r"\bvitest\b",
                    r"\beslint\b", r"\bprettier\b", r"\btsc\b", r"tsconfig", r"node:\S+-slim"],  # fmt: skip
+    "obsidian": [r"\.obsidian", r"check-vault", r"\.base\b"],
 }
 # Core scripts written in Python on purpose (stdlib only, runnable by any layer's CI).
 CORE_PYTHON_SCRIPTS = {"scripts/check-wiki.py", "scripts/repo-metadata.py",

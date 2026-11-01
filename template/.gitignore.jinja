@@ -1,12 +1,6 @@
 [% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]
 [% include 'layers/' ~ language ~ '/ignore/gitignore.jinja' %]
 
-[% if kind == 'knowledge' %]
-# Obsidian's per-client state, wherever the vault is (design record 0015)
-**/.obsidian/workspace*.json
-**/.trash/
-
-[% endif %]
 # Local knowledge graphs (graphify): rebuilt locally, never committed
 .graphify/
 graphify-out/

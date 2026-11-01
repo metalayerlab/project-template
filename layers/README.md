@@ -1,8 +1,8 @@
 # Language layers
 
 The template is a **language-agnostic core** plus one **layer** per language: `python` and `typescript`
-(design record 0009). `none` is the layer for a language without one: every value is defined,
-most of them empty (design record 0008). `tests/test_layers.py` enforces the boundary: core files may not contain
+(design record 0009), and `obsidian`, a vault of notes whose only kind is `brain` (design record 0016).
+`none` is the layer for a language without one: every value is defined, most of them empty (design record 0008). `tests/test_layers.py` enforces the boundary: core files may not contain
 language tooling, and every layer must provide everything the core asks for.
 
 ## Where things live
@@ -63,7 +63,8 @@ A layer `layers/<lang>/` provides:
 **Empty values.** A value may be `''` (or `[]` for `noread`) when the language has no such step. The core
 guards every value that can be empty on the value itself, `[% if layer.typecheck %]…[% endif %]`, never on
 `language`. `name`, `code_lang`, `release_type`, `version_file` and `test` are never empty: `test` is the
-one command the Definition of done always runs.
+one command the Definition of done always runs. A layer whose only kind drops releases and the image
+(`obsidian`: `brain`) still defines `release_type`, `version_file` and the image values; they are never rendered.
 
 ### 2. Fragments, by area (paths relative to `layers/<lang>/`)
 
@@ -102,7 +103,8 @@ one command the Definition of done always runs.
 
 ### Core tools every layer may assume
 
-`python3` (stdlib: `check-wiki.py`, the personal-data guard), `uv`/`uvx` (Copier, pre-commit), `git`, `docker`.
+`python3` (stdlib: `check-wiki.py`, the personal-data guard), `uv`/`uvx` (Copier, pre-commit, and
+`check-vault.py` with its inline dependency), `git`, `docker`.
 The template's own tests also need each layer's toolchain: `node` >= 24 and `npm` for TypeScript.
 
 ## Adding a layer (Go, say)

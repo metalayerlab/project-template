@@ -1,5 +1,5 @@
 [% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]
-[% if kind != 'knowledge' %]
+[% if kind != 'brain' %]
 <!--
 Title: a Conventional Commit, e.g. "feat: add retry to the uploader". It becomes
 the squash commit on main and a CHANGELOG.md line.
@@ -8,7 +8,7 @@ the squash commit on main and a CHANGELOG.md line.
 
 ## What and why
 
-[% if kind == 'knowledge' %]
+[% if kind == 'brain' %]
 <!-- What changes, and why. Link the issue or the notes it builds on. -->
 [% else %]
 <!-- What changes, and why. Link the issue or design record (docs/design/). -->
@@ -27,8 +27,8 @@ AGENTS.md, the wiki, or project-template? Link the issue or PR. "None" is fine. 
 
 ## Author checklist
 
-[% if kind == 'knowledge' %]
-- [ ] Notes follow the conventions `README.md` names
+[% if kind == 'brain' %]
+- [ ] Notes follow the repository's note conventions; a decision has a design record
 - [ ] No secrets, and nothing `.gitignore` keeps out (evidence, keys, private folders)
 [% else %]
 - [ ] Tests cover the change, and fail without it
@@ -43,7 +43,7 @@ AGENTS.md, the wiki, or project-template? Link the issue or PR. "None" is fine. 
 
 ## Reviewer checklist
 
-[% if kind == 'knowledge' %]
+[% if kind == 'brain' %]
 Human review is required for every PR, and is the whole point for generated ones.
 
 - [ ] I read every line of the diff, not only the summary

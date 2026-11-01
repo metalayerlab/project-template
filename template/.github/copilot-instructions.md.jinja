@@ -4,8 +4,8 @@
 Follow [AGENTS.md](../AGENTS.md): the project's only instruction file. If it isn't loaded, read it before
 changing anything. The rules that matter most:
 
-[% if kind == 'knowledge' %]
-- Read `README.md` first: the map, and the note conventions every note follows.
+[% if kind == 'brain' %]
+[% include 'layers/' ~ language ~ '/copilot.md.jinja' %]
 - Never commit what `.gitignore` keeps out, or edit template-owned files. Never weaken a check.
 [% else %]
 [% include 'layers/' ~ language ~ '/copilot.md.jinja' %]
