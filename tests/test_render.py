@@ -51,6 +51,7 @@ VARIANTS: dict[str, dict[str, object]] = {
         "python_version": "3.14",
         "personal_data_guard": True,
         "license": "Proprietary",
+        "integration_ci": True,
     },
     "cli": {"kind": "cli", "license": "MIT", "dependabot_automerge": "patch"},
     "library": {"kind": "library", "license": "Apache-2.0"},
@@ -215,6 +216,92 @@ def test_image_extras_rejected(bad: object, tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="image_extras"):
         run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
                  vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+
+
+def integration_steps(project: Path) -> dict[str, str] | None:
+    """The `run` of each named step of ci.yml's Integration tests job, or None without one."""
+    import yaml
+
+    job = yaml.safe_load((project / ".github/workflows/ci.yml").read_text())["jobs"].get("integration")
+    return job and {s["name"]: s["run"] for s in job["steps"] if "run" in s}
+
+
+@pytest.mark.parametrize(
+    ("answers", "sync"),
+    [
+        ({}, None),
+        ({"integration_ci": True}, "uv sync --locked"),
+        ({"integration_ci": True, "integration_extras": ["fuse", "gpu"]},
+         "uv sync --locked --extra fuse --extra gpu"),
+        ({"integration_ci": True, "integration_extras": ["*"]}, "uv sync --locked --all-extras"),
+    ],
+)  # fmt: skip
+def test_integration_ci(answers: dict[str, object], sync: str | None, tmp_path: Path) -> None:
+    """`integration_ci` (#81, 0017) adds the job, with both package lists and the extras; off adds nothing."""
+    data = {"project_name": "demo", "description": "demo", "kind": "cli", **answers}
+    run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+             vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+    steps = integration_steps(tmp_path / "p")
+    ci = (tmp_path / "p/.github/workflows/ci.yml").read_text()
+    if sync is None:
+        assert steps is None and "integration" not in ci and "runtime" not in ci
+        return
+    assert steps is not None
+    assert steps["Install (from the lock file)"] == sync
+    assert "^(build|runtime):" in steps["System packages"]
+    assert "--no-cov" in steps["Integration tests"]
+    assert ("integration_extras" in ci) == ("integration_extras" in answers)
+
+
+@pytest.mark.parametrize(
+    "answers",
+    [
+        {"language": "typescript", "kind": "cli", "integration_ci": True},
+        {"language": "none", "integration_ci": True},
+        {"kind": "cli", "integration_extras": ["fuse"]},
+        *({"kind": "cli", "integration_ci": True, "integration_extras": bad}
+          for bad in ["fuse", [1], [""], ["*", "fuse"], ["a b"], ["fuse;rm"], ["-x"], ["fuse", "fuse"]]),
+    ],
+)  # fmt: skip
+def test_integration_ci_rejected(answers: dict[str, object], tmp_path: Path) -> None:
+    data = {"project_name": "demo", "description": "demo", **answers}
+    with pytest.raises(ValueError, match="integration_"):
+        run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+                 vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+
+
+INTEGRATION_TESTS = {
+    # (tests/integration/test_x.py, the failing step or None, what it prints)
+    "none": ("", "Integration tests", ""),
+    "pass": ("@pytest.mark.integration\ndef test_a() -> None:\n    assert True\n\n\n"
+             "@pytest.mark.integration\n@pytest.mark.xfail(reason='known')\n"
+             "def test_b() -> None:\n    raise AssertionError\n", None, ""),
+    "skip": ("@pytest.mark.integration\ndef test_a() -> None:\n    assert True\n\n\n"
+             "@pytest.mark.integration\ndef test_b() -> None:\n    pytest.skip('no /dev/fuse')\n",
+             "No integration test was skipped", "::error::skipped tests.integration.test_x.test_b"),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("case", sorted(INTEGRATION_TESTS))
+def test_integration_job_fails_rather_than_skips(case: str, project: Path, tmp_path: Path) -> None:
+    """The job runs the tests, and fails when none runs or one is skipped (#81)."""
+    steps = integration_steps(project)
+    if steps is None:
+        pytest.skip("no integration job")
+    code, failing, printed = INTEGRATION_TESTS[case]
+    copy = tmp_path / project.name
+    shutil.copytree(project, copy, ignore=shutil.ignore_patterns(".venv"))
+    if code:
+        (copy / "tests/integration/test_x.py").write_text(f"import pytest\n\n\n{code}")
+    env = {**os.environ, "RUN_INTEGRATION": "1", "RUNNER_TEMP": str(tmp_path)}
+    for name in ("Integration tests", "No integration test was skipped"):
+        result = subprocess.run(["sh", "-c", steps[name]], cwd=copy, env=env,
+                                capture_output=True, text=True)  # fmt: skip
+        if name == failing:
+            assert result.returncode != 0 and printed in result.stdout, result.stdout
+            return
+        assert result.returncode == 0, f"{name}:\n{result.stdout}\n{result.stderr}"
+    assert failing is None
 
 
 def test_first_release_is_0_1_0(project: Path) -> None:
