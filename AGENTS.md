@@ -74,6 +74,7 @@ pytest's temporary directories: render a variant yourself instead.
 uv run pytest                                                   # all variants
 uv run pytest -m docker                                         # images build, run and are healthy
 python3 template/scripts/check-wiki.py --wiki docs/wiki --strict
+python3 template/scripts/check-wiki.py --wiki docs/wiki --docs-touched origin/main  # docs/wiki/ changed with the code
 docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12
 docker run --rm -v "$PWD:/workdir" davidanson/markdownlint-cli2:v0.24.0 \
   --config template/.markdownlint-cli2.yaml "docs/wiki/*.md" "docs/ai/*.md" "docs/design/*.md" "*.md" "!CHANGELOG.md"
