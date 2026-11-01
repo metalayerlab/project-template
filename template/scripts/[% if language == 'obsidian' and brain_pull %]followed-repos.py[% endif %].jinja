@@ -6,7 +6,7 @@
 """Print the GitHub repositories the vault's notes follow: their `repos:` property.
 
 Template-owned: changes come from project-template through `copier update` (design
-record 0017). The Brain pull workflow's gate reads it: one `owner/name` per line, sorted.
+record 0018). The Brain pull workflow's gate reads it: one `owner/name` per line, sorted.
 `repos:` is one string or a list; an entry that isn't `owner/name` is a warning on stderr.
 
     uv run scripts/followed-repos.py [--vault DIR]

@@ -1,4 +1,4 @@
-# 0017: Brain pull: a scheduled workflow keeps a brain's `repos:` notes current
+# 0018: Brain pull: a scheduled workflow keeps a brain's `repos:` notes current
 
 Status: Implemented
 Date: 2026-11-01

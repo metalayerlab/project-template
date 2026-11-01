@@ -58,7 +58,7 @@ def test_core_file_is_language_neutral(path: Path) -> None:
 
 def test_brain_pull_is_an_obsidian_file() -> None:
     """The Brain pull workflow and its script render only for obsidian, and no core file reads
-    the answer (design record 0017)."""
+    the answer (design record 0018)."""
     gated = [p.relative_to(TEMPLATE) for p in TEMPLATE.rglob("*") if "brain_pull" in str(p.relative_to(TEMPLATE))]
     assert {p.name for p in gated} >= {
         "[% if language == 'obsidian' and brain_pull %]brain-pull.yml[% endif %].jinja",

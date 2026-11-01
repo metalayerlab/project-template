@@ -185,7 +185,7 @@ vault_dir:
     One folder name, or "." for the repository root
     [% endif %]
 
-# A daily Claude Code run that keeps `repos:` notes current, in one PR (design record 0017).
+# A daily Claude Code run that keeps `repos:` notes current, in one PR (design record 0018).
 brain_pull:
   type: bool
   help: Add the Brain pull workflow? Daily, Claude Code updates the notes whose `repos:` property names a GitHub repository that changed, in one PR for review. Needs the CLAUDE_CODE_OAUTH_TOKEN secret and a repository setting (Quick-Start in the wiki)

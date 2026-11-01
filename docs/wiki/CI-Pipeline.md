@@ -20,7 +20,7 @@ Locally, `pre-commit` runs the same lint, type, wiki and secret checks before ea
 
 ## Brain pull
 
-A brain that answers `brain_pull` ([design 0017](https://github.com/metalayerlab/project-template/blob/main/docs/design/0017-brain-pull.md)) gets `brain-pull.yml`: daily at 05:00 UTC, or by hand (`gh workflow run brain-pull.yml`, with an optional `since` date and a `debug` switch that logs every Claude message and tool call, which is how you see the calls it refused).
+A brain that answers `brain_pull` ([design 0018](https://github.com/metalayerlab/project-template/blob/main/docs/design/0018-brain-pull.md)) gets `brain-pull.yml`: daily at 05:00 UTC, or by hand (`gh workflow run brain-pull.yml`, with an optional `since` date and a `debug` switch that logs every Claude message and tool call, which is how you see the calls it refused).
 
 1. **Update notes** (read-only token). Without the `CLAUDE_CODE_OAUTH_TOKEN` secret it stops there, green. Otherwise `scripts/followed-repos.py` lists the `repos:` values in the vault, and a shell step asks GitHub which of them have commits or releases since the start of this workflow's last *successful* run. Only if one changed does Claude Code run, with read-only tools and edits limited to the vault's notes, and write a patch, a PR body and optional issues.
 2. **Open or update the PR** (`contents`, `pull-requests`, `issues` and `actions: write`). It rejects a patch that touches anything but existing `.md` notes in the vault (`.obsidian/`, `_templates/`, `Decisions.base`, new or deleted files), re-runs `check-vault.py`, commits to the open `brain-pull` PR's branch or a new `brain-pull/<date>`, and opens or comments on the PR. A closed PR's branch is never reused.

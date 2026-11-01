@@ -490,7 +490,7 @@ PULL_FILES = [PULL, "scripts/followed-repos.py"]
 @pytest.mark.parametrize("data", [{"language": "obsidian"}, {"language": "python", "brain_pull": True},
                                   {"language": "none", "brain_pull": True}])  # fmt: skip
 def test_brain_pull_is_opt_in(data: dict[str, object], tmp_path: Path) -> None:
-    """Only a brain that answers brain_pull gets the workflow; an answer can't add it elsewhere (0017)."""
+    """Only a brain that answers brain_pull gets the workflow; an answer can't add it elsewhere (0018)."""
     dst = tmp_path / "p"
     run_copy(str(ROOT), dst, data={"project_name": "demo", "description": "demo", **data}, defaults=True,
              unsafe=True, quiet=True, vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
@@ -498,7 +498,7 @@ def test_brain_pull_is_opt_in(data: dict[str, object], tmp_path: Path) -> None:
 
 
 def test_brain_pull_workflow(project: Path) -> None:
-    """Claude runs read-only; only propose writes, after checking the patch's scope (0017)."""
+    """Claude runs read-only; only propose writes, after checking the patch's scope (0018)."""
     if not brain(project):
         assert [f for f in PULL_FILES if (project / f).exists()] == []
         return
@@ -566,7 +566,7 @@ SCOPE_CASES = {
 
 @pytest.mark.parametrize("case", SCOPE_CASES)
 def test_brain_pull_scope(case: str, project: Path, tmp_path: Path) -> None:
-    """The propose job applies only edits to existing notes in the vault (0017)."""
+    """The propose job applies only edits to existing notes in the vault (0018)."""
     if not brain(project):
         pytest.skip("no Brain pull")
     copy = tmp_path / project.name
@@ -581,7 +581,7 @@ def test_brain_pull_scope(case: str, project: Path, tmp_path: Path) -> None:
 
 
 def test_brain_pull_with_the_vault_at_the_root(tmp_path: Path) -> None:
-    """`vault_dir: .`: notes at the root are in scope; the AI files and README.md are not (0017)."""
+    """`vault_dir: .`: notes at the root are in scope; the AI files and README.md are not (0018)."""
     dst = tmp_path / "demo"
     data = {"project_name": "demo", "description": "demo", "language": "obsidian", "vault_dir": ".",
             "brain_pull": True}  # fmt: skip
@@ -608,7 +608,7 @@ FOLLOWED = {
 
 
 def test_followed_repos(project: Path, tmp_path: Path) -> None:
-    """The gate's list: inline and block lists, distinct and sorted; templates and bad entries skipped (0017)."""
+    """The gate's list: inline and block lists, distinct and sorted; templates and bad entries skipped (0018)."""
     if not brain(project):
         pytest.skip("no Brain pull")
     copy = tmp_path / project.name
