@@ -38,9 +38,9 @@ uvx copier update --trust -d language=python -d kind=cli   # and that layer's qu
 
 Copier adds the layer's files and **deletes** `scripts/check.sh` and `version.txt`, your edits included. Before you update, move the commands from `check.sh` into the new layer's tools (they are still in git history afterwards). The version moves into the layer's manifest file (`pyproject.toml` or `package.json`), and must match `.release-please-manifest.json`. Your wiki pages keep their old text, so update Quick-Start, Contributing and Testing-Guide, and link the new pages from `_Sidebar.md` (`check-wiki.py` names them).
 
-## Between `other` and `knowledge`
+## Between `none` and `obsidian`
 
-`copier update --trust -d kind=knowledge` turns a `language: none` project into a notes repository: Copier deletes the release files, `docs/`, `contrib/`, `CONTRIBUTING.md`, `SECURITY.md`, `TODO.md` and `version.txt`, your edits included, so move anything you keep first. Its `README.md` becomes project-owned. Going back (`-d kind=other`) brings those files back as skeletons.
+`copier update --trust -d language=obsidian` turns a `language: none` project into a brain, a notes vault: Copier deletes the release files, `docs/` (your wiki pages and design records included), `contrib/`, `CONTRIBUTING.md`, `SECURITY.md`, `TODO.md` and `version.txt`, so move anything you keep into the vault first. It adds the vault in `vault_dir` and `scripts/check-vault.py`, and keeps your `README.md` and `scripts/check.sh`, which are now the project's. Going back (`-d language=none`) brings the deleted files back as skeletons and leaves the vault in place.
 
 If you keep resolving the same conflict, the change probably belongs in the template: see [Contributing to the Template](Contributing-to-the-Template).
 

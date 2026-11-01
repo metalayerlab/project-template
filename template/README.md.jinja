@@ -1,18 +1,11 @@
 [% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]
-[% if kind == 'knowledge' %]
+[% if kind == 'brain' %]
 # [[ project_name ]]
 
 [[ description ]]
 
-<!-- guidance: this README is yours (copier update never touches it): it is the map every
-assistant reads first. Say what the notes are for, fill the table, and name the note
-that holds your conventions. Then delete this comment. -->
-
-| Folder | What | In git |
-|---|---|---|
-| `notes/` | the notes | yes |
-
-Start at `notes/Home.md`. Note conventions (file names, front matter, links): `notes/Conventions.md`.
+<!-- guidance: this README is yours (copier update never touches it). Say what the notes are
+for and who they are for. Then delete this comment. -->
 
 ## For AI assistants
 
@@ -20,12 +13,9 @@ Start at `notes/Home.md`. Note conventions (file names, front matter, links): `n
 the Copilot and Cursor pointers import it. Every change gets human review.
 
 ## Checks
+[% include 'layers/' ~ language ~ '/readme/development.md.jinja' %]
 
-```sh
-sh scripts/check.sh                       # this repository's own checks
-python3 scripts/check-context-budget.py   # the AI instruction files stay small
-scripts/check-docs-secrets.sh             # the secret scan (Docker)
-```
+CI also runs the secret scan (`scripts/check-docs-secrets.sh`, with Docker).
 
 This repository was generated from [project-template](https://github.com/[[ github_owner ]]/project-template).
 Template fixes arrive as a weekly *Template update* PR.

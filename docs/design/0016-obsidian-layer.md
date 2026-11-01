@@ -1,6 +1,6 @@
 # 0016: An `obsidian` language layer: the vault is the wiki, design records are notes
 
-Status: Approved
+Status: Implemented
 Date: 2026-11-01
 Authors: Stephen Cox; drafted by Claude (Opus 5.5)
 Supersedes: [0015](0015-knowledge-kind.md)

@@ -2,22 +2,24 @@
 # AGENTS.md
 
 [[ project_name ]]: [[ description ]]
-[% if kind == 'knowledge' %]
-A knowledge repository: notes, not code. Single source of instructions for AI assistants; the tool files point here.
+[% if kind == 'brain' %]
+A brain: notes, not code. Single source of instructions for AI assistants; the tool files point here.
 
 ## How to work
 
-1. Read `README.md` first (the map, and the note conventions it names), then only the notes the task needs.
-2. Write notes by those conventions. Changing a convention is the user's call: propose it, don't apply it.
+[% include 'layers/' ~ language ~ '/agents/stack-intro.md.jinja' %]
+
+1. Changing a convention is the user's call: propose it, don't apply it.
+2. A decision about this repository (layout, conventions, sources) gets a design record: **stop for approval**.
 3. A human reviews every change. Report what you skipped or couldn't check; never claim an unrun check passed.
 4. Asking the user something? Give your recommendation and why.
 5. Reply tersely: the result, then what you need from the user. No preamble, recaps or restated plans.
 
 ## Don't read
 
-- `.graphify/`, `graphify-out/`, and what `README.md` marks as evidence, generated or archived.
+- [% for d in layer.noread %]`[[ d ]]`, [% endfor %]`.graphify/`, `graphify-out/`, and what the notes mark as evidence, generated or archived.
 
-New large or generated path? Say so in `README.md` and deny `Read` on it in `.claude/settings.json`.
+New large or generated path? List it here and deny `Read` on it in `.claude/settings.json`.
 
 [% else %]
 Single source of instructions for AI assistants; the tool files point here. Reasons: the wiki's Contributing page.
@@ -85,11 +87,13 @@ T = template-owned: never edit here; fixes arrive by the weekly update PR. A bug
 
 | Path | What |
 |---|---|
-[% if kind == 'knowledge' %]
-| `README.md` | The map: folders, where to start, the note conventions |
-| `scripts/check.sh` | This repository's own checks (front matter, links); a stub until filled |
+[% if kind == 'brain' %]
+[% include 'layers/' ~ language ~ '/agents/repo-map.md.jinja' %]
 | `.github/workflows/`, `scripts/` | CI and its scripts (T), except `check.sh` |
 | `.copier-answers.yml` | Copier only |
+
+## Conventions
+[% include 'layers/' ~ language ~ '/agents/conventions.md.jinja' %]
 
 [% else %]
 [% include 'layers/' ~ language ~ '/agents/repo-map.md.jinja' %]
@@ -116,17 +120,17 @@ T = template-owned: never edit here; fixes arrive by the weekly update PR. A bug
 [% endif %]
 ## Never
 
-[% if kind == 'knowledge' %]
+[% if kind == 'brain' %]
 - Push to `main`, create tags or releases, or edit `.copier-answers.yml`.
 [% else %]
 - Push to `main`, create tags or releases, or edit release-please or Copier files (see the map).
 [% endif %]
-- Change another codebase from here (other repos, submodules, installed dependencies), even when asked: the user opens a session there. Search its issues (`gh issue list -R <owner/repo> --state all -S <terms>`), comment your case or draft one for the user to confirm. A workaround stays minimal, links the issue ([% if kind == 'knowledge' %]in the note[% else %]code comment, `TODO.md`[% endif %]), and goes when the fix lands.
+- Change another codebase from here (other repos, submodules, installed dependencies), even when asked: the user opens a session there. Search its issues (`gh issue list -R <owner/repo> --state all -S <terms>`), comment your case or draft one for the user to confirm. A workaround stays minimal, links the issue ([% if kind == 'brain' %]in the note[% else %]code comment, `TODO.md`[% endif %]), and goes when the fix lands.
 - Credit an AI in commits or PRs: no co-author trailers, bylines or session links.
-[% if kind == 'knowledge' %]
+[% if kind == 'brain' %]
 - Commit secrets or what `.gitignore` keeps out (evidence, keys, private folders).
 - Weaken a check: loosen `scripts/check.sh` or the secret scan, add `continue-on-error`. If a check is wrong, say so.
-- Grow this file or the tool files past the context budget (`scripts/check-context-budget.py`, CI-checked): be terse.
+- Grow this file or the tool files past the context budget (`[[ layer.lint ]]`, CI-checked): be terse.
 [% else %]
 - Edit inside generated wiki blocks: regenerate them.
 - Commit secrets, real hostnames, IPs or personal data. Use `example.org` and `192.0.2.0/24`.
@@ -138,9 +142,9 @@ T = template-owned: never edit here; fixes arrive by the weekly update PR. A bug
 ## Definition of done
 
 ```sh
-[% if kind == 'knowledge' %]
+[% if kind == 'brain' %]
+[[ layer.lint ]]
 [[ layer.test ]]
-python3 scripts/check-context-budget.py
 scripts/check-docs-secrets.sh  # if Docker is available
 ```
 

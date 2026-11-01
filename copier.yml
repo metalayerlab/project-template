@@ -56,14 +56,19 @@ _skip_if_exists:
   - docs/wiki/Deployment.md
   - docs/wiki/_Sidebar.md
   - docs/wiki/_Footer.md
-  # A knowledge repository's README.md is its own map (design record 0015).
-  - "[[ 'README.md' if kind == 'knowledge' else '' ]]"
+  # A brain's README.md, and its vault's notes and shared settings, are its own (design record 0016).
+  - "[[ 'README.md' if kind == 'brain' else '' ]]"
+  - "[[ (('' if vault_dir == '.' else vault_dir ~ '/') ~ '🏠 Home.md') if language == 'obsidian' else '' ]]"
+  - "[[ (('' if vault_dir == '.' else vault_dir ~ '/') ~ '📐 Conventions.md') if language == 'obsidian' else '' ]]"
+  - "[[ (('' if vault_dir == '.' else vault_dir ~ '/') ~ '_attachments/**') if language == 'obsidian' else '' ]]"
+  - "[[ (('' if vault_dir == '.' else vault_dir ~ '/') ~ '.obsidian/app.json') if language == 'obsidian' else '' ]]"
+  - "[[ (('' if vault_dir == '.' else vault_dir ~ '/') ~ '.obsidian/templates.json') if language == 'obsidian' else '' ]]"
 
-# A knowledge repository keeps the agent guard rails and the secret scan, and
-# drops releases, the wiki, design records and markdownlint (design record 0015).
+# A brain keeps the agent guard rails and the secret scan, and drops releases,
+# the wiki and markdownlint: its vault is its wiki (design records 0015 and 0016).
 _exclude:
   - |
-    [% if kind == 'knowledge' %]
+    [% if kind == 'brain' %]
     /CHANGELOG.md
     /CONTRIBUTING.md
     /SECURITY.md
@@ -106,6 +111,8 @@ language:
   choices:
     Python: python
     "TypeScript: Node.js and npm": typescript
+    # A notes repository: the vault is the wiki, design records are notes (design record 0016).
+    "Obsidian: a vault of notes (no build, release or image)": obsidian
     "None: core only (no build, tests or image)": none
   default: python
 
@@ -143,13 +150,13 @@ kind:
   choices:
     "service: long-running, HTTP API (FastAPI / Fastify), health endpoints":
       value: service
-      validator: "[% if language == 'none' %]Needs a language layer[% endif %]"
+      validator: "[% if language in ['none', 'obsidian'] %]Needs a language layer for code[% endif %]"
     "cli: command-line tool (Typer / commander)":
       value: cli
-      validator: "[% if language == 'none' %]Needs a language layer[% endif %]"
+      validator: "[% if language in ['none', 'obsidian'] %]Needs a language layer for code[% endif %]"
     "library: importable package only":
       value: library
-      validator: "[% if language == 'none' %]Needs a language layer[% endif %]"
+      validator: "[% if language in ['none', 'obsidian'] %]Needs a language layer for code[% endif %]"
     # A Vite + React single-page app in an nginx image (design record 0014).
     "web: single-page app (Vite + React), served by nginx (language: typescript only)":
       value: web
@@ -158,11 +165,25 @@ kind:
     "other: no language layer (language: none only)":
       value: other
       validator: "[% if language != 'none' %]Only with language: none[% endif %]"
-    # A notes repository, such as an Obsidian vault: the agent guard rails only (design record 0015).
-    "knowledge: a notes repository, such as an Obsidian vault (language: none only)":
-      value: knowledge
-      validator: "[% if language != 'none' %]Only with language: none[% endif %]"
-  default: "[[ 'other' if language == 'none' else 'service' ]]"
+    # A notes repository, never asked: language: obsidian sets it (design record 0016). It is a real
+    # choice because Copier checks a hidden question's default against the choices, and still applies
+    # a `-d kind=...`, so every other choice rejects obsidian.
+    "brain: a notes repository (language: obsidian only)":
+      value: brain
+      validator: "[% if language != 'obsidian' %]Only with language: obsidian[% endif %]"
+  # Not asked for obsidian: a vault is a brain, the notes repository shape (design record 0016).
+  default: "[[ 'other' if language == 'none' else 'brain' if language == 'obsidian' else 'service' ]]"
+  when: "[[ language != 'obsidian' ]]"
+
+vault_dir:
+  type: str
+  help: The vault's folder, relative to the repository root ("." for the root itself)
+  default: knowledge
+  when: "[[ language == 'obsidian' ]]"
+  validator: >-
+    [% if not (vault_dir | regex_search('^(\\.|[A-Za-z0-9_][A-Za-z0-9 _-]*)$')) %]
+    One folder name, or "." for the repository root
+    [% endif %]
 
 python_version:
   type: str
@@ -210,8 +231,8 @@ health_path:
 container_image:
   type: bool
   help: Build and publish a container image to GHCR?
-  default: "[[ kind not in ['library', 'other', 'knowledge'] ]]"
-  when: "[[ kind not in ['library', 'other', 'knowledge'] ]]"
+  default: "[[ kind not in ['library', 'other', 'brain'] ]]"
+  when: "[[ kind not in ['library', 'other', 'brain'] ]]"
 
 multi_arch:
   type: bool
@@ -290,7 +311,7 @@ license:
     MIT: MIT
     Apache-2.0: Apache-2.0
     Proprietary (all rights reserved): Proprietary
-  default: "[[ 'Proprietary' if kind == 'knowledge' else 'Unlicense' ]]"
+  default: "[[ 'Proprietary' if kind == 'brain' else 'Unlicense' ]]"
 
 copyright_holder:
   type: str
