@@ -43,6 +43,7 @@ Every setting can be given in four places, and the first one that has it wins:
 4. the built-in default
 
 `<KEY>` is the setting's key in upper case, with the dots as underscores: `listen.port` is `[[ env_prefix ]]LISTEN_PORT`.
+A value of the wrong type, such as `0.5` or `true` for an integer or a list for a string, is an error that names the setting.
 `[[ project_name ]] config` prints the effective value of every setting and where it came from, with secrets masked.
 
 ## Settings

@@ -103,8 +103,17 @@ test("integer coercion", () => {
   expect(coerce(count, 3)).toBe(3);
   expect(() => coerce(count, "1.5")).toThrow(/expected integer/);
   expect(() => coerce(count, "")).toThrow(/expected integer/);
+  for (const raw of [0.5, true, [1], { a: 1 }]) {
+    expect(() => coerce(count, raw)).toThrow(/expected integer/);
+  }
 });
 
 test("a string setting takes a YAML scalar as text", () => {
   expect(coerce({ key: "name", default: "", help: "a name" }, 42)).toBe("42");
+});
+
+test("a string setting rejects a YAML list or mapping", () => {
+  const name = { key: "name", default: "", help: "a name" };
+  expect(() => coerce(name, ["a"])).toThrow(/expected string/);
+  expect(() => coerce(name, { a: 1 })).toThrow(/expected string/);
 });

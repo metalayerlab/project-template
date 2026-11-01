@@ -24,6 +24,10 @@ The working tree must be clean first. `--trust` re-runs `scripts/bootstrap.sh`, 
 
 When your change and the template's touch the same lines, Copier leaves `<<<<<<< before updating` / `>>>>>>> after updating` markers in the file (`--conflict inline`, the workflow's default). Search the PR diff for `<<<<<<<`, resolve each one, and commit. A file you deleted that the template still ships comes back, so delete it again if it's really unwanted, and say why in the PR.
 
+## Fixes to project-owned files
+
+A fix to a file the project owns, such as `src/<package>/config.py`, never arrives through an update. The release notes name it, and you apply it by hand. The config engine's type checks are one: a YAML `0.5` or `true` for an integer setting, or a list or mapping for a string setting, is now an error that names the setting instead of a silent `0`, `1` or Python repr. Copy `_coerce` and its tests from a freshly rendered project.
+
 ## Moving from `none` to a language layer
 
 A project made with `language: none` moves to a layer when one exists:
