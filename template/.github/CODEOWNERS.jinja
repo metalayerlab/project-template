@@ -4,5 +4,9 @@
 
 # Template-owned files: change them in project-template, not here.
 /.github/workflows/     [[ code_owners ]]
+[% if kind == 'knowledge' %]
+/scripts/check-context-budget.py [[ code_owners ]]
+[% else %]
 /scripts/check-wiki.py  [[ code_owners ]]
 /docs/wiki/.standard.toml [[ code_owners ]]
+[% endif %]

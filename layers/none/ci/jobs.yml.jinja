@@ -4,6 +4,7 @@
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+[% if kind != 'knowledge' %]
       # The `build:` packages in contrib/system-packages.txt (project-owned), for
       # dependencies that build from source. None listed: nothing is installed.
       - name: System packages
@@ -12,8 +13,10 @@
             sudo apt-get update
             sed -n 's/^build://p' contrib/system-packages.txt | xargs sudo apt-get install -y --no-install-recommends
           fi
+[% endif %]
       - name: scripts/check.sh
         run: sh scripts/check.sh
+[% if kind != 'knowledge' %]
 
   version:
     name: Version
@@ -27,3 +30,4 @@
           echo "version.txt: $VERSION, manifest: $MANIFEST"
           [ "$VERSION" = "$MANIFEST" ] \
             || { echo "::error::version.txt ($VERSION) and .release-please-manifest.json ($MANIFEST) disagree: only release-please changes them"; exit 1; }
+[% endif %]

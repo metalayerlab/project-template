@@ -15,6 +15,8 @@ The template assumes most code is written by an AI assistant and every change is
 | Gemini CLI | `GEMINI.md` | `@./AGENTS.md` import |
 | Cursor | AGENTS.md | native; `.cursor/rules/project.mdc` is a one-line pointer (no `@` import, so nothing loads twice) |
 
+A `knowledge` repository's `AGENTS.md` is shorter: read `README.md` (the map) first, follow the note conventions it names, never commit what `.gitignore` keeps out; its Definition of done is `scripts/check.sh`, the context-budget check and the secret scan.
+
 The README's "For AI assistants" section lists the same table for humans. Personal tweaks go in git-ignored files (`CLAUDE.local.md`, `.claude/settings.local.json`), never in the shared ones.
 
 ## The loop

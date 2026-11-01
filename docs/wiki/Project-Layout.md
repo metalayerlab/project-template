@@ -28,6 +28,8 @@ pyproject.toml  uv.lock  (or package.json  package-lock.json  tsconfig*.json  es
 .gitignore  .gitleaks.toml  .markdownlint-cli2.yaml  .pre-commit-config.yaml  .editorconfig
 ```
 
+A `knowledge` repository (`language: none`) has only the guard rails: `AGENTS.md`, the tool pointers, `.claude/settings.json`, `.github/` (CI, template update, CODEOWNERS, Dependabot, the change-request form, `repository.toml`), `scripts/` (`bootstrap.sh`, `check.sh`, `check-context-budget.py`, `check-docs-secrets.sh` for gitleaks only, `repo-boundary.py`, `repo-metadata.py`), `README.md`, `LICENSE` and the dotfiles. No `docs/`, `contrib/`, release files, `CONTRIBUTING.md`, `SECURITY.md` or `TODO.md`. Its `README.md` is project-owned. `.gitignore` adds Obsidian's per-client state (`**/.obsidian/workspace*.json`, `**/.trash/`).
+
 ## Who owns what
 
 | Owner | Files | On `copier update` |

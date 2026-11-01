@@ -6,7 +6,7 @@ left gets a line here or an issue.
 
 ## Open
 
-- Build `kind: knowledge` ([0015](docs/design/0015-knowledge-kind.md)): the question, the gated files, the budget check outside the wiki standard, the `knowledge` variant and the wiki pages
+Nothing open: new work starts as an issue or a design record.
 
 ## Decided against (don't re-propose without reading this first)
 

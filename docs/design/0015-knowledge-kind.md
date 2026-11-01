@@ -1,6 +1,6 @@
 # 0015: A `knowledge` kind: a notes repository with the agent guard rails
 
-Status: Approved
+Status: Implemented
 Date: 2026-11-01
 Authors: Stephen Cox; drafted by Claude (Opus 5.5)
 
@@ -54,8 +54,10 @@ kind:
   default: "[[ 'other' if language == 'none' else 'service' ]]"
 ```
 
-The `when` on `kind` is removed. `other` stays the default for `none`, so existing `none` projects see no
-change. `knowledge` skips everything `other` skips (`port`, `contrib`, `container_image`, ...).
+The `when` on `kind` is removed. `other` stays the default for `none`, so existing `none` projects render
+the same files; their `.copier-answers.yml` now records `kind: other`. `service`, `cli` and `library` get a
+validator ("Needs a language layer"), as `web` already had one. `knowledge` skips everything `other` skips
+(`port`, `contrib`, `container_image`, ...).
 
 ### What a knowledge repository gets
 
@@ -80,8 +82,12 @@ change. `knowledge` skips everything `other` skips (`port`, `contrib`, `containe
 | `.markdownlint-cli2.yaml` and the `docs` half of `check-docs-secrets.sh` | the repository's note conventions decide its Markdown, not ours |
 | `CONTRIBUTING.md`, `SECURITY.md`, the bug and feature issue forms, `contrib/system-packages.txt` | written for software |
 
-Dropped files are gated in their names with `kind != 'knowledge'`, so other variants' output doesn't change.
-The `none` layer's version job is guarded the same way.
+Dropped files are listed in a Jinja-rendered `_exclude` block in `copier.yml` that renders only for
+`knowledge`, not gated one by one in their names: they are core files every other kind keeps, and twenty
+renamed files would hide that. The `none` layer's system-packages step and version job are guarded on `kind`.
+Files that stay but differ (`AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, CI, pre-commit, the PR
+template, `template-update.yml`, `check-docs-secrets.sh`) get `knowledge` branches; `CLAUDE.md`,
+`template-update.yml` and `check-docs-secrets.sh` become `.jinja` files for it.
 
 ### `README.md` is the repository's map
 
@@ -94,14 +100,16 @@ and the repository rewrites it. `_skip_if_exists` entries are rendered with Jinj
 A `knowledge` branch replaces the code-oriented sections with three rules: read `README.md` first and then
 only the notes the task needs; follow the note conventions `README.md` names; never commit what `.gitignore`
 keeps out (evidence, keys). The Definition of done is `sh scripts/check.sh` and
-`scripts/check-docs-secrets.sh secrets`. The rendered file is smaller than the `none` one, so the skeleton
-stays inside its 75% of the budget; the characters added to `AGENTS.md.jinja` are stated in the PR.
+`scripts/check-docs-secrets.sh secrets`. It renders to 2,370 characters (the `none` one is 4,998), well
+inside the skeleton's 6,750; every other variant's `AGENTS.md` is unchanged.
 
 ### The context budget and the ruleset
 
 A `knowledge` repository's CI checks its AI-facing files against the same `[context_budget]` as every
-other kind, through a template-owned check that doesn't need `docs/wiki/`. Where the budget lives for it is
-the implementing PR's choice; other kinds' budget and checks don't change.
+other kind, in a `Context budget` job running the template-owned `scripts/check-context-budget.py` (also a
+pre-commit hook). The budget is a literal in the script; `test_budget_is_the_same_without_a_wiki` keeps it
+equal to `.standard.toml`'s. The same job validates `.github/repository.toml`, and a `GitHub's About box`
+job warns on drift on `main`, as `wiki.yml` does for other kinds.
 
 The knowledge Quick Start keeps the `main` ruleset (0011) with a bypass for the repository admin, so a
 scheduled commit job can push to `main`. Agents are still denied pushes to `main` by `settings.json`.
@@ -109,9 +117,11 @@ scheduled commit job can push to `main`. Agents are still denied pushes to `main
 ### Tests
 
 - A `knowledge` variant in `tests/test_render.py` and `template-ci.yml`, running its own Definition of done.
-- Tests that read `docs/wiki/.standard.toml` or release files skip `knowledge`.
-- `test_knowledge_has_no_releases_or_wiki`: none of the dropped files render.
-  `test_kind_knowledge_needs_language_none`: `knowledge` with Python fails.
+- Tests that read the wiki or release files skip `knowledge`.
+- `test_knowledge_keeps_guard_rails_only`: none of the dropped files render, nothing names them, and the
+  budget check passes. `test_knowledge_readme_is_project_owned`: `copier update` keeps a knowledge
+  `README.md` and still updates an `other` one. `test_kind_other_needs_language_none[knowledge]` and
+  `test_kind_with_code_needs_a_layer` cover the validators.
 
 ## Alternatives considered
 
@@ -138,11 +148,14 @@ scheduled commit job can push to `main`. Agents are still denied pushes to `main
   `.gitignore` come back as conflicts to merge once. Migrating-Existing-Projects documents this.
 - Moving between `other` and `knowledge` with `copier update -d kind=...` adds or deletes the release and wiki
   files; Copier deletes `version.txt` going to `knowledge`. Updating-from-the-Template documents this.
-- The core gains `kind != 'knowledge'` in about twenty file names. `test_layers.py` is unaffected: `kind` is
-  not a language.
-- This is a `feat:` change, not breaking: the default and every existing variant's output are unchanged.
+- The core gains an `_exclude` block and `knowledge` branches in a dozen files. `test_layers.py` is
+  unaffected: `kind` is not a language.
+- `scripts/repo-metadata.py` still enables the (unused) GitHub wiki when it applies the About box.
+- This is a `feat:` change, not breaking: the default and every existing variant's files are unchanged
+  (checked byte for byte); `none` projects' answers file gains `kind: other`.
 - Wiki: Answering-the-Questions (the choice and what it drops), Project-Layout (what a knowledge repository
-  has), Migrating-Existing-Projects, Updating-from-the-Template, Working-with-AI (the `knowledge` rules), Quick-Start (the admin bypass).
+  has), Migrating-Existing-Projects, Updating-from-the-Template, Working-with-AI (the `knowledge` rules), Quick-Start (the checks and the admin bypass),
+  Contributing-to-the-Template (the `_exclude` exception).
 
 ## Open questions
 

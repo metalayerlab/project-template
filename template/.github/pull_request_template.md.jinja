@@ -1,12 +1,18 @@
 [% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]
+[% if kind != 'knowledge' %]
 <!--
 Title: a Conventional Commit, e.g. "feat: add retry to the uploader". It becomes
 the squash commit on main and a CHANGELOG.md line.
 -->
+[% endif %]
 
 ## What and why
 
+[% if kind == 'knowledge' %]
+<!-- What changes, and why. Link the issue or the notes it builds on. -->
+[% else %]
 <!-- What changes, and why. Link the issue or design record (docs/design/). -->
+[% endif %]
 
 ## Lessons
 
@@ -21,6 +27,10 @@ AGENTS.md, the wiki, or project-template? Link the issue or PR. "None" is fine. 
 
 ## Author checklist
 
+[% if kind == 'knowledge' %]
+- [ ] Notes follow the conventions `README.md` names
+- [ ] No secrets, and nothing `.gitignore` keeps out (evidence, keys, private folders)
+[% else %]
 - [ ] Tests cover the change, and fail without it
 - [ ] `docs/wiki/` is updated (see AGENTS.md "Docs map"), or this has no user-visible effect
 [% if layer.gen_wiki %]
@@ -28,13 +38,21 @@ AGENTS.md, the wiki, or project-template? Link the issue or PR. "None" is fine. 
 [% endif %]
 - [ ] No secrets, personal data or real hostnames/IPs in code, tests or docs
 - [ ] New dependencies are justified below, and actually exist on the index
+[% endif %]
 - [ ] Template problem found? Linked project-template issue: 
 
 ## Reviewer checklist
 
+[% if kind == 'knowledge' %]
+Human review is required for every PR, and is the whole point for generated ones.
+
+- [ ] I read every line of the diff, not only the summary
+- [ ] Every claim is backed by the source or evidence it cites
+[% else %]
 Human review is required for every PR, and is the whole point for generated ones:
 docs/ai/review-checklist.md.
 
 - [ ] I read every line of the diff, not only the summary
 - [ ] Behaviour matches the description; edge cases and errors are handled
 - [ ] Tests assert real behaviour (not just that the code runs)
+[% endif %]
