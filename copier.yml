@@ -344,6 +344,35 @@ personal_data_guard:
   help: Add the personal-data guard (fails CI on public IPs / denylisted strings in tracked files)?
   default: false
 
+# An opt-in CI job for the integration tests (design record 0017).
+integration_ci:
+  type: bool
+  help: Add a CI job that runs the integration tests (RUN_INTEGRATION=1) with contrib/system-packages.txt's build and runtime packages? It fails if no test runs or one is skipped.
+  default: false
+  when: "[[ language == 'python' ]]"
+  validator: "[% if integration_ci and language != 'python' %]Only with language: python[% endif %]"
+
+integration_extras:
+  type: yaml
+  help: Optional extras (pyproject's [project.optional-dependencies]) the integration job installs, for example [fuse], or ["*"] for all.
+  default: "[]"
+  when: "[[ integration_ci ]]"
+  validator: >-
+    [% if integration_extras is string or integration_extras is not sequence %]
+    A list of extra names: [fuse]
+    [% elif integration_extras | reject('string') | list or '' in integration_extras %]
+    Each extra is a name
+    [% elif '*' in integration_extras and integration_extras | length > 1 %]
+    "*" (all extras) stands alone
+    [% elif integration_extras | reject('eq', '*') | map('lower') | map('trim', 'abcdefghijklmnopqrstuvwxyz0123456789._-') | select | list
+        or integration_extras | reject('eq', '*') | map('first') | map('lower') | reject('in', 'abcdefghijklmnopqrstuvwxyz0123456789') | list %]
+    Names start with a letter or digit and use letters, digits, ".", "_" and "-"
+    [% elif integration_extras | unique | list | length != integration_extras | length %]
+    An extra is listed twice
+    [% elif integration_extras and not integration_ci %]
+    Only with integration_ci
+    [% endif %]
+
 # ------------------------------------------------- derived (never asked)
 
 env_prefix:

@@ -70,7 +70,7 @@ one command the Definition of done always runs. A layer whose only kind drops re
 
 | Fragment | Into | Required |
 |---|---|---|
-| `ci/jobs.yml` | ci.yml: the test job(s) and the version/lock check | yes |
+| `ci/jobs.yml` | ci.yml: the test job(s) and the version/lock check (Python: the integration job with `integration_ci`, design record 0017) | yes |
 | `release/jobs.yml` | release-please.yml: extra jobs (Python: refresh `uv.lock` on the Release PR) | optional |
 | `editorconfig` | .editorconfig: extra sections (TypeScript: 2-space `.ts`/`.js`, which Prettier reads) | optional |
 | `dependabot.yml` | dependabot.yml: the package ecosystem | yes |

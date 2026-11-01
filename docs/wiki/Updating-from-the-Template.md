@@ -14,6 +14,7 @@ uvx copier update --trust --skip-tasks           # newest template tag, same ans
 uvx copier update --trust --skip-tasks -d contrib='[docker, k8s]'   # also change an answer
 uvx copier update --trust --skip-tasks -d extra_ports='[3128]'      # declare a second listener
 uvx copier update --trust --skip-tasks -d image_extras='[fuse]'     # install an optional extra in the image
+uvx copier update --trust --skip-tasks -d integration_ci=true -d integration_extras='[fuse]'   # run the integration tests in CI
 uvx copier update --trust --skip-tasks --vcs-ref=v1.4.0             # a specific template version
 sh scripts/bootstrap.sh       # once conflicts are resolved: lock file, generated wiki sections
 git diff                      # review, test, commit, open a PR

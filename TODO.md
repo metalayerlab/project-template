@@ -27,3 +27,7 @@ Nothing open: new work starts as an issue or a design record.
 - `docs/wiki/` or the GitHub wiki beside an Obsidian vault: the vault is the wiki ([0016](docs/design/0016-obsidian-layer.md))
 - A stdlib-only vault check: frontmatter is YAML, so `check-vault.py` declares PyYAML inline ([0016](docs/design/0016-obsidian-layer.md))
 - systemd for `kind: web`: a host's own nginx serves static files ([0014](docs/design/0014-web-kind.md))
+- A `test:` list in `contrib/system-packages.txt` for the integration job: it installs the `runtime:` list too ([0017](docs/design/0017-integration-ci-job.md))
+- A seeded project-owned `integration.yml` workflow: it would never receive fixes, so the job is in the template-owned `ci.yml` ([0017](docs/design/0017-integration-ci-job.md))
+- Reusing `image_extras` for the integration job, or one list-valued `integration_ci`: the image and the tests can need different extras, and "off" needs its own value ([0017](docs/design/0017-integration-ci-job.md))
+- Integration tests inside the Test job's matrix: they would count towards the coverage floor ([0017](docs/design/0017-integration-ci-job.md))
