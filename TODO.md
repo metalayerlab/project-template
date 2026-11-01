@@ -7,6 +7,7 @@ left gets a line here or an issue.
 ## Open
 
 - A thin `config.py` on interpose's settings engine (#109, [0020](docs/design/0020-thin-config-on-interpose.md)): blocked on interpose v0.1.0
+- AGENTS.md headroom: the largest variant (`ts-service`) uses 6718 of the 6750 chars the skeleton may (#112). The next rule needs matching cuts, or a design record to raise `[context_budget]` or the 75% headroom
 
 ## Decided against (don't re-propose without reading this first)
 
