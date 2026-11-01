@@ -1,6 +1,6 @@
 # 0015: A `knowledge` kind: a notes repository with the agent guard rails
 
-Status: Implemented
+Status: Superseded by 0016
 Date: 2026-11-01
 Authors: Stephen Cox; drafted by Claude (Opus 5.5)
 

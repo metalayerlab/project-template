@@ -6,7 +6,7 @@ left gets a line here or an issue.
 
 ## Open
 
-Nothing open: new work starts as an issue or a design record.
+- Implement [0016](docs/design/0016-obsidian-layer.md): `language: obsidian` with kind `brain` and `vault_dir`, replacing `kind: knowledge`
 
 ## Decided against (don't re-propose without reading this first)
 
@@ -24,4 +24,6 @@ Nothing open: new work starts as an issue or a design record.
 - TanStack Query, zustand, Tailwind, Storybook, msw or Playwright in the `web` skeleton: one project's choice ([0014](docs/design/0014-web-kind.md))
 - A `notes_dir` question letting code projects edit a notes vault directly: the boundary hook blocks it and it costs every project's budget; a brain pulls instead ([0015](docs/design/0015-knowledge-kind.md))
 - Markdownlint in a `knowledge` repository: each vault's conventions decide its Markdown ([0015](docs/design/0015-knowledge-kind.md))
+- `docs/wiki/` or the GitHub wiki beside an Obsidian vault: the vault is the wiki ([0016](docs/design/0016-obsidian-layer.md))
+- A stdlib-only vault check: frontmatter is YAML, so `check-vault.py` declares PyYAML inline ([0016](docs/design/0016-obsidian-layer.md))
 - systemd for `kind: web`: a host's own nginx serves static files ([0014](docs/design/0014-web-kind.md))
