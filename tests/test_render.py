@@ -552,6 +552,7 @@ def test_no_double_blank_lines_in_markdown(project: Path) -> None:
 
 def test_home_toc_lines_are_separate_paragraphs(project: Path) -> None:
     """A missing blank line joins two Table of Contents lines into one paragraph (#78)."""
+    wiki_only(project)
     lines = (project / "docs/wiki/Home.md").read_text(encoding="utf-8").splitlines()
     toc = re.compile(r"\*\*[^*]+\*\*:")
     joined = [b for a, b in zip(lines, lines[1:]) if toc.match(a) and toc.match(b)]

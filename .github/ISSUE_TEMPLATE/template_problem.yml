@@ -44,6 +44,7 @@ body:
       options:
         - python
         - typescript
+        - obsidian
         - none
   - type: dropdown
     id: kind
@@ -56,6 +57,7 @@ body:
         - library
         - web
         - other
+        - brain
   - type: dropdown
     id: when
     attributes:
