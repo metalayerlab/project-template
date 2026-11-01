@@ -78,6 +78,10 @@ Starlette 1.x builds its `TestClient` on `httpx2`. A service project's dev group
 
 `filterwarnings = ["error"]` makes every warning a failure, so a deprecation shows up in the PR that brings it. Fix the cause (usually what the warning says to use instead). If it comes from a library you can't change yet, ignore that one warning in `pyproject.toml`, narrowly and with a reason, for example `` "ignore:Using `httpx` with:UserWarning" `` (the category must be the warning's real class or a parent of it: check where it is defined), and add a `TODO.md` line to remove it.
 
+### `Required test coverage of 80.0% not reached` running integration tests or a subset
+
+The coverage floor in `addopts` is for the whole unit suite: integration tests alone, or a few unit tests, can't reach it. Add `--no-cov`: `RUN_INTEGRATION=1 uv run pytest -m integration --no-cov`. `copier update` brings the fix to AGENTS.md, but `Testing-Guide.md` is your own page: add `--no-cov` to its commands yourself. TypeScript is unaffected: only `npm test` measures coverage.
+
 ### Secret scan flags a value that isn't a secret
 
 A test vector or a documented sample (RFC 6455's `Sec-WebSocket-Key`, for example). Allow-list it in `.gitleaks.toml` (a `[allowlist]` regex, or the finding's fingerprint in `.gitleaksignore`), never by disabling the job. `scripts/check-docs-secrets.sh secrets` re-runs CI's scan locally, on committed history.
