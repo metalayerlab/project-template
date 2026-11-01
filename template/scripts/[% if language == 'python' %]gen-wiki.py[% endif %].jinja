@@ -41,9 +41,11 @@ def settings() -> str:
         "|---|---|---|---|",
     ]
     for s in SETTINGS:
-        default = "*(none)*" if s.default == "" else f"`{s.default}`"
+        empty = "*(empty list)*" if s.is_list else "*(none)*"
+        default = empty if s.default == "" else f"`{s.default}`"
+        listed = " A list: YAML, or comma-separated." if s.is_list else ""
         secret = " 🔒 Secret: use the `_FILE` variant." if s.secret else ""
-        rows.append(f"| `{s.key}` | `{s.env}` | {default} | {_cell(s.help)}{secret} |")
+        rows.append(f"| `{s.key}` | `{s.env}` | {default} | {_cell(s.help)}{listed}{secret} |")
     return "\n".join(rows)
 
 

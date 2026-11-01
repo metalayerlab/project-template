@@ -117,3 +117,40 @@ def test_str_coercion_takes_scalars_as_text() -> None:
     from [[ package_name ]].config import Setting, _coerce
 
     assert _coerce(Setting("name", "", "a name"), 2.5) == "2.5"
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        (["a", " b ", 3], ("a", "b", "3")),
+        (" a, b ,,c ", ("a", "b", "c")),
+        ("", ()),
+        ([], ()),
+    ],
+)
+def test_list_coercion(raw: object, expected: tuple[str, ...]) -> None:
+    from [[ package_name ]].config import Setting, _coerce
+
+    assert _coerce(Setting("hosts", "", "hosts", is_list=True), raw) == expected
+
+
+@pytest.mark.parametrize("raw", ({"a": 1}, [{"a": 1}], [list("a")]))
+def test_list_coercion_rejects_mappings_and_nesting(raw: object) -> None:
+    from [[ package_name ]].config import Setting, _coerce
+
+    with pytest.raises(ConfigError, match="hosts: expected list"):
+        _coerce(Setting("hosts", "", "hosts", is_list=True), raw)
+
+
+def test_list_setting_sources(tmp_path: Path) -> None:
+    from [[ package_name ]].config import Setting, resolve
+
+    hosts = Setting("proxy.hosts", "", "hosts", is_list=True)
+    assert resolve(hosts, {}, {}) == ((), "default")
+    assert resolve(hosts, {"proxy": {"hosts": ["a", "b"]}}, {}) == (("a", "b"), "file")
+    env = {hosts.env: "c, d"}
+    assert resolve(hosts, {}, env) == (("c", "d"), hosts.env)
+    secret = tmp_path / "hosts"
+    secret.write_text("e,f\n", encoding="utf-8")
+    env[f"{hosts.env}_FILE"] = str(secret)
+    assert resolve(hosts, {}, env) == (("e", "f"), f"{hosts.env}_FILE")

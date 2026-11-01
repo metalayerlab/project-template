@@ -58,7 +58,7 @@ Reference tables come from the code, so they can't drift:
 
 | Block | Page | Source |
 |---|---|---|
-| `settings` | In-Depth-Configuration | `config.SETTINGS`: key, env var, default, help, 🔒 for secrets |
+| `settings` | In-Depth-Configuration | `config.SETTINGS`: key, env var, default, help, a note for lists, 🔒 for secrets |
 | `cli` | CLI-Reference | the Typer app: commands (sub-apps' too, as `<group> <command>`), arguments, options, env vars, help |
 | `http-api` | HTTP-API-Reference | the FastAPI OpenAPI schema: method, path, summary |
 

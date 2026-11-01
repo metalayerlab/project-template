@@ -11,6 +11,7 @@ Every setting can come from four places, and the first one that has it wins:
 ``listen.port`` is ``[[ env_prefix ]]LISTEN_PORT``.
 
 To add a setting, add it to SETTINGS and to Config, and read it in load_config.
+A list setting (``is_list=True``, default ``""``) is a YAML list or a comma-separated string.
 The wiki's settings table is generated from SETTINGS (``scripts/gen-wiki.py``),
 so write its help as you want users to read it. Values are never logged;
 only where each one came from is.
@@ -31,7 +32,7 @@ CONFIG_ENV = f"{ENV_PREFIX}CONFIG"
 DEFAULT_CONFIG_PATH = Path("/etc/[[ project_name ]]/config.yaml")
 LOG_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR")
 
-Value = str | int | bool
+Value = str | int | bool | tuple[str, ...]
 
 
 class ConfigError(Exception):
@@ -44,6 +45,7 @@ class Setting:
     default: Value
     help: str
     secret: bool = False
+    is_list: bool = False
 
     @property
     def env(self) -> str:
@@ -84,6 +86,11 @@ def _lookup(data: Mapping[str, Any], dotted: str) -> Any:
 def _coerce(setting: Setting, raw: Any) -> Value:
     """Give raw (a string from the environment, or a YAML value) the default's type."""
     try:
+        if setting.is_list:
+            items = raw if isinstance(raw, list) else str(raw).split(",")
+            if isinstance(raw, dict | set) or any(isinstance(i, dict | list | set) for i in items):
+                raise ValueError(raw)
+            return tuple(text for i in items if (text := str(i).strip()))
         if isinstance(setting.default, bool):
             if isinstance(raw, bool):
                 return raw
@@ -102,7 +109,7 @@ def _coerce(setting: Setting, raw: Any) -> Value:
         if isinstance(raw, dict | list | set):
             raise ValueError(raw)
     except ValueError:
-        kind = type(setting.default).__name__
+        kind = "list" if setting.is_list else type(setting.default).__name__
         raise ConfigError(f"{setting.key}: expected {kind}, got {raw!r}") from None
     return str(raw)
 
@@ -123,7 +130,7 @@ def resolve(
     value = _lookup(data, setting.key)
     if value is not None:
         return _coerce(setting, value), "file"
-    return setting.default, "default"
+    return (_coerce(setting, setting.default) if setting.is_list else setting.default), "default"
 
 
 def read_file(path: Path) -> dict[str, Any]:
@@ -147,7 +154,7 @@ def load_config(path: Path | None = None, environ: Mapping[str, str] | None = No
         path = Path(env.get(CONFIG_ENV, str(DEFAULT_CONFIG_PATH)))
     data = read_file(path)
 
-    values: dict[str, Value] = {}
+    values: dict[str, Any] = {}  # each value has its setting's type
     sources: dict[str, str] = {}
     for setting in SETTINGS:
         values[setting.key], sources[setting.key] = resolve(setting, data, env)

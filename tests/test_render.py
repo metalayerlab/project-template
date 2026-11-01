@@ -909,6 +909,31 @@ def test_gen_wiki_documents_subcommands(project: Path, tmp_path: Path) -> None:
     assert "`--force`" in out and "Show it anyway." in out
 
 
+LIST_SETTING = '''
+import importlib.util
+
+from {pkg} import config
+
+config.SETTINGS = (config.Setting("proxy.hosts", "", "Hosts to intercept.", is_list=True),)
+spec = importlib.util.spec_from_file_location("gen_wiki", "scripts/gen-wiki.py")
+gen_wiki = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(gen_wiki)
+print(gen_wiki.settings())
+'''
+
+
+def test_gen_wiki_shows_list_settings(project: Path, tmp_path: Path) -> None:
+    """A list setting's row says it is a list and shows an empty default as one (#84)."""
+    pkg = project.name.replace("-", "_")
+    if not (project / "src" / pkg / "config.py").exists():
+        pytest.skip("no Python config")
+    script = tmp_path / "list_setting.py"
+    script.write_text(LIST_SETTING.format(pkg=pkg))
+    out = sh("uv", "run", "python", str(script), cwd=project)
+    assert "| `proxy.hosts` | `" in out
+    assert "| *(empty list)* | Hosts to intercept. A list: YAML, or comma-separated. |" in out
+
+
 def test_no_double_blank_lines_in_markdown(project: Path) -> None:
     """markdownlint's MD012 fails a project's first PR (Wiki standard) on these."""
     pages = [project / "AGENTS.md", *sorted((project / "docs/wiki").glob("*.md"))]
