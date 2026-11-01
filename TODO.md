@@ -34,3 +34,5 @@ Nothing open: new work starts as an issue or a design record.
 - Brain pull on by default for every brain: it spends Claude usage, needs a secret and a repository setting, and a brain without `repos:` notes gains nothing ([0018](docs/design/0018-brain-pull.md))
 - Setting "Allow GitHub Actions to create and approve pull requests" from `repo-metadata.py`: CI's `GITHUB_TOKEN` can't read it, and it is a security choice for the maintainer ([0018](docs/design/0018-brain-pull.md))
 - One Brain pull job holding a write token while Claude reads other repositories: Claude runs read-only and a second job checks its patch ([0018](docs/design/0018-brain-pull.md))
+- Cloning sources' wikis for Brain pull subscriptions: template projects publish from `docs/wiki/`, so a path-filtered commits query is enough ([0019](docs/design/0019-brain-pull-subscriptions.md))
+- Brain pull adding notes for a subscribed source no note covers: it opens an issue instead, keeping review to one PR a day ([0019](docs/design/0019-brain-pull-subscriptions.md))

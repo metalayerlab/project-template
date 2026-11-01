@@ -39,7 +39,7 @@ knowledge/
   .obsidian/app.json  templates.json  the attachment and templates folders; the rest of .obsidian/ is each user's
 ```
 
-`README.md`, Home, Conventions, `_attachments/` and the two `.obsidian/` files are the project's; the base and the record template are the template's (T). `scripts/check-vault.py` checks front matter, embeds, the design records' shape and the AI files' context budget; a link to a note that doesn't exist yet is fine. With `brain_pull`, a brain also gets `.github/workflows/brain-pull.yml` and `scripts/followed-repos.py` (both T; [CI Pipeline](CI-Pipeline#brain-pull)).
+`README.md`, Home, Conventions, `_attachments/` and the two `.obsidian/` files are the project's; the base and the record template are the template's (T). `scripts/check-vault.py` checks front matter, embeds, the design records' shape and the AI files' context budget; a link to a note that doesn't exist yet is fine. With `brain_pull`, a brain also gets `.github/workflows/brain-pull.yml` and `scripts/brain-pull-gate.py` (both T), and the vault gets `🛰️ Subscriptions.md`, the project's ([CI Pipeline](CI-Pipeline#brain-pull)).
 
 ## Who owns what
 

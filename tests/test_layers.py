@@ -57,12 +57,13 @@ def test_core_file_is_language_neutral(path: Path) -> None:
 
 
 def test_brain_pull_is_an_obsidian_file() -> None:
-    """The Brain pull workflow and its script render only for obsidian, and no core file reads
-    the answer (design record 0018)."""
+    """The Brain pull workflow, its gate and its subscriptions note render only for obsidian, and
+    no core file reads the answer (design records 0018, 0019)."""
     gated = [p.relative_to(TEMPLATE) for p in TEMPLATE.rglob("*") if "brain_pull" in str(p.relative_to(TEMPLATE))]
     assert {p.name for p in gated} >= {
         "[% if language == 'obsidian' and brain_pull %]brain-pull.yml[% endif %].jinja",
-        "[% if language == 'obsidian' and brain_pull %]followed-repos.py[% endif %].jinja",
+        "[% if language == 'obsidian' and brain_pull %]brain-pull-gate.py[% endif %].jinja",
+        "[% if language == 'obsidian' and brain_pull %]🛰️ Subscriptions.md[% endif %]",
     }
     assert [p for p in gated if "language == 'obsidian' and brain_pull" not in str(p)] == []
     assert [p for p in core_files() if "brain_pull" in p.read_text(encoding="utf-8", errors="ignore")] == []

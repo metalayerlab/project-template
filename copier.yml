@@ -63,6 +63,8 @@ _skip_if_exists:
   - "[[ (('' if vault_dir == '.' else vault_dir ~ '/') ~ '_attachments/**') if language == 'obsidian' else '' ]]"
   - "[[ (('' if vault_dir == '.' else vault_dir ~ '/') ~ '.obsidian/app.json') if language == 'obsidian' else '' ]]"
   - "[[ (('' if vault_dir == '.' else vault_dir ~ '/') ~ '.obsidian/templates.json') if language == 'obsidian' else '' ]]"
+  # The list a brain follows is its own; the template only seeds it (design record 0019).
+  - "[[ (('' if vault_dir == '.' else vault_dir ~ '/') ~ '🛰️ Subscriptions.md') if language == 'obsidian' else '' ]]"
 
 # A brain keeps the agent guard rails and the secret scan, and drops releases,
 # the wiki and markdownlint: its vault is its wiki (design records 0015 and 0016).
@@ -205,10 +207,10 @@ vault_dir:
     One folder name, or "." for the repository root
     [% endif %]
 
-# A daily Claude Code run that keeps `repos:` notes current, in one PR (design record 0018).
+# A daily Claude Code run that keeps notes current with what they follow, in one PR (design records 0018, 0019).
 brain_pull:
   type: bool
-  help: Add the Brain pull workflow? Daily, Claude Code updates the notes whose `repos:` property names a GitHub repository that changed, in one PR for review. Needs the CLAUDE_CODE_OAUTH_TOKEN secret and a repository setting (Quick-Start in the wiki)
+  help: Add the Brain pull workflow? Daily, Claude Code updates the notes whose `repos:` property names a GitHub repository that changed (or the parts of it a `🛰️ Subscriptions` note follows), in one PR for review. Needs the CLAUDE_CODE_OAUTH_TOKEN secret and a repository setting (Quick-Start in the wiki)
   default: false
   when: "[[ language == 'obsidian' ]]"
 

@@ -26,12 +26,24 @@ It fails rather than passing without testing: when no test is selected (pytest e
 
 ## Brain pull
 
-A brain that answers `brain_pull` ([design 0018](https://github.com/metalayerlab/project-template/blob/main/docs/design/0018-brain-pull.md)) gets `brain-pull.yml`: daily at 05:00 UTC, or by hand (`gh workflow run brain-pull.yml`, with an optional `since` date and a `debug` switch that logs every Claude message and tool call, which is how you see the calls it refused).
+A brain that answers `brain_pull` ([design 0018](https://github.com/metalayerlab/project-template/blob/main/docs/design/0018-brain-pull.md), [0019](https://github.com/metalayerlab/project-template/blob/main/docs/design/0019-brain-pull-subscriptions.md)) gets `brain-pull.yml`: daily at 05:00 UTC, or by hand (`gh workflow run brain-pull.yml`, with an optional `since` date and a `debug` switch that logs every Claude message and tool call, which is how you see the calls it refused).
 
-1. **Update notes** (read-only token). Without the `CLAUDE_CODE_OAUTH_TOKEN` secret it stops there, green. Otherwise `scripts/followed-repos.py` lists the `repos:` values in the vault, and a shell step asks GitHub which of them have commits or releases since the start of this workflow's last *successful* run. Only if one changed does Claude Code run, with read-only tools and edits limited to the vault's notes, and write a patch, a PR body and optional issues.
-2. **Open or update the PR** (`contents`, `pull-requests`, `issues` and `actions: write`). It rejects a patch that touches anything but existing `.md` notes in the vault (`.obsidian/`, `_templates/`, `Decisions.base`, new or deleted files), re-runs `check-vault.py`, commits to the open `brain-pull` PR's branch or a new `brain-pull/<date>`, and opens or comments on the PR. A closed PR's branch is never reused.
+1. **Update notes** (read-only token). Without the `CLAUDE_CODE_OAUTH_TOKEN` secret it stops there, green. Otherwise `scripts/brain-pull-gate.py` asks GitHub what changed, since the start of this workflow's last *successful* run on `main`, in each part of each source the brain follows (below), and writes it to `changes.md` with the notes naming each source. Only if something changed does Claude Code run, reading only those changes, with read-only tools and edits limited to the vault's notes, and write a patch, a PR body and optional issues (a source no note names becomes an issue, never a new note).
+2. **Open or update the PR** (`contents`, `pull-requests`, `issues` and `actions: write`). It rejects a patch that touches anything but existing `.md` notes in the vault (`.obsidian/`, `_templates/`, `Decisions.base`, `🛰️ Subscriptions.md`, new or deleted files), re-runs `check-vault.py`, commits to the open `brain-pull` PR's branch or a new `brain-pull/<date>`, and opens or comments on the PR. A closed PR's branch is never reused.
 
-A failed run moves no date, so the next one reads the same changes again. After the push nothing fails the run: dispatching CI and opening issues (3 at most) are warnings. A push by `GITHUB_TOKEN` starts no workflows, so the job dispatches `ci.yml` on the branch; that run isn't shown on the PR, and the PR's own CI run waits for you to approve it. Repositories it can't read (private ones) are skipped with a warning. Nothing is merged without you.
+A failed run moves no date, so the next one reads the same changes again. After the push nothing fails the run: dispatching CI and opening issues (3 at most) are warnings. A push by `GITHUB_TOKEN` starts no workflows, so the job dispatches `ci.yml` on the branch; that run isn't shown on the PR, and the PR's own CI run waits for you to approve it. Repositories it can't find (private, renamed or gone) are skipped with a warning; any other API error fails the run. Nothing is merged without you.
+
+**What it follows.** Every repository a note names in `repos:` (`everything`), plus the vault's `🛰️ Subscriptions.md`, a note that is yours (`copier update` never touches it). A subscription for a repository replaces its `everything`:
+
+```yaml
+subscriptions:
+  - source: owner/busy-repo
+    follow: [design-records, releases]   # commits under docs/design/; releases
+  - source: owner/other-repo
+    follow: ["wiki:Security"]            # commits to docs/wiki/Security.md
+```
+
+`follow` takes `everything`, `releases`, `design-records` and `"wiki:<Page>"`. A malformed list fails the run before Claude starts. `uv run scripts/brain-pull-gate.py --list` prints what the brain follows without calling GitHub. Only runs on `main` move the date, so a test run from a branch doesn't make the next scheduled run skip a window.
 
 ## Required checks
 
