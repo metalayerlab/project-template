@@ -69,3 +69,9 @@ A bug in a template-owned file is every project's bug, and a fix made inside one
 4. **A workaround** only unblocks the project. Keep it minimal, link the issue in a code comment and in `TODO.md`, and remove it when the fix arrives in the update PR.
 
 The same applies to any other codebase a project depends on. Every project's AGENTS.md carries this rule tersely, under "Never", and the PR template asks for the linked issue.
+
+### Use the repository's own issue form
+
+An assistant opening an issue anywhere first looks for that repository's issue forms or templates: `.github/ISSUE_TEMPLATE/`, then the owner's `.github` repository (`gh api repos/<owner>/.github/contents/.github/ISSUE_TEMPLATE`). It picks the fitting form and fills in every field, required or not, under the form's exact headings. The form exists because the maintainers need those fields, and it applies its own labels, which an outsider can't set on a repository they don't maintain. A hand-written issue misses both: one drafted from the assistant's own headings had to be rewritten after the user pointed to the form ([#111](https://github.com/metalayerlab/project-template/issues/111)).
+
+Only when no form exists, and only with the user's explicit yes, does the assistant hand-write the issue, and the issue says why: no form found, and where it looked.
