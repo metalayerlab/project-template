@@ -252,6 +252,35 @@ def test_python_checks(project: Path) -> None:
         sh(*cmd, cwd=project)
 
 
+INTEGRATION_TEST = '''import pytest
+
+
+@pytest.mark.integration
+def test_upstream() -> None:
+    assert True
+'''
+
+
+def test_python_test_commands(project: Path, tmp_path: Path) -> None:
+    """Every test command AGENTS.md and the Testing Guide give passes once there is an
+    integration test: a subset, or the integration tests alone, cannot reach the coverage floor."""
+    if not (project / "pyproject.toml").exists():
+        pytest.skip("not a Python project")
+    row = re.search(r"^\| Tests \(80% floor\) / integration \| `[^`]+` / `([^`]+)` \|$",
+                    (project / "AGENTS.md").read_text(), re.M)
+    guide = (project / "docs/wiki/Testing-Guide.md").read_text()
+    block = re.search(r"```sh\n(uv run pytest .*?)```", guide, re.S)
+    assert row and block
+    commands = [line.split("  #")[0].strip() for line in block.group(1).splitlines()]
+    assert row.group(1) in commands
+    copy = tmp_path / project.name
+    shutil.copytree(project, copy, ignore=shutil.ignore_patterns(".venv"))
+    (copy / "tests/integration/test_upstream.py").write_text(INTEGRATION_TEST)
+    for command in commands:
+        sh("sh", "-c", command, cwd=copy)
+    assert "1 passed" in sh("sh", "-c", row.group(1), cwd=copy)
+
+
 def test_typescript_checks(project: Path) -> None:
     """The layer's Definition of done, plus CI's lock check and smoke test (0009)."""
     if not (project / "package.json").exists():
