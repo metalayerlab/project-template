@@ -604,6 +604,31 @@ def test_written_wiki_passes_strict(project: Path, tmp_path: Path) -> None:
     sh("python3", "scripts/check-wiki.py", "--strict", cwd=copy)
 
 
+@pytest.mark.parametrize(
+    ("anchor", "ok"),
+    [("where-did-auth-and-access_log-go", True), ("in-a-fence", False), ("in-a-comment", False)],
+)
+def test_wiki_anchors_keep_inline_code(anchor: str, ok: bool, project: Path, tmp_path: Path) -> None:
+    """GitHub keeps inline code's text in a heading's anchor; fences and comments have none (#83)."""
+    wiki_only(project)
+    copy = tmp_path / "p"
+    shutil.copytree(project / "docs", copy / "docs")
+    shutil.copytree(project / "scripts", copy / "scripts")
+    faq = copy / "docs/wiki/Frequently-Asked-Questions.md"
+    faq.write_text(
+        faq.read_text(encoding="utf-8")
+        + "\n## Where did `auth()` and `access_log()` go?\n\n```text\n## In a fence\n```\n"
+        + "\n<!--\n## In a comment\n-->\n"
+        + f"\nSee [the answer](Frequently-Asked-Questions#{anchor}).\n",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        ["python3", "scripts/check-wiki.py"], cwd=copy, capture_output=True, text=True
+    )
+    assert (result.returncode == 0) == ok, result.stdout + result.stderr
+    assert ok or f"missing anchor #{anchor}" in result.stdout + result.stderr
+
+
 def test_manifests(project: Path) -> None:
     script = project / "scripts/check-manifests.sh"
     if script.exists():

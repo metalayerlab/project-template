@@ -44,7 +44,7 @@ Each page starts from a skeleton: the fixed headings, prefilled text where it is
 |---|---|
 | A required page is missing, or a required heading was removed or renamed | An `<!-- guidance: -->` comment or `TODO(wiki)` marker remains |
 | A page is not linked from `_Sidebar.md` | |
-| A link to a missing page or `#anchor` | |
+| A link to a missing page or `#anchor` (built as GitHub builds it: inline code's text is kept, headings in code blocks and comments have none) | |
 | A relative link to a repo path, which breaks once published (use a full URL) | |
 | Unbalanced `generated:start`/`end` markers | |
 | A `docs/design/NNNN-*.md` record missing from the index (`docs/design/README.md`) | |
