@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.21](https://github.com/metalayerlab/project-template/compare/v0.1.20...v0.1.21) (2026-11-01)
+
+
+### ✨ Features
+
+* agents list what a session left behind and remove only what the user approves ([#96](https://github.com/metalayerlab/project-template/issues/96)) ([9f48a54](https://github.com/metalayerlab/project-template/commit/9f48a54f25d977e7d1603ac1c94ba1cb31ddd18a))
+* an opt-in CI job for integration tests that need system packages or extras ([#97](https://github.com/metalayerlab/project-template/issues/97)) ([1e52ca7](https://github.com/metalayerlab/project-template/commit/1e52ca787ad42c729f9249039b67808f892fdeaf))
+* brain_pull, a scheduled Brain pull workflow for obsidian brains ([#99](https://github.com/metalayerlab/project-template/issues/99)) ([e1b5992](https://github.com/metalayerlab/project-template/commit/e1b59928203a00271384628ea46b4eacc1570331))
+
+
+### 🐛 Bug Fixes
+
+* keep inline code's text in wiki heading anchors ([#95](https://github.com/metalayerlab/project-template/issues/95)) ([dc6254d](https://github.com/metalayerlab/project-template/commit/dc6254d362671bfeeea84dbbf9d9d6acf85376bc))
+* run bootstrap after copier update, not during it, so a failing task can't drop project edits ([#101](https://github.com/metalayerlab/project-template/issues/101)) ([07cf1f2](https://github.com/metalayerlab/project-template/commit/07cf1f2477451e7940e345a1063f5eb562453776))
+* run Python integration tests and test subsets without the coverage floor ([#103](https://github.com/metalayerlab/project-template/issues/103)) ([a5984a3](https://github.com/metalayerlab/project-template/commit/a5984a3844f7fdc72ab7662b2315bd57e646ce6f))
+
 ## [0.1.20](https://github.com/metalayerlab/project-template/compare/v0.1.19...v0.1.20) (2026-11-01)
 
 
