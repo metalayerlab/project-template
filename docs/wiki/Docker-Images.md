@@ -20,7 +20,7 @@ The `build:` packages are installed in the builder stage, and in CI's test job b
 A Python dependency that only the image needs, such as one that compiles against a C library, can stay an optional extra, so the core, its tests and lint need no C toolchain. Name the extras the image installs in the Copier answer `image_extras`:
 
 ```sh
-uvx copier update --trust -d image_extras='[fuse]'     # or '["*"]' for every extra
+uvx copier update --trust --skip-tasks -d image_extras='[fuse]'     # or '["*"]' for every extra
 ```
 
 Both of the builder's `uv sync` lines then get `--extra fuse` (`--all-extras` for `"*"`). It is an answer, not a project file, so the Dockerfile stays template-owned and updates without conflicts ([design 0012](https://github.com/metalayerlab/project-template/blob/main/docs/design/0012-image-extras.md)). CI's test job installs no extras. List the extra's build and runtime apt packages in `contrib/system-packages.txt` as above.

@@ -1,6 +1,6 @@
 # Answering the Questions
 
-Copier asks these when you run `copier copy`. Pass answers non-interactively with `-d key=value`, for example `-d kind=cli`. The answers are saved in `.copier-answers.yml`, and `copier update` reuses them. To change one later, run `copier update --trust -d key=new-value`, or `copier update --trust --vcs-ref=HEAD -A` to answer everything again.
+Copier asks these when you run `copier copy`. Pass answers non-interactively with `-d key=value`, for example `-d kind=cli`. The answers are saved in `.copier-answers.yml`, and `copier update` reuses them. To change one later, run `copier update --trust --skip-tasks -d key=new-value`, or `copier update --trust --skip-tasks --vcs-ref=HEAD -A` to answer everything again.
 
 ## Questions
 
