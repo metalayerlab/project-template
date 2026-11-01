@@ -2,7 +2,7 @@
 
     uv run pytest                    # every variant: lint, types, tests, wiki, manifests
     uv run pytest -m docker          # also build each image and probe its health endpoint
-    uv run pytest -k service         # one variant
+    uv run pytest --variant service  # one variant (tests/conftest.py)
 
 Each variant is a project as `copier copy` would create it, and must pass its own
 Definition of done (AGENTS.md) unchanged. That is the template's contract.
@@ -569,6 +569,23 @@ def test_issue_form_offers_every_choice() -> None:
     for question in ("language", "kind"):
         choices = [c["value"] if isinstance(c, dict) else c for c in questions[question]["choices"].values()]
         assert dropdowns[question] == choices, question
+
+
+def test_template_ci_runs_every_test() -> None:
+    """Template CI's jobs between them select every test once (#98): one render job per variant
+    plus `rest` (tests/conftest.py), and the layer job for tests/test_layers.py."""
+    import yaml
+
+    from conftest import REST
+
+    jobs = yaml.safe_load((ROOT / ".github/workflows/template-ci.yml").read_text())["jobs"]
+    matrix = jobs["render"]["strategy"]["matrix"]["variant"]
+    assert REST not in VARIANTS
+    assert sorted(matrix) == sorted([*VARIANTS, REST])
+    runs = [s["run"] for s in jobs["render"]["steps"] if "pytest" in s.get("run", "")]
+    assert runs == ["uv run pytest -v -m '' --ignore tests/test_layers.py --variant \"${{ matrix.variant }}\""]
+    layers = [s["run"] for s in jobs["layers"]["steps"] if "pytest" in s.get("run", "")]
+    assert layers == ["uv run pytest -v tests/test_layers.py"]
 
 
 def test_readme_links_existing_wiki_pages(project: Path) -> None:
