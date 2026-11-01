@@ -4,6 +4,11 @@
 Follow [AGENTS.md](../AGENTS.md): the project's only instruction file. If it isn't loaded, read it before
 changing anything. The rules that matter most:
 
+[% if kind == 'brain' %]
+[% include 'layers/' ~ language ~ '/copilot.md.jinja' %]
+- Never commit what `.gitignore` keeps out, or edit template-owned files. Never weaken a check.
+[% else %]
 [% include 'layers/' ~ language ~ '/copilot.md.jinja' %]
 - Code, tests and the matching `docs/wiki/` page change together.
 - Never edit `CHANGELOG.md`, the version, generated wiki blocks or template-owned files. Never weaken a check.
+[% endif %]

@@ -45,6 +45,34 @@ jobs:
         run: python3 scripts/check-personal-data.py
 [% endif %]
 [% include 'layers/' ~ language ~ '/ci/jobs.yml.jinja' %]
+[% if kind == 'brain' %]
+
+  repository:
+    name: Repository metadata
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Projects with a wiki check this in their Wiki workflow; without one, it is its own job (0015).
+      - name: .github/repository.toml is valid
+        run: python3 scripts/repo-metadata.py --validate
+
+  # A warning, not a failure: only a repository admin can fix it, outside any PR
+  # (project-template design record 0010). An invalid file still fails.
+  metadata:
+    name: GitHub's About box
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Matches .github/repository.toml?
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          rc=0; python3 scripts/repo-metadata.py --check || rc=$?
+          if [ "$rc" = 1 ]; then
+            echo "::warning::GitHub's About box differs from .github/repository.toml: run python3 scripts/repo-metadata.py"
+          elif [ "$rc" != 0 ]; then exit "$rc"; fi
+[% endif %]
 [% if container_image or contrib %]
 
   manifests:

@@ -8,15 +8,19 @@
 [% if container_image or contrib %]
       "Bash(scripts/check-manifests.sh)",
 [% endif %]
+[% if kind != 'brain' %]
       "Bash(python3 scripts/check-wiki.py:*)",
+[% endif %]
       "Bash(scripts/check-docs-secrets.sh:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)"
     ],
     "deny": [
+[% if kind != 'brain' %]
       "Edit(CHANGELOG.md)",
       "Edit(.release-please-manifest.json)",
+[% endif %]
       "Edit(.copier-answers.yml)",
       "Bash(git push * main)",
       "Bash(git push * main *)",

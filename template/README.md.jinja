@@ -1,4 +1,26 @@
 [% import 'layers/' ~ language ~ '/layer.jinja' as layer with context %]
+[% if kind == 'brain' %]
+# [[ project_name ]]
+
+[[ description ]]
+
+<!-- guidance: this README is yours (copier update never touches it). Say what the notes are
+for and who they are for. Then delete this comment. -->
+
+## For AI assistants
+
+**[AGENTS.md](AGENTS.md) is the only instruction file**; [CLAUDE.md](CLAUDE.md), [GEMINI.md](GEMINI.md) and
+the Copilot and Cursor pointers import it. Every change gets human review.
+
+## Checks
+[% include 'layers/' ~ language ~ '/readme/development.md.jinja' %]
+
+CI also runs the secret scan (`scripts/check-docs-secrets.sh`, with Docker).
+
+This repository was generated from [project-template](https://github.com/[[ github_owner ]]/project-template).
+Template fixes arrive as a weekly *Template update* PR.
+
+[% else %]
 # [[ project_name ]]
 
 [% if container_image %]
@@ -91,6 +113,7 @@ release-please. See [Contributing]([[ repo_url ]]/wiki/Contributing).
 This project was generated from [project-template](https://github.com/[[ github_owner ]]/project-template).
 Template fixes arrive as a weekly *Template update* PR.
 
+[% endif %]
 ## License
 
 [% if license == 'Unlicense' %]

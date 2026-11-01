@@ -26,7 +26,8 @@ get are in `template/AGENTS.md.jinja`.
 - So **never write `[[` in a `.jinja` file** unless you mean a variable. Watch for `Callable[[str], X]`,
   TOML `[[array]]` and bash `[[ ]]`: use `Callable[..., X]`, `[table.key]` and `[ ]`.
 - Conditional files and directories go in the *name*: `[% if kind == 'service' %]api.py[% endif %].jinja`.
-  An empty rendered name skips the file.
+  An empty rendered name skips the file. One exception: the files `kind: brain` (`language: obsidian`) drops are listed in
+  `_exclude` in `copier.yml`, because they are core files every other kind keeps.
 - `trim_blocks` and `lstrip_blocks` are on. Put block tags on their own lines, and check the rendered
   output, not the source.
 

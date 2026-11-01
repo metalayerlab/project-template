@@ -55,6 +55,7 @@ VARIANTS: dict[str, dict[str, object]] = {
     "cli": {"kind": "cli", "license": "MIT", "dependabot_automerge": "patch"},
     "library": {"kind": "library", "license": "Apache-2.0"},
     "none": {"language": "none", "license": "MIT"},
+    "obsidian": {"language": "obsidian"},
     "ts-service": {
         "language": "typescript",
         "kind": "service",
@@ -65,6 +66,16 @@ VARIANTS: dict[str, dict[str, object]] = {
     "ts-library": {"language": "typescript", "kind": "library", "license": "Proprietary"},
     "ts-web": {"language": "typescript", "kind": "web", "dependabot_automerge": "patch"},
 }
+
+
+def brain(project: Path) -> bool:
+    """A notes repository, an Obsidian vault: no releases, wiki or image (0015, 0016)."""
+    return project.name.endswith("-obsidian")
+
+
+def wiki_only(project: Path) -> None:
+    if brain(project):
+        pytest.skip("a brain's vault is its wiki")
 
 
 def sh(*cmd: str, cwd: Path, env: dict[str, str] | None = None) -> str:
@@ -105,16 +116,43 @@ HEADROOM = 0.75  # the skeleton may use at most 75% of each budget, leaving room
 
 
 def test_always_loaded_files_leave_headroom(project: Path) -> None:
-    """The budget itself is in the rendered docs/wiki/.standard.toml, enforced by check-wiki.py."""
-    import tomllib
-
-    budget = tomllib.loads((project / "docs/wiki/.standard.toml").read_text())["context_budget"]
+    """The budget is in the rendered docs/wiki/.standard.toml, enforced by check-wiki.py, or in
+    scripts/check-vault.py for a brain (0016)."""
+    budget = context_budget(project)
     over = {
         name: (size, int(limit * HEADROOM))
         for name, limit in budget.items()
         if (size := len((project / name).read_text(encoding="utf-8"))) > limit * HEADROOM
     }
     assert not over, f"skeleton uses too much of the context budget (chars, allowed): {over}"
+
+
+def context_budget(project: Path) -> dict[str, int]:
+    import importlib.util
+    import tomllib
+
+    if not brain(project):
+        return tomllib.loads((project / "docs/wiki/.standard.toml").read_text())["context_budget"]
+    script = project / "scripts/check-vault.py"
+    spec = importlib.util.spec_from_file_location("check_vault", script)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.BUDGET  # type: ignore[no-any-return]
+
+
+def test_budget_is_the_same_without_a_wiki(project: Path) -> None:
+    """A brain's vault check and every wiki's standard agree on the budget (0016)."""
+    import ast
+    import tomllib
+
+    if brain(project):
+        pytest.skip("compared from the projects with a wiki")
+    standard = tomllib.loads((project / "docs/wiki/.standard.toml").read_text())["context_budget"]
+    name = "[% if language == 'obsidian' %]check-vault.py[% endif %].jinja"
+    script = ROOT / "template/scripts" / name
+    budget = re.search(r"BUDGET = (\{.*?\})", script.read_text(), re.S)
+    assert budget and ast.literal_eval(budget.group(1)) == standard
 
 
 def test_template_problems_are_reported(project: Path) -> None:
@@ -183,6 +221,8 @@ def test_first_release_is_0_1_0(project: Path) -> None:
     """With the manifest at 0.0.0, release-please would otherwise propose 1.0.0."""
     import json
 
+    if brain(project):
+        pytest.skip("a brain has no releases")
     config = json.loads((project / "release-please-config.json").read_text())
     assert config["packages"]["."]["initial-version"] == "0.1.0"
 
@@ -242,7 +282,7 @@ def test_none_checks(project: Path) -> None:
     if not (project / "scripts/check.sh").exists():
         pytest.skip("has a language layer")
     assert quiet(["sh", "scripts/check.sh"], project) == ["scripts/check.sh: no checks defined yet"]
-    assert (project / "version.txt").read_text() == "0.0.0\n"
+    assert brain(project) or (project / "version.txt").read_text() == "0.0.0\n"
     assert not (project / "pyproject.toml").exists() and not (project / "src").exists()
     agents = (project / "AGENTS.md").read_text()
     assert "sh scripts/check.sh" in agents and "``" not in agents.replace("```", "")
@@ -269,6 +309,177 @@ def test_kind_other_needs_language_none(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="language: none"):
         run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
                  vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+
+
+@pytest.mark.parametrize(("kind", "error"), [("knowledge", "Invalid choice"), ("brain", "language: obsidian")])
+def test_language_none_offers_other_only(kind: str, error: str, tmp_path: Path) -> None:
+    """A notes repository is `language: obsidian`, whose kind is always `brain` (0016)."""
+    data = {"project_name": "demo", "description": "demo", "language": "none", "kind": kind}
+    with pytest.raises(ValueError, match=error):
+        run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+                 vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+    data = {"project_name": "demo", "description": "demo", "language": "obsidian"}
+    run_copy(str(ROOT), tmp_path / "o", data=data, defaults=True, unsafe=True, quiet=True,
+             vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+    assert 'topics = ["obsidian", "brain"]' in (tmp_path / "o/.github/repository.toml").read_text()
+
+
+@pytest.mark.parametrize("kind", ["service", "cli", "library", "web", "other"])
+def test_obsidian_is_a_brain(kind: str, tmp_path: Path) -> None:
+    """`kind` isn't asked for obsidian, and an answer for it can't make a vault anything else (0016)."""
+    data = {"project_name": "demo", "description": "demo", "language": "obsidian", "kind": kind}
+    with pytest.raises(ValueError, match="kind"):
+        run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+                 vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+
+
+@pytest.mark.parametrize("kind", ["service", "cli", "library"])
+def test_kind_with_code_needs_a_layer(kind: str, tmp_path: Path) -> None:
+    data = {"project_name": "demo", "description": "demo", "language": "none", "kind": kind}
+    with pytest.raises(ValueError, match="Needs a language layer"):
+        run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+                 vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+
+
+BRAIN_DROPS = [
+    "CHANGELOG.md", "CONTRIBUTING.md", "SECURITY.md", "TODO.md", "version.txt", "contrib", "docs",
+    "release-please-config.json", ".release-please-manifest.json", ".markdownlint-cli2.yaml",
+    "scripts/check-wiki.py", ".github/workflows/release-please.yml", ".github/workflows/pr-title.yml",
+    ".github/workflows/wiki.yml", ".github/ISSUE_TEMPLATE/bug_report.yml",
+    ".github/ISSUE_TEMPLATE/feature_request.yml",
+]  # fmt: skip
+
+
+def test_brain_keeps_guard_rails_only(project: Path) -> None:
+    """Releases, the wiki and markdownlint go; the guard rails stay, and the vault comes (0015, 0016)."""
+    if not brain(project):
+        assert not (project / "scripts/check-vault.py").exists() and not (project / "knowledge").exists()
+        return
+    assert [p for p in BRAIN_DROPS if (project / p).exists()] == []
+    skip = {".git", "__pycache__"}
+    files = [p for p in project.rglob("*") if p.is_file() and not skip & set(p.parts)]
+    text = "\n".join(p.read_text(errors="ignore") for p in files)
+    dropped = r"check-wiki|release-please|docs/wiki|docs/design|CHANGELOG|markdownlint"
+    assert not re.search(dropped, text)
+    sh("uv", "run", "scripts/check-vault.py", cwd=project)
+    assert quiet(["uv", "run", "scripts/check-vault.py"], project) == [
+        "check-vault OK: 4 files, 0 design records"
+    ]
+    assert "**/.obsidian/workspace*.json" in (project / ".gitignore").read_text()
+    assert "proprietary" in (project / "LICENSE").read_text()
+
+
+VAULT_OWNERS = {
+    "README.md": True,
+    "knowledge/🏠 Home.md": True,
+    "knowledge/📐 Conventions.md": True,
+    "knowledge/.obsidian/app.json": True,
+    "knowledge/.obsidian/templates.json": True,
+    "knowledge/decisions/Decisions.base": False,
+    "knowledge/_templates/📝 Design Record.md": False,
+}
+
+
+def test_brain_ownership(tmp_path: Path) -> None:
+    """copier update leaves a brain's README.md and notes alone, not other kinds' README.md,
+    and still updates the design index and template (0015, 0016)."""
+    for language, owned in (("obsidian", VAULT_OWNERS), ("none", {"README.md": False})):
+        dst = tmp_path / language
+        data = {"project_name": "demo", "description": "demo", "language": language}
+        run_copy(str(ROOT), dst, data=data, defaults=True, unsafe=True, quiet=True, vcs_ref="HEAD",
+                 skip_tasks=True)  # fmt: skip
+        for name in owned:
+            (dst / name).write_text("mine\n")
+        run_copy(str(ROOT), dst, data=data, defaults=True, unsafe=True, quiet=True, vcs_ref="HEAD",
+                 skip_tasks=True, overwrite=True)  # fmt: skip
+        assert {n: (dst / n).read_text() == "mine\n" for n in owned} == owned, language
+
+
+def test_vault_at_the_root(tmp_path: Path) -> None:
+    """`vault_dir: .` puts the skeleton at the root, and the ignore and noread entries still match (0016)."""
+    data = {"project_name": "demo", "description": "demo", "language": "obsidian", "vault_dir": "."}
+    dst = tmp_path / "demo"
+    run_copy(str(ROOT), dst, data=data, defaults=True, unsafe=True, quiet=True, vcs_ref="HEAD")
+    for name in ["🏠 Home.md", "decisions/Decisions.base", ".obsidian/app.json", "_attachments/.gitkeep"]:
+        assert (dst / name).is_file(), name
+    assert not (dst / "knowledge").exists()
+    agents = (dst / "AGENTS.md").read_text()
+    assert "`.obsidian/`, `.trash/`, `_attachments/`" in agents and "`🏠 Home.md`" in agents
+    (dst / ".obsidian/workspace.json").write_text("{}")
+    (dst / ".trash").mkdir()
+    (dst / ".trash/old.md").write_text("old")
+    ignored = sh("git", "check-ignore", ".obsidian/workspace.json", ".trash/old.md", cwd=dst)
+    assert ignored.split() == [".obsidian/workspace.json", ".trash/old.md"]
+    sh("git", "add", "-A", cwd=dst)
+    assert sh("uv", "run", "scripts/check-vault.py", cwd=dst).startswith("check-vault OK")
+
+
+@pytest.mark.parametrize("bad", ["notes/vault", "..", "../notes", "", ".obsidian", "a/"])
+def test_vault_dir_rejected(bad: str, tmp_path: Path) -> None:
+    data = {"project_name": "demo", "description": "demo", "language": "obsidian", "vault_dir": bad}
+    with pytest.raises(ValueError, match="vault_dir"):
+        run_copy(str(ROOT), tmp_path / "p", data=data, defaults=True, unsafe=True, quiet=True,
+                 vcs_ref="HEAD", skip_tasks=True)  # fmt: skip
+
+
+RECORD = """---
+kind: decision
+number: {number}
+status: {status}
+date: 2026-11-01
+authors: [A. Maintainer]
+summary: A decision
+supersedes: {supersedes}
+superseded_by: {superseded_by}
+tags: [decision]
+---
+
+## 🧭 Context
+
+## ✅ Decision
+
+## ⚖️ Alternatives considered
+
+## 🌊 Consequences
+
+## ❓ Open questions
+"""
+OLD = RECORD.format(number=1, status="superseded", supersedes="[]",
+                    superseded_by='"[[📝 0002 Follow Upstream]]"')  # fmt: skip
+NEW = RECORD.format(number=2, status="approved", supersedes='["[[📝 0001 Keep Notes Here]]"]',
+                    superseded_by="")  # fmt: skip
+VAULT_CASES = {
+    "valid": ({}, ""),
+    "broken embed": ({"🧭 Topic.md": "See [[🧭 Not Yet]].\n\n![[missing.png]]\n"}, "embeds a missing file"),
+    "bad front matter": ({"🧭 Topic.md": "---\ntags: [a\n---\n"}, "not valid YAML"),
+    "bad status": ({"decisions/📝 0002 Follow Upstream.md": NEW.replace("approved", "done")}, "status 'done'"),
+    "duplicate number": ({"decisions/📝 0002 Also Two.md": NEW}, "number 2 is also"),
+    "missing heading": ({"decisions/📝 0002 Follow Upstream.md": NEW.replace("## ⚖️ Alternatives considered", "")},
+                        "missing headings: Alternatives considered"),
+    "one-sided supersedes": ({"decisions/📝 0001 Keep Notes Here.md": OLD.replace("superseded_by: \"[[📝 0002 Follow Upstream]]\"", "superseded_by:")},
+                             "doesn't link back"),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("case", VAULT_CASES)
+def test_vault_check(case: str, project: Path, tmp_path: Path) -> None:
+    """The vault check fails on what is always broken; a link to a missing note passes (0016)."""
+    if not brain(project):
+        pytest.skip("no vault")
+    copy = tmp_path / project.name
+    shutil.copytree(project, copy)
+    vault = copy / "knowledge"
+    notes = {"decisions/📝 0001 Keep Notes Here.md": OLD, "decisions/📝 0002 Follow Upstream.md": NEW,
+             "🧭 Topic.md": "---\ntags: [topic]\n---\nSee [[🧭 Not Yet]] and ![[🏠 Home]].\n"}  # fmt: skip
+    files, error = VAULT_CASES[case]
+    for name, text in {**notes, **files}.items():
+        (vault / name).write_text(text, encoding="utf-8")
+    result = subprocess.run(["uv", "run", "scripts/check-vault.py"], cwd=copy, capture_output=True, text=True)
+    if not error:
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert result.stdout == "check-vault OK: 7 files, 2 design records\n"
+    else:
+        assert result.returncode == 1 and error in result.stdout, result.stdout + result.stderr
 
 
 SUBGROUP = '''
@@ -361,17 +572,20 @@ def test_issue_form_offers_every_choice() -> None:
 
 def test_readme_links_existing_wiki_pages(project: Path) -> None:
     """The README links the wiki by URL, which check-wiki.py doesn't follow."""
+    wiki_only(project)
     pages = re.findall(r"/wiki/([\w-]+)\)", (project / "README.md").read_text())
     missing = [p for p in pages if not (project / "docs/wiki" / f"{p}.md").exists()]
     assert pages and not missing
 
 
 def test_wiki_standard(project: Path) -> None:
+    wiki_only(project)
     sh("python3", "scripts/check-wiki.py", cwd=project)
 
 
 def test_fresh_wiki_blocks_a_release(project: Path) -> None:
     """Skeleton guidance must fail strict mode (Release PRs) until it is written."""
+    wiki_only(project)
     result = subprocess.run(
         ["python3", "scripts/check-wiki.py", "--strict"], cwd=project, capture_output=True
     )
@@ -379,6 +593,7 @@ def test_fresh_wiki_blocks_a_release(project: Path) -> None:
 
 
 def test_written_wiki_passes_strict(project: Path, tmp_path: Path) -> None:
+    wiki_only(project)
     copy = tmp_path / "p"
     shutil.copytree(project / "docs", copy / "docs")
     shutil.copytree(project / "scripts", copy / "scripts")
@@ -409,8 +624,12 @@ def test_repository_metadata(project: Path, tmp_path: Path) -> None:
     want = tomllib.loads((project / ".github/repository.toml").read_text())
     variant = VARIANTS[project.name.removeprefix("demo-")]
     topics = [variant.get("language", "python"), variant["kind"]] if "kind" in variant else []
+    topics = ["obsidian", "brain"] if brain(project) else topics
+    topics = [t for t in topics if t not in ("none", "other")]
     assert want == {"description": variant.get("description", f"A demo {project.name.removeprefix('demo-')}"),
-                    "homepage": f"https://github.com/metalayerlab/{project.name}/wiki", "topics": topics}  # fmt: skip
+                    "homepage": "" if brain(project) else
+                                f"https://github.com/metalayerlab/{project.name}/wiki",
+                    "topics": topics}  # fmt: skip
 
     (tmp_path / "gh").write_text(FAKE_GH)
     (tmp_path / "gh").chmod(0o755)
@@ -437,7 +656,8 @@ def quiet(cmd: list[str], cwd: Path) -> list[str]:
 
 def test_checks_are_quiet_when_they_pass(project: Path) -> None:
     """Every Definition of done run is read by an assistant: one line on a pass (0007)."""
-    checks = [["python3", "scripts/check-wiki.py"]]
+    checks = [["uv", "run", "scripts/check-vault.py"] if brain(project) else ["python3", "scripts/check-wiki.py"]]
+    sh(*checks[0], cwd=project)  # uv's first run reports installing PyYAML
     if (project / "scripts/check-manifests.sh").exists():
         checks.append(["scripts/check-manifests.sh"])
     noisy = {" ".join(c): lines for c in checks if len(lines := quiet(c, project)) > 1}
@@ -470,6 +690,7 @@ def test_gitleaks_pins_match(project: Path) -> None:
 def test_docs_secrets_match_ci(project: Path, tmp_path: Path) -> None:
     """The skeleton passes in one line (0007), and an MD014 `$` prompt fails locally as in CI (#21)."""
     assert len(quiet(["scripts/check-docs-secrets.sh"], project)) == 1
+    wiki_only(project)
     copy = tmp_path / project.name
     shutil.copytree(project, copy, ignore=shutil.ignore_patterns(".venv", "node_modules"))
     page = copy / "docs/wiki/Home.md"
@@ -483,12 +704,12 @@ def test_docs_secrets_match_ci(project: Path, tmp_path: Path) -> None:
 def test_labels_are_created(project: Path) -> None:
     """Copier copies files, not labels: a workflow creates each label the checks use (#56)."""
     files = [*(project / ".github/workflows").glob("*.yml"), project / "scripts/check-wiki.py"]
-    text = "\n".join(f.read_text() for f in files)
+    text = "\n".join(f.read_text() for f in files if f.exists())
     use = r"--label ([\w-]+)|^\s+labels: ([\w-]+)|labels\.\*\.name, '([\w-]+)'"
     used = set(re.findall(use, text, re.M))
     used = {name for group in used for name in group if name}
     created = set(re.findall(r"gh label create ([\w-]+)", text))
-    assert {"no-docs-needed", "template-update"} <= used
+    assert {"template-update"} | (set() if brain(project) else {"no-docs-needed"}) <= used
     assert used <= created, used - created
 
 
@@ -553,7 +774,9 @@ def test_image_runs(project: Path) -> None:
 
 
 def test_system_packages_are_empty_by_default(project: Path) -> None:
-    """contrib/system-packages.txt (#53) exists in every project and lists nothing."""
+    """contrib/system-packages.txt (#53) exists in every project with code and lists nothing."""
+    if brain(project):
+        pytest.skip("no code to build")
     lines = (project / "contrib/system-packages.txt").read_text().splitlines()
     assert [ln for ln in lines if not ln.startswith("#") and ln.strip()] == ["build:", "runtime:"]
 

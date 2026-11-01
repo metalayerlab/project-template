@@ -44,4 +44,5 @@ Projects that predate the template can adopt it. Moving each onto it gives it th
 | Privileged workloads (FUSE, DaemonSets) | Keep them as extra manifests; their namespace can't use the *restricted* Pod Security level, so say why in a comment |
 | Fixtures captured from real systems | Answer `personal_data_guard=true`. Keep project-specific rules in a script of their own with its own CI step, because the template's guard is template-owned |
 | A long-lived integration branch (e.g. `next`) | Replace it with `feat/*` branches into `main`. Merge the wiki clone's branches into `master` (the branch GitHub publishes) before step 3 |
+| A notes repository (an Obsidian vault) | `copier copy --trust -d language=obsidian -d vault_dir=<the vault's folder, or .>` into it. An existing `🏠 Home.md` or `📐 Conventions.md` is kept; the vault gains `decisions/`, the base and the record template. Your `README.md` is kept; `.gitignore` comes back as a conflict once: keep your ignore entries. Put your note conventions in `📐 Conventions`; `AGENTS.md` tells assistants to follow them |
 | Missing wiki pages or LICENSE | The checker lists missing pages; choose a licence with `license` |

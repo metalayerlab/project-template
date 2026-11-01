@@ -86,7 +86,12 @@ jobs:
             `copier update` from project-template **${{ env.FROM }}** to **${{ env.TO }}**.
 
             - Search the diff for `<<<<<<<`: conflicts are left inline for you to resolve.
+[% if kind == 'brain' %]
+            - Read the template's release notes for what changed and why.
+            - `README.md`, `scripts/check.sh` and your notes are yours and never touched.
+[% else %]
             - Read the template's CHANGELOG for what changed and why.
             - Pages under `docs/wiki/` (except Release-Process) and `src/`, `tests/` are
               yours and never touched; `docs/wiki/.standard.toml` may have changed, so
               the Wiki check may now ask for something new.
+[% endif %]

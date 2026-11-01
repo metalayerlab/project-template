@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [service, service-min, cli, library, none, ts-service, ts-cli, ts-library, ts-web]
+        variant: [service, service-min, cli, library, none, obsidian, ts-service, ts-cli, ts-library, ts-web]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

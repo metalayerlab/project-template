@@ -81,7 +81,7 @@ function lookup(data: unknown, dotted: string): unknown {
   return node;
 }
 
-/** Give raw (a string from the environment, or a YAML scalar) the default's type. */
+/** Give raw (a string from the environment, or a YAML value) the default's type. */
 export function coerce(setting: Setting, raw: unknown): Value {
   const text = typeof raw === "string" ? raw.trim() : JSON.stringify(raw);
   if (typeof setting.default === "boolean") {
@@ -94,6 +94,10 @@ export function coerce(setting: Setting, raw: unknown): Value {
     const n = typeof raw === "number" ? raw : Number(text);
     if (text !== "" && Number.isInteger(n)) return n;
     throw new ConfigError(`${setting.key}: expected integer, got ${JSON.stringify(raw)}`);
+  }
+  // A YAML list or mapping would become its JSON text; scalars (1, 2.5) are fine.
+  if (typeof raw === "object" && raw !== null) {
+    throw new ConfigError(`${setting.key}: expected string, got ${JSON.stringify(raw)}`);
   }
   return typeof raw === "string" ? raw : text;
 }
